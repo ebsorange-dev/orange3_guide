@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orange3 Web Server</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-weight: 700;
+            color: #ff9d00;
+            letter-spacing: 1px;
+        }
+
+        p {
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #d1d1e0;
+        }
+
+        .btn {
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(229, 46, 113, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 30px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            display: none;
+            word-wrap: break-word;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-style: italic;
+            color: #ff9d00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Orange3 Web Interface</h1>
+        <p>Orange3 라이브러리를 웹 서버 엔진으로 변환하여 사용 중입니다. 버튼을 눌러 Orange에서 제공하는 기본 데이터셋(Iris) 정보를 로드해보세요.</p>
+        <button class="btn" onclick="fetchDatasetInfo()">데이터셋 정보 로드</button>
+        <div class="loading" id="loading">로딩 중...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function fetchDatasetInfo() {
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            
+            resultDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/dataset/info');
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `
+                        <strong>데이터셋:</strong> ${data.data.name}<br><br>
+                        <strong>인스턴스 수:</strong> ${data.data.instances}<br><br>
+                        <strong>속성:</strong> ${data.data.attributes.join(', ')}<br><br>
+                        <strong>타겟 클래스:</strong> ${data.data.class_var}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: #ff4c4c;">오류: ${data.message}</span>`;
+                }
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<span style="color: #ff4c4c;">요청 실패: ${error.message}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서버에 연결할 수 없습니다</title>
+<style>
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #222;
+  }
+  .box {
+    text-align: center;
+    max-width: 520px;
+    padding: 40px 20px;
+  }
+  .icon {
+    font-size: 54px;
+    color: #F47B20;
+    line-height: 1;
+    margin-bottom: 18px;
+  }
+  .title {
+    font-size: 17px;
+    color: #222;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .msg {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .hint {
+    font-size: 11px;
+    color: #aaa;
+    opacity: 0.7;
+    margin-bottom: 22px;
+    font-family: Consolas, "SF Mono", monospace;
+  }
+  button {
+    margin-top: 6px;
+    padding: 10px 28px;
+    border-radius: 6px;
+    border: 0;
+    background: #F47B20;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .15s;
+  }
+  button:hover { background: #d96b10; }
+  button:active { background: #b85a0d; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">⚠</div>
+  <div class="title">서버에 연결할 수 없습니다</div>
+  <div class="msg">
+    잠시 후 다시 시도해 주세요.<br>
+    문제가 지속되면 관리자에게 문의하세요.
+  </div>
+  <div class="hint">(upstream unavailable · 502/503/504)</div>
+  <button onclick="location.reload()">다시 시도</button>
+</div>
+</body>
+</html>

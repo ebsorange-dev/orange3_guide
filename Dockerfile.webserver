@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# fastapi/uvicorn 레이어 분리 — 소규모 변경 시 orange3 재다운로드 방지
+RUN pip install --no-cache-dir fastapi "uvicorn[standard]"
+RUN pip install --no-cache-dir orange3
+
+# main.py, index.html은 docker-compose volume으로 런타임 마운트
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:9508/')" || exit 1
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9508"]

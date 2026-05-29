@@ -1,0 +1,70 @@
+# Git 및 IDE
+.git
+.gitignore
+.github
+**/.git
+
+# Python 캐시 / 빌드 산출물
+**/__pycache__
+**/*.pyc
+**/*.pyo
+*.egg-info
+.venv
+
+# 런타임 데이터 (빌드에 불필요)
+sessions/
+sessions;C/
+config/
+data/
+
+# session_manager는 별도 빌드 컨텍스트
+session_manager/
+
+# 위젯 오버라이드 (런타임 마운트)
+widgets_override/
+
+# 문서 / 이미지 / 분석 파일
+*.md
+*.html
+*.png
+*.json
+# Korean.json은 루트에 있어야 COPY 가능 → 예외
+!Korean.json
+# Xpra HTML5 키 인터셉트 스크립트 (Dockerfile.xpra) — 루트 COPY 대상
+!xpra_key_intercept.html
+
+# 기타 스크립트 / 유틸
+main.py
+apply_pattern2.py
+implementation_plan_세션분리_최종
+
+# orange3 서브디렉터리 중 COPY에 불필요한 것
+orange3/.git
+orange3/.github
+orange3/benchmark
+orange3/conda-recipe
+orange3/distribute
+orange3/doc
+orange3/tutorials
+orange3/scripts
+orange3/Orange3.egg-info
+orange3/README*
+orange3/CHANGELOG*
+orange3/CODE_OF_CONDUCT*
+orange3/CONTRIBUTING*
+orange3/MANIFEST*
+orange3/ROADMAP*
+orange3/tox.ini
+orange3/setup.py
+orange3/setup.cfg
+orange3/pyproject.toml
+orange3/pylintrc
+orange3/quietunittest.py
+orange3/codecov.yml
+orange3/.coveragerc
+orange3/.codeclimate.yml
+orange3/.scrutinizer.yml
+orange3/.readthedocs.yaml
+orange3/.gitmodules
+orange3/.gitattributes
+orange3/i18n

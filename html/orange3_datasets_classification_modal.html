@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classification Datasets</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
+    background: #ffffff;
+    color: #1f1f23;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #e5e7eb;
+    background: #ffffff; height: 44px; flex-shrink: 0;
+  }
+  .title {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 14px; color: #1f1f23;
+  }
+  .title-icon { width: 18px; height: 18px; color: #3b82f6; }
+  .badge-cat {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #dbeafe; color: #1d4ed8;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-cat::before {
+    content: ""; width: 6px; height: 6px;
+    border-radius: 50%; background: #3b82f6;
+  }
+  .close-btn {
+    background: none; border: none; color: #6b7280;
+    font-size: 22px; cursor: pointer; padding: 0 8px; line-height: 1;
+  }
+  .close-btn:hover { color: #111827; }
+  .main {
+    flex: 1; overflow-y: auto;
+    padding: 8px 16px 12px; background: #f8f9fb;
+  }
+  .section-title {
+    font-size: 12px; font-weight: 600; color: #6b7280;
+    margin: 4px 0 6px;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .list {
+    background: #ffffff; border: 1px solid #e5e7eb;
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .list-header, .list-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1.7fr 110px;
+    gap: 10px; padding: 6px 12px; align-items: center;
+  }
+  .list-header {
+    background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+    font-size: 10.5px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .list-row {
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 12.5px; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:hover { background: #f9fafb; }
+  .list-row.selected { background: #dbeafe; border-bottom-color: #bfdbfe; }
+  .list-row.selected:hover { background: #c7defb; }
+  .list-row.selected .col-title { color: #1e3a8a; }
+  .col-select { display: flex; align-items: center; justify-content: center; }
+  .radio {
+    appearance: none; -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border: 1.6px solid #c4cad1; border-radius: 50%;
+    background: #ffffff; cursor: pointer; position: relative;
+    transition: border-color 0.12s, background 0.12s; flex-shrink: 0;
+  }
+  .radio:hover { border-color: #2563eb; }
+  .radio:checked { border-color: #2563eb; background: #2563eb; }
+  .radio:checked::after {
+    content: ""; position: absolute;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 6px; height: 6px; border-radius: 50%; background: #ffffff;
+  }
+  .col-title { color: #111827; font-weight: 600; font-size: 12.5px; line-height: 1.2; }
+  .col-title .file {
+    display: block; font-size: 10.5px; font-weight: 400;
+    color: #6b7280; margin-top: 1px; line-height: 1.2;
+    font-family: "Consolas", "Courier New", monospace;
+  }
+  .col-desc {
+    color: #4b5563; font-size: 12px; line-height: 1.3;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .col-meta {
+    font-size: 10.5px; color: #6b7280; font-family: "Consolas", monospace;
+    display: flex; flex-direction: column; gap: 0; line-height: 1.2;
+  }
+  .col-meta .meta-rows { color: #374151; font-weight: 600; }
+  .footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-top: 1px solid #e5e7eb;
+    background: #ffffff; flex-shrink: 0;
+  }
+  .footer-info { font-size: 12px; color: #6b7280; }
+  .footer-info b { color: #1e3a8a; font-weight: 600; }
+  .footer-buttons { display: flex; gap: 8px; }
+  .btn {
+    padding: 7px 16px; border-radius: 6px;
+    font-size: 12.5px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .btn-cancel { background: #ffffff; border-color: #d1d5db; color: #4b5563; }
+  .btn-cancel:hover { background: #f3f4f6; }
+  .btn-apply { background: #2563eb; color: #ffffff; }
+  .btn-apply:hover { background: #1d4ed8; }
+  .btn-apply:disabled { background: #93c5fd; cursor: not-allowed; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="title">
+    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/>
+      <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+      <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+    </svg>
+    <span>Datasets</span>
+    <span class="badge-cat">분류 (Classification)</span>
+  </div>
+  <button class="close-btn" id="btnClose" title="닫기">×</button>
+</header>
+<main class="main">
+  <div class="section-title">선택할 데이터셋을 클릭하세요</div>
+  <div id="content"></div>
+</main>
+<footer class="footer">
+  <div class="footer-info" id="footerInfo">선택된 항목 없음</div>
+  <div class="footer-buttons">
+    <button class="btn btn-cancel" id="btnCancel">취소</button>
+    <button class="btn btn-apply" id="btnApply" disabled>샘플 데이터 적용하기</button>
+  </div>
+</footer>
+<script>
+const CONTAINER_BASE = "/data/Classification";
+const datasets = [
+  { title:"Iris",                    file:"iris.tab",                    rows:150,  feat:"4 cont",  desc:"꽃잎/꽃받침 길이·너비로 3종 붓꽃 분류 — 분류 입문용 표준 데이터셋." },
+  { title:"Titanic",                 file:"titanic.tab",                 rows:2201, feat:"3 disc",  desc:"타이타닉호 승객의 생존 여부 데이터." },
+  { title:"Heart Disease",           file:"heart_disease.tab",           rows:303,  feat:"6c + 7d", desc:"심장병 진단 데이터 — 결측값 포함 의료 분류 예제." },
+  { title:"Breast Cancer Wisconsin", file:"breast-cancer-wisconsin.tab", rows:699,  feat:"9 cont",  desc:"유방암 진단(양성/악성) 데이터." },
+  { title:"Lymphography",            file:"lymphography.tab",            rows:148,  feat:"18 disc", desc:"림프 조영술 데이터." },
+  { title:"Zoo",                     file:"zoo.tab",                     rows:101,  feat:"16 disc", desc:"동물 분류 데이터 — 7개 클래스." },
+  { title:"Adult",                   file:"adult.tab",                   rows:32561,feat:"6c + 8d", desc:"미국 인구조사 소득 분류 데이터." },
+  { title:"Voting",                  file:"voting.tab",                  rows:435,  feat:"16 disc", desc:"미 상원 투표 기록 데이터." },
+  { title:"Promoters",               file:"promoters.tab",               rows:106,  feat:"57 disc", desc:"DNA 프로모터 시퀀스 데이터." },
+  { title:"Car Evaluation",          file:"car.tab",                     rows:1728, feat:"6 disc",  desc:"자동차 평가 데이터." },
+];
+let selectedFile = null;
+function rowHTML(d, idx) {
+  return `
+    <div class="list-row" data-idx="${idx}" data-file="${d.file}">
+      <div class="col-select">
+        <input type="radio" name="ds-select" class="radio" value="${d.file}">
+      </div>
+      <div class="col-title">${d.title}<span class="file">${d.file}</span></div>
+      <div class="col-desc" title="${d.desc}">${d.desc}</div>
+      <div class="col-meta"><span class="meta-rows">${d.rows} rows</span><span>${d.feat}</span></div>
+    </div>`;
+}
+function render() {
+  document.getElementById("content").innerHTML = `
+    <div class="list">
+      <div class="list-header">
+        <div style="text-align:center">선택</div><div>데이터 이름</div><div>설명</div><div>크기</div>
+      </div>
+      ${datasets.map(rowHTML).join("")}
+    </div>`;
+}
+function selectRow(file, title) {
+  selectedFile = file;
+  document.querySelectorAll(".list-row").forEach(row => {
+    const isSel = row.dataset.file === file;
+    row.classList.toggle("selected", isSel);
+    const r = row.querySelector(".radio"); if (r) r.checked = isSel;
+  });
+  document.getElementById("footerInfo").innerHTML =
+    `선택됨: <b>${title}</b> → <code>${CONTAINER_BASE}/${file}</code>`;
+  document.getElementById("btnApply").disabled = false;
+}
+function applySelection() {
+  if (!selectedFile) return;
+  const path = `${CONTAINER_BASE}/${selectedFile}`;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "dataset-selected", path, file: selectedFile }, "*");
+  }
+}
+function cancelSelection() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "dataset-cancelled" }, "*");
+  }
+}
+document.getElementById("content").addEventListener("click", e => {
+  const row = e.target.closest(".list-row"); if (!row) return;
+  selectRow(datasets[+row.dataset.idx].file, datasets[+row.dataset.idx].title);
+});
+document.getElementById("content").addEventListener("dblclick", e => {
+  const row = e.target.closest(".list-row"); if (!row) return;
+  selectRow(datasets[+row.dataset.idx].file, datasets[+row.dataset.idx].title);
+  applySelection();
+});
+document.getElementById("btnApply").addEventListener("click", applySelection);
+document.getElementById("btnCancel").addEventListener("click", cancelSelection);
+document.getElementById("btnClose").addEventListener("click", cancelSelection);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") cancelSelection();
+  if (e.key === "Enter" && selectedFile) applySelection();
+});
+render();
+</script>
+</body>
+</html>

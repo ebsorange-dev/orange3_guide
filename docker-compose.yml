@@ -1,0 +1,124 @@
+services:
+  web-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.webserver
+    image: orange3-web-server
+    container_name: orange3-web-server
+    ports:
+      - "9508:9508"
+    volumes:
+      - ./main.py:/app/main.py:ro
+      - ./index.html:/app/index.html:ro
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  session-manager:
+    build:
+      context: ./session_manager
+    image: orange3-session-manager
+    container_name: orange3-session-manager
+    ports:
+      # 외부 8888로 노출 — 8888은 administered exclusion으로 영구 예약됨
+      # (netsh int ipv4 add excludedportrange ... store=persistent + winnat 재시작)
+      # → Hyper-V 동적 예약이 8888을 다시 점유하지 못함. 컨테이너 내부 포트는 8080 유지
+      - "8888:8080"
+      # 10000-10199: Orange3 컨테이너가 직접 호스트 포트에 바인딩 (session-manager 불필요)
+    volumes:
+      # Docker 소켓: Linux 컨테이너 생성 권한
+      - /var/run/docker.sock:/var/run/docker.sock
+      # main.py 핫리로드: 파일 수정 후 docker restart만으로 반영
+      - ./session_manager/main.py:/app/main.py:ro
+      # 사이드바 최상단 메뉴 버튼용 로고 이미지
+      - ./session_manager/orange_logo.png:/app/orange_logo.png:ro
+      # HTML 페이지들 — 폴더 단위로 마운트 (Dataset 버튼 / Analysis-Datasets 버튼 / 분류 모달)
+      - ./html:/app/html:ro
+      # 세션별 config 디렉터리 (컨테이너 내부 경로)
+      - ./sessions:/sessions
+      # 공유 데이터 (읽기 전용)
+      - ./data:/data:ro
+      # 위젯 오버라이드 파일 (session-manager 컨테이너 내부에서 스캔)
+      - ./widgets_override:/widgets_override:ro
+      # 사용자 업로드 .ows 워크플로우 (초등/중등/교재 BOOK 카테고리별)
+      - ./_upload_ows_:/upload_ows:ro
+      # 공유 썸네일 캐시 (2026-05-29) — 모든 세션 공유 SVG
+      # 자동 생성: warm pool 컨테이너의 launcher 가 처음 부팅 시 1회 생성
+      - ./thumbs_shared:/shared_thumbs:rw
+    environment:
+      - ORANGE3_IMAGE=orange3-gui
+      # Windows reserved port range 회피 — 비어 있는 9425-11181 구간 사용
+      - PORT_START=10000
+      - PORT_END=10199
+      # 세션 유휴 타임아웃 2시간 (P3-O2). 만료 직전 워크플로우 자동 저장됨.
+      - SESSION_TIMEOUT=7200
+      - WARM_POOL_SIZE=25
+      # ② 워밍풀 메모리 튜닝 (2026-05-22): 유휴 시간대 풀 축소.
+      # WARM_PEAK_HOURS(KST) 안 → WARM_POOL_SIZE(25), 그 외(유휴) → WARM_POOL_SIZE_IDLE(8).
+      # 컨테이너 1개 ~467MB → 25→8 축소 시 유휴 시간 약 8GB RAM 절감.
+      - WARM_POOL_SIZE_IDLE=8
+      - WARM_PEAK_HOURS=8-20
+      # 동시 부팅 가능한 워밍 컨테이너 수 — Orange3 startup CPU spike 분산
+      # (호스트 20 CPU × Orange3 부팅 100% spike → 동시 6개로 제한해 안정성 확보)
+      - WARM_BOOT_CONCURRENCY=6
+      # 워밍풀 컨테이너 최대 생존 시간 (초) — 초과 시 자동 교체 (디스크 누적·메모리 누수 방지)
+      - WARM_MAX_AGE=1800
+      # CONTAINER_SESSIONS_PATH: 이 컨테이너 안에서 세션 디렉터리를 만들 경로
+      - CONTAINER_SESSIONS_PATH=/sessions
+      # HOST_BASE: .env 에서 정의 — 드라이브 문자 소문자 + 앞에 /
+      # 예) d:\_26_Use_Orange_New_set_ → HOST_BASE=/d/_26_Use_Orange_New_set_
+      - HOST_SESSIONS_PATH=${HOST_BASE}/sessions
+      - HOST_DATA_PATH=${HOST_BASE}/data
+      - WIDGETS_HOST_PATH=${HOST_BASE}/widgets_override
+      # WIDGETS_LOCAL_PATH: session-manager 컨테이너 내부에서 스캔할 경로
+      - WIDGETS_LOCAL_PATH=/widgets_override
+      # ORANGE3_WIDGETS_PATH: Orange3 컨테이너 내 위젯 설치 경로
+      - ORANGE3_WIDGETS_PATH=/usr/local/lib/python3.10/dist-packages/Orange/widgets
+      - UPLOAD_OWS_HOST_PATH=${HOST_BASE}/_upload_ows_
+      # LAUNCHER_HOST_PATH: orange3_launcher.py 호스트 경로 (이미지 재빌드 없이 핫리로드)
+      - LAUNCHER_HOST_PATH=${HOST_BASE}/orange3_launcher.py
+      # 공유 썸네일 디렉토리 (2026-05-29) — 모든 세션이 같은 SVG 캐시 공유.
+      # 세션당 15MB × N 세션 중복 → 1회 생성 후 공유 (디스크 100× 절감).
+      - SHARED_THUMBS_HOST_PATH=${HOST_BASE}/thumbs_shared
+      - SHARED_THUMBS_LOCAL_PATH=/shared_thumbs
+      # ── Xpra 전환 실험 (Phase 2, 2026-05-23) ──
+      # /xpra 라우트가 신규 Xpra 컨테이너를 띄울 때 사용. 운영 noVNC 와 별개.
+      - XPRA_IMAGE=orange3-xpra:poc
+      - XPRA_PORT_START=13901
+      - XPRA_PORT_END=13950
+      # 워밍풀 크기 (Phase 5 준비, 2026-05-23). 0=비활성, >0=즉시 응답.
+      - XPRA_WARM_POOL_SIZE=10
+      # ── Google Drive OAuth (OPEN 모달의 LOGIN TO GOOGLE 버튼) ──
+      # 사용하려면 Google Cloud Console 에서 OAuth 2.0 클라이언트 ID 생성 후 값 입력.
+      # · 승인된 리다이렉션 URI 에 GOOGLE_OAUTH_REDIRECT_URI 와 동일한 값 등록 필요.
+      # · 비워두면 LOGIN 버튼 클릭 시 "연동 미설정" 안내 표시.
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      - GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8888/api/gdrive/callback}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # orange3-gui 이미지 빌드 전용 (session-manager가 동적으로 컨테이너 실행)
+  orange3-gui:
+    build:
+      context: .
+    image: orange3-gui
+    profiles:
+      - build-only
+
+  # Xpra 전환 실험 이미지 빌드 전용 (Phase 2 PoC, 2026-05-23)
+  # 운영에는 영향 없음. /xpra 라우트로만 신규 기동.
+  orange3-xpra:
+    build:
+      context: .
+      dockerfile: Dockerfile.xpra
+    image: orange3-xpra:poc
+    profiles:
+      - build-only

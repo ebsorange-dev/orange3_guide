@@ -1,0 +1,37 @@
+<script id="x-del-intercept">
+// Phase 3D-3 fix v6 (2026-05-23): Delete/Backspace 인터셉트 재활성화.
+// 진짜 원인은 launcher 의 QAction 매칭 실패 (`__removeSelectedAction` 에
+// setObjectName 미호출) 이었음 → orange3_launcher.py 의 _do_tool 에
+// SchemeEditWidget.removeSelected() fallback 추가 (운영 noVNC 도 함께 fix).
+// 따라서 Delete 를 capture 로 잡아 /tool=delete 호출 → launcher fallback 으로
+// 정확히 캔버스의 메서드를 호출 (focus/keymap 무관).
+document.addEventListener("keydown", function (e) {
+    // Phase 3D-3 fix v8 (2026-05-23): Backspace 인터셉트 제거.
+    // Backspace 는 캔버스 quick-search/위젯 다이얼로그 input 의 표준 편집 키 —
+    // 가로채면 input field 에 도달 못 해 텍스트 삭제 불가. Delete 만 가로채
+    // 워크플로우 노드 삭제로 사용. (Backspace 로 위젯 삭제하던 사용 패턴은
+    // Delete 로 통일됨 — Orange3 의 __removeSelectedAction shortcut 도 둘 다 등록되어 있어
+    // Xpra forwarding 경로로도 동일 동작.)
+    if (e.key === "Delete") {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        window.parent.postMessage({ type: "vnc-del", key: e.key }, "*");
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === "a" || e.key === "A")) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        window.parent.postMessage({ type: "vnc-selectall" }, "*");
+    } else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key === "z" || e.key === "Z")) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        window.parent.postMessage({ type: "vnc-undo" }, "*");
+    } else if ((e.ctrlKey || e.metaKey) && ((e.key === "y" || e.key === "Y") || (e.shiftKey && (e.key === "z" || e.key === "Z")))) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        window.parent.postMessage({ type: "vnc-redo" }, "*");
+    } else if (e.key === "F5") {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        window.parent.postMessage({ type: "vnc-reload" }, "*");
+    }
+}, true);
+</script>

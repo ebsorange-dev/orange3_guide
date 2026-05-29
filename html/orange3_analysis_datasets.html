@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orange3 분석 데이터셋 카탈로그</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
+    background: #ffffff; color: #1f2937;
+    display: flex; flex-direction: column;
+  }
+
+  /* ============ Top Header (제목 + 부제 + 닫기) ============ */
+  .top-header {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 20px; min-height: 72px;
+    background: #ffffff; border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex; flex-direction: column; gap: 2px;
+    flex: 1; min-width: 0;
+  }
+  .brand .title {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 18px; color: #111827;
+    line-height: 1.3;
+  }
+  .brand-icon {
+    width: 22px; height: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .brand-icon span { background: #1f2937; border-radius: 3px; }
+  .brand .subtitle {
+    font-size: 13px; color: #6b7280; line-height: 1.4;
+    margin-left: 32px;
+  }
+  .close-btn {
+    margin-left: auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    cursor: pointer;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .close-btn:hover {
+    color: #111827;
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+  .close-btn svg { display: block; }
+
+  /* ============ Tabs (중성 색상) ============ */
+  .tabs {
+    display: flex; gap: 0; background: #ffffff;
+    border-bottom: 1px solid #e5e7eb; padding: 0 28px;
+    overflow-x: auto; flex-shrink: 0; scrollbar-width: thin;
+  }
+  .tabs::-webkit-scrollbar { height: 3px; }
+  .tab {
+    padding: 12px 18px; font-size: 13px; font-weight: 500;
+    color: #6b7280; cursor: pointer;
+    border-bottom: 2px solid transparent; white-space: nowrap;
+    transition: color 0.12s, border-color 0.12s, background 0.12s;
+  }
+  .tab:hover { color: #111827; background: #f9fafb; }
+  .tab.active { color: #111827; font-weight: 700; border-bottom-color: #1f2937; }
+
+  /* ============ Main ============ */
+  .main { flex: 1; overflow-y: auto; padding: 18px 28px 24px; background: #ffffff; }
+  .desc-box {
+    border-left: 3px solid #9ca3af; background: #f9fafb; color: #374151;
+    padding: 10px 14px; border-radius: 4px;
+    font-size: 13px; line-height: 1.5; margin-bottom: 16px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .card {
+    background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 14px 16px; cursor: pointer;
+    transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+  }
+  .card:hover {
+    border-color: #9ca3af;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+  .card-file {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px; font-weight: 700; color: #111827;
+    margin-bottom: 6px; word-break: break-all;
+  }
+  .card-desc { font-size: 12.5px; color: #6b7280; line-height: 1.4; }
+
+  .footer {
+    text-align: center; padding: 12px 16px; color: #9ca3af;
+    font-size: 11.5px; background: #ffffff;
+    border-top: 1px solid #e5e7eb; flex-shrink: 0;
+  }
+
+  /* ============ Detail Popup (중성 색상) ============ */
+  .detail-overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0, 0, 0, 0.45);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(2px);
+  }
+  .detail-overlay.show { display: flex; }
+  .detail-popup {
+    background: #ffffff; border-radius: 14px;
+    width: min(560px, 95vw); max-height: 88vh;
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+  }
+  .detail-header {
+    background: #1f2937; color: #ffffff; padding: 16px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .detail-title {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 16px; font-weight: 700;
+  }
+  .detail-close {
+    background: rgba(255, 255, 255, 0.18); border: none;
+    color: #ffffff; width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s;
+  }
+  .detail-close:hover { background: rgba(255, 255, 255, 0.32); }
+  .detail-body { padding: 20px 24px 24px; overflow-y: auto; flex: 1; }
+  .detail-section { margin-bottom: 18px; }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-section h3 {
+    color: #111827; font-size: 13px; font-weight: 700;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .detail-section p { font-size: 13px; color: #374151; line-height: 1.6; margin-left: 4px; }
+  .detail-section ul { list-style: none; margin-left: 4px; }
+  .detail-section ul li {
+    font-size: 13px; color: #374151; line-height: 1.7;
+    padding-left: 14px; position: relative;
+  }
+  .detail-section ul li::before {
+    content: "•"; color: #9ca3af; position: absolute; left: 0; font-weight: bold;
+  }
+  .detail-section ul li b { color: #111827; font-weight: 600; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-left: 4px; }
+  .pill {
+    background: #f3f4f6; border: 1px solid #e5e7eb; color: #374151;
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .load-instruction { font-size: 12.5px; color: #374151; line-height: 1.6; margin-left: 4px; }
+  .load-instruction b { color: #111827; font-weight: 600; }
+  /* "다운로드" 버튼 — 데이터 구성 헤더 옆 (Phase 5, 2026-05-24) */
+  .dl-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #F47B20; color: #fff; text-decoration: none;
+    padding: 4px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0;
+    text-transform: none;
+    transition: background .12s;
+  }
+  .dl-btn:hover { background: #d96b10; }
+  .dl-btn:active { background: #b85a0a; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+</style>
+</head>
+<body>
+
+<!-- Top Header (이미지1 텍스트 + 닫기) -->
+<header class="top-header">
+  <div class="brand">
+    <div class="title">
+      <span class="brand-icon"><span></span><span></span><span></span><span></span></span>
+      <span>Orange3 분석 데이터셋 카탈로그</span>
+    </div>
+    <div class="subtitle">카테고리 탭을 선택하고, 카드를 클릭하면 데이터셋 상세 정보가 팝업으로 열립니다.</div>
+  </div>
+  <button class="close-btn" id="closeBtn" title="닫기" aria-label="닫기">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+<main class="main" id="main"></main>
+<footer class="footer">출처: Orange3 documentation datasets · <a href="https://datasets.biolab.si/" target="_blank" rel="noopener noreferrer">https://datasets.biolab.si/</a></footer>
+
+<div class="detail-overlay" id="detailOverlay">
+  <div class="detail-popup" id="detailPopup">
+    <div class="detail-header">
+      <div class="detail-title" id="detailTitle">filename.tab</div>
+      <button class="detail-close" id="detailClose" title="닫기">✕</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+const categories = [
+  { key:"classification", label:"분류", folder:"Classification",
+    desc:"지도학습 — 범주(클래스)를 예측하는 데이터셋. Tree, Logistic Regression, Random Forest 위젯과 함께 사용.",
+    items: [
+      { file:"iris.tab", desc:"붓꽃 3종 분류 (150개 샘플, 4개 속성)",
+        detail:{ overview:"붓꽃의 꽃잎/꽃받침 길이·너비 측정값으로 setosa·versicolor·virginica 3종을 분류하는 통계학·머신러닝의 표준 입문 데이터셋.",
+                 instances:150, attributes:4, target:"iris (3 categories)",
+                 widgets:["File","Tree","Logistic Regression","Random Forest","k-Nearest Neighbors"],
+                 usage:"분류 알고리즘 비교·시각화 입문에 적합. Scatter Plot으로 클래스 분리도 확인 가능." } },
+      { file:"titanic.tab", desc:"타이타닉 승객 생존 여부 (1309개 샘플)",
+        detail:{ overview:"타이타닉호 침몰 사고에서 실제 승객의 생존 여부를 예측하는 이진 분류 데이터.",
+                 instances:1309, attributes:3, target:"survived (yes/no)",
+                 widgets:["File","Logistic Regression","Tree","Naive Bayes"],
+                 usage:"이산 변수 기반 분류·확률 예측 학습용." } },
+      { file:"heart_disease.tab", desc:"심장병 진단 (303개 샘플, 14개 속성)",
+        detail:{ overview:"환자의 의료 검사 결과로 심장병 유무를 진단하는 데이터.",
+                 instances:303, attributes:13, target:"diameter narrowing (yes/no)",
+                 widgets:["File","Impute","Logistic Regression","Random Forest"],
+                 usage:"의료 분류 + 결측값 처리 워크플로우 시연용." } },
+      { file:"breast-cancer-wisconsin.tab", desc:"유방암 진단(양성/악성)",
+        detail:{ overview:"유방암 세포 검사 9가지 특징으로 양성/악성을 분류하는 위스콘신 유방암 데이터.",
+                 instances:699, attributes:9, target:"class (benign/malignant)",
+                 widgets:["File","SVM","Logistic Regression","Random Forest"],
+                 usage:"이진 분류·진단 모델 학습. ROC Analysis로 모델 성능 비교." } },
+      { file:"lymphography.tab", desc:"림프 조영술 진단 데이터",
+        detail:{ overview:"림프 조영술 영상 판독 데이터로 4가지 진단 결과를 분류.",
+                 instances:148, attributes:18, target:"class (4 categories)",
+                 widgets:["File","Tree","Naive Bayes","CN2 Rule Induction"],
+                 usage:"의료 영상 진단 분류 입문." } },
+      { file:"zoo.tab", desc:"동물 7종 분류 (포유류, 조류 등)",
+        detail:{ overview:"101종 동물의 16가지 특성으로 포유류·조류·파충류 등 7개 분류군을 예측.",
+                 instances:101, attributes:16, target:"type (7 categories)",
+                 widgets:["File","Tree","Hierarchical Clustering"],
+                 usage:"다중 클래스 분류·계층 군집화 동시 학습." } },
+      { file:"adult.tab", desc:"미국 인구조사 소득 분류 (>50K 여부)",
+        detail:{ overview:"1994년 미국 인구조사 데이터로 연소득이 50,000달러 초과인지 예측.",
+                 instances:32561, attributes:14, target:"y (>50K / <=50K)",
+                 widgets:["File","Logistic Regression","Random Forest","Gradient Boosting"],
+                 usage:"대규모 데이터·앙상블 모델 비교 학습용." } },
+      { file:"voting.tab", desc:"미 의회 투표 기록 (공화당/민주당)",
+        detail:{ overview:"미 하원의원 16개 안건에 대한 찬반 투표 기록으로 정당을 분류.",
+                 instances:435, attributes:16, target:"party (republican/democrat)",
+                 widgets:["File","Naive Bayes","Tree","CN2 Rule Induction"],
+                 usage:"이산 변수 기반 정치 성향 분류." } },
+      { file:"promoters.tab", desc:"DNA 프로모터 시퀀스 분류",
+        detail:{ overview:"DNA 염기서열로 프로모터 시퀀스 여부를 판별하는 생물 시퀀스 데이터.",
+                 instances:106, attributes:57, target:"class (promoter/non-promoter)",
+                 widgets:["File","Tree","Naive Bayes","SVM"],
+                 usage:"바이오인포매틱스 시퀀스 분류 입문." } },
+      { file:"car.tab", desc:"자동차 평가 (unacc/acc/good/vgood)",
+        detail:{ overview:"자동차의 6가지 속성으로 4단계 등급을 평가.",
+                 instances:1728, attributes:6, target:"class (unacc/acc/good/vgood)",
+                 widgets:["File","Tree","Random Forest","Logistic Regression"],
+                 usage:"순서형 분류·다중 클래스 분류 학습용." } },
+    ]},
+  { key:"regression", label:"회귀", folder:"Regression",
+    desc:"지도학습 — 연속형 수치를 예측하는 데이터셋.",
+    items: [
+      { file:"housing.tab", desc:"보스턴 주택 가격 예측 (506개 샘플, 13개 속성)",
+        detail:{ overview:"보스턴 지역 주택 가격을 13개 환경/사회 속성으로 예측.",
+                 instances:506, attributes:13, target:"MEDV (continuous)",
+                 widgets:["File","Linear Regression","Random Forest","Gradient Boosting"],
+                 usage:"회귀 분석 표준 예제." } },
+      { file:"auto-mpg.tab", desc:"자동차 연비(MPG) 예측 (398개 샘플)",
+        detail:{ overview:"자동차 사양으로 연비를 예측.",
+                 instances:398, attributes:7, target:"mpg (continuous)",
+                 widgets:["File","Linear Regression","Random Forest","kNN"],
+                 usage:"다변량 회귀 학습용." } },
+      { file:"servo.tab", desc:"서보 시스템 응답 시간 예측",
+        detail:{ overview:"서보 모터 시스템의 응답 시간을 예측.",
+                 instances:167, attributes:4, target:"class (continuous)",
+                 widgets:["File","Tree","Random Forest","Linear Regression"],
+                 usage:"비선형 회귀 모델링 시연." } },
+    ]},
+  { key:"clustering", label:"군집화", folder:"Clustering",
+    desc:"비지도학습 — 유사한 샘플끼리 그룹화.",
+    items: [
+      { file:"glass.tab", desc:"유리 종류 분류",
+        detail:{ overview:"유리 시료의 9가지 화학 성분으로 6종 유리 타입을 군집화.",
+                 instances:214, attributes:9, target:"type (6 categories)",
+                 widgets:["File","k-Means","Hierarchical Clustering","DBSCAN"],
+                 usage:"군집화·차원 축소 학습용." } },
+      { file:"wine.tab", desc:"와인 화학 성분 (3종, 13개 성분)",
+        detail:{ overview:"이탈리아 동일 지역 3개 와이너리 와인의 13가지 화학 성분.",
+                 instances:178, attributes:13, target:"class (3 categories)",
+                 widgets:["File","k-Means","PCA","Hierarchical Clustering"],
+                 usage:"군집화 표준 데이터." } },
+      { file:"brown-selected.tab", desc:"효모 유전자 발현 데이터",
+        detail:{ overview:"베이커리 효모의 유전자 79개의 발현량 측정 데이터.",
+                 instances:186, attributes:79, target:"function (3 categories)",
+                 widgets:["File","Hierarchical Clustering","Heat Map","k-Means"],
+                 usage:"고차원 데이터 군집화·생물정보학 입문." } },
+    ]},
+  { key:"text", label:"텍스트", folder:"Text",
+    desc:"텍스트 마이닝 — 문서 분류·토픽 모델링·감성 분석.",
+    items: [
+      { file:"grimm-tales-selected.tab", desc:"그림 동화 선별 모음",
+        detail:{ overview:"그림 형제 동화 일부를 선별한 코퍼스 (소형, 빠른 시연용).",
+                 instances:44, attributes:"text", target:"-",
+                 widgets:["Corpus","Preprocess Text","Topic Modelling","Word Cloud"],
+                 usage:"LDA 토픽 모델링 워크플로우 입문." } },
+      { file:"grimm-tales.tab", desc:"그림 동화 전체",
+        detail:{ overview:"그림 형제 동화 전체 코퍼스 (선별 버전 대비 더 풍부).",
+                 instances:200, attributes:"text", target:"-",
+                 widgets:["Corpus","Preprocess Text","Topic Modelling","Document Embedding"],
+                 usage:"중·대형 텍스트 데이터 토픽 분석." } },
+      { file:"andersen.tab", desc:"안데르센 동화",
+        detail:{ overview:"한스 크리스티안 안데르센 동화 모음.",
+                 instances:23, attributes:"text", target:"-",
+                 widgets:["Corpus","Preprocess Text","Word Cloud","Concordance"],
+                 usage:"단편 문학 텍스트 분석 입문." } },
+      { file:"deerwester.tab", desc:"정보 검색 고전 예제 문서",
+        detail:{ overview:"Deerwester(1990) 논문의 9개 문서 - LSA 알고리즘 원전 예제.",
+                 instances:9, attributes:"text", target:"-",
+                 widgets:["Corpus","Bag of Words","Document Embedding"],
+                 usage:"LSA·TF-IDF·LSI 시연용 (가장 작은 코퍼스)." } },
+      { file:"book-excerpts.tab", desc:"도서 발췌문",
+        detail:{ overview:"여러 저자·장르의 도서 발췌문 모음 (분류 라벨 포함).",
+                 instances:140, attributes:"text", target:"author/genre",
+                 widgets:["Corpus","Preprocess Text","Logistic Regression","Document Embedding"],
+                 usage:"문서 분류 워크플로우." } },
+      { file:"friends-transcripts.tab", desc:"미드 'Friends' 대본",
+        detail:{ overview:"미국 시트콤 'Friends'의 에피소드 대본 모음.",
+                 instances:236, attributes:"text", target:"character/season",
+                 widgets:["Corpus","Concordance","Word Enrichment","Topic Modelling"],
+                 usage:"등장인물별 대사 패턴 분석·시즌별 주제 변화 추적." } },
+      { file:"election-tweets-2016.tab", desc:"2016 미국 대선 트윗",
+        detail:{ overview:"2016년 미국 대선 기간 수집된 트윗 (감성 라벨 포함).",
+                 instances:6444, attributes:"text", target:"sentiment",
+                 widgets:["Corpus","Sentiment Analysis","Topic Modelling"],
+                 usage:"SNS 감성 분석·주제 추출 학습용." } },
+      { file:"slo-opinion-corpus.tab", desc:"슬로베니아어 의견 코퍼스",
+        detail:{ overview:"슬로베니아어 온라인 의견 텍스트 (감성 분류용).",
+                 instances:1700, attributes:"text", target:"sentiment",
+                 widgets:["Corpus","Sentiment Analysis","Logistic Regression"],
+                 usage:"비영어 텍스트 감성 분석 다국어 시연용." } },
+      { file:"20newsgroups-train.tab", desc:"20 Newsgroups 학습셋",
+        detail:{ overview:"20개 뉴스그룹 게시물 분류 데이터셋 (학습용).",
+                 instances:11314, attributes:"text", target:"newsgroup (20 categories)",
+                 widgets:["Corpus","Preprocess Text","Bag of Words","SVM","Logistic Regression"],
+                 usage:"대규모 다중 클래스 문서 분류 표준 벤치마크." } },
+      { file:"20newsgroups-test.tab", desc:"20 Newsgroups 테스트셋",
+        detail:{ overview:"20 Newsgroups 데이터의 별도 테스트 분할.",
+                 instances:7532, attributes:"text", target:"newsgroup (20 categories)",
+                 widgets:["Corpus","Predictions","Test and Score"],
+                 usage:"훈련/테스트 분리 평가용." } },
+      { file:"reuters-r8-train.tab", desc:"Reuters R8 학습셋",
+        detail:{ overview:"Reuters-21578 데이터의 R8 분할 (8개 토픽) 학습용.",
+                 instances:5485, attributes:"text", target:"topic (8 categories)",
+                 widgets:["Corpus","Preprocess Text","Logistic Regression","SVM"],
+                 usage:"중규모 토픽 분류 벤치마크." } },
+      { file:"reuters-r8-test.tab", desc:"Reuters R8 테스트셋",
+        detail:{ overview:"Reuters R8 분할의 테스트셋.",
+                 instances:2189, attributes:"text", target:"topic (8 categories)",
+                 widgets:["Corpus","Predictions","Test and Score"],
+                 usage:"R8 모델 평가용." } },
+      { file:"reuters-r52-train.tab", desc:"Reuters R52 학습셋",
+        detail:{ overview:"Reuters-21578 데이터의 R52 분할 (52개 토픽) 학습용.",
+                 instances:6532, attributes:"text", target:"topic (52 categories)",
+                 widgets:["Corpus","Preprocess Text","Logistic Regression","SVM"],
+                 usage:"고난도 다중 클래스(52) 토픽 분류." } },
+      { file:"reuters-r52-test.tab", desc:"Reuters R52 테스트셋",
+        detail:{ overview:"Reuters R52 분할의 테스트셋.",
+                 instances:2568, attributes:"text", target:"topic (52 categories)",
+                 widgets:["Corpus","Predictions","Test and Score"],
+                 usage:"R52 모델 평가용." } },
+    ]},
+  { key:"image", label:"이미지", folder:"Image",
+    desc:"이미지 분석 — 이미지 임베딩으로 분류·군집화·유사도 검색.",
+    items: [
+      { file:"Painters", desc:"화가별 회화 작품 이미지",
+        detail:{ overview:"여러 유명 화가의 회화 작품 이미지 모음.",
+                 instances:200, attributes:"images", target:"painter",
+                 widgets:["Import Images","Image Embedding","Image Viewer"],
+                 usage:"이미지 임베딩 → 분류·군집화 워크플로우." } },
+      { file:"Yoga poses", desc:"요가 자세 이미지",
+        detail:{ overview:"다양한 요가 자세를 촬영한 이미지 모음.",
+                 instances:1500, attributes:"images", target:"pose",
+                 widgets:["Import Images","Image Embedding","k-Means"],
+                 usage:"포즈 분류·임베딩 시각화." } },
+      { file:"Bone healing", desc:"골절 치유 X-ray 이미지",
+        detail:{ overview:"골절 치유 단계별 X-ray 이미지.",
+                 instances:120, attributes:"images", target:"healing stage",
+                 widgets:["Import Images","Image Embedding","Logistic Regression"],
+                 usage:"의료 영상 분석 워크플로우." } },
+    ]},
+  { key:"timeseries", label:"시계열", folder:"TimeSeries",
+    desc:"시계열 분석 — 추세·계절성·예측.",
+    items: [
+      { file:"airpassengers", desc:"항공 승객 수 (1949–1960)",
+        detail:{ overview:"1949–1960년 월별 국제선 항공 승객 수.",
+                 instances:144, attributes:1, target:"passengers (continuous)",
+                 widgets:["File","As Timeseries","Line Chart","ARIMA Model"],
+                 usage:"계절성·트렌드 분해, ARIMA 예측 표준 예제." } },
+      { file:"amzn_stock", desc:"아마존(AMZN) 주가 데이터",
+        detail:{ overview:"아마존 주식의 일별 시·고·저·종가·거래량 데이터.",
+                 instances:5000, attributes:5, target:"Close (continuous)",
+                 widgets:["File","As Timeseries","Moving Transform","ARIMA Model"],
+                 usage:"금융 시계열 예측·이동평균 분석." } },
+      { file:"cyp_yearly_temperature", desc:"키프로스 연간 기온",
+        detail:{ overview:"키프로스의 연간 평균 기온 측정 시계열.",
+                 instances:120, attributes:1, target:"temperature (continuous)",
+                 widgets:["File","As Timeseries","Line Chart","Periodogram"],
+                 usage:"장기 추세 분석·계절성 검출." } },
+    ]},
+  { key:"bio", label:"생물정보", folder:"Bio",
+    desc:"생물정보학 — 유전자 발현·게놈 분석.",
+    items: [
+      { file:"GDS", desc:"NCBI Gene Expression Omnibus 시리즈",
+        detail:{ overview:"NCBI GEO 데이터베이스의 유전자 발현 데이터셋 모음.",
+                 instances:"~", attributes:"genes", target:"experiment condition",
+                 widgets:["GEO Data Sets","Differential Expression","Gene Set Enrichment"],
+                 usage:"차등 발현 유전자 분석." } },
+      { file:"DictyExpress", desc:"점균류 발달 생물학 데이터",
+        detail:{ overview:"점균류 Dictyostelium의 발달 단계별 유전자 발현.",
+                 instances:"~", attributes:"genes", target:"developmental stage",
+                 widgets:["dictyExpress","Differential Expression","Heat Map"],
+                 usage:"발달 생물학 시계열 발현 분석." } },
+    ]},
+  { key:"misc", label:"기타", folder:"Misc",
+    desc:"튜토리얼·시연용 보조 데이터셋.",
+    items: [
+      { file:"bone-marrow.tab", desc:"골수 이식 결과 데이터",
+        detail:{ overview:"골수 이식 결과 데이터",
+                 instances:187, attributes:36, target:"survival",
+                 widgets:["File","Survival Analysis","Cox Regression"],
+                 usage:"생존 분석 예제. Cox 회귀로 위험 요인 분석." } },
+      { file:"sailing.tab", desc:"항해 결정 데이터",
+        detail:{ overview:"기상 조건에 따른 항해 출항 여부 결정 데이터.",
+                 instances:20, attributes:4, target:"sailing (yes/no)",
+                 widgets:["File","Tree","CN2 Rule Induction"],
+                 usage:"의사결정 트리 학습의 가장 작은 표준 예제." } },
+      { file:"friends.tab", desc:"소셜 네트워크 친구 관계",
+        detail:{ overview:"소셜 네트워크의 친구 관계 그래프 예제 데이터.",
+                 instances:"~", attributes:"network", target:"-",
+                 widgets:["Network File","Network Analysis","Network Explorer"],
+                 usage:"그래프 분석·관계 시각화 시연용." } },
+      { file:"paid-vs-free.tab", desc:"유료/무료 앱 비교",
+        detail:{ overview:"유료 앱과 무료 앱의 다양한 지표 비교 데이터.",
+                 instances:"~", attributes:"mixed", target:"price (paid/free)",
+                 widgets:["File","Box Plot","Distribution"],
+                 usage:"A/B 비교 분석·기술통계 시각화." } },
+    ]},
+];
+
+let currentCat = "classification";
+const IS_MODAL = (window.parent && window.parent !== window);   // iframe 모드 감지
+
+function renderTabs() {
+  const bar = document.getElementById("tabs");
+  bar.innerHTML = categories.map(c =>
+    `<div class="tab${c.key === currentCat ? ' active' : ''}" data-key="${c.key}">${c.label}</div>`
+  ).join("");
+  bar.querySelectorAll(".tab").forEach(el => {
+    el.onclick = () => { currentCat = el.dataset.key; render(); };
+  });
+}
+
+function renderMain() {
+  const cat = categories.find(c => c.key === currentCat);
+  const cards = cat.items.map((it, idx) => `
+    <div class="card" data-cat="${cat.key}" data-idx="${idx}">
+      <div class="card-file">${it.file}</div>
+      <div class="card-desc">${it.desc}</div>
+    </div>`).join("");
+  document.getElementById("main").innerHTML = `
+    <div class="desc-box">${cat.desc}</div>
+    <div class="grid">${cards}</div>`;
+}
+
+/* 닫기 버튼 — iframe 모드: 부모 페이지 모달 닫기 / standalone: 탭 닫기 시도 */
+function closeCatalog() {
+  if (IS_MODAL) {
+    window.parent.postMessage({ type: "dataset-cancelled" }, "*");
+  } else {
+    try { window.close(); } catch (_) {}
+    // window.close() 가 막힌 경우 사용자에게 안내
+    document.body.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;'
+      + 'height:100vh;color:#6b7280;font-size:14px;">'
+      + '창을 닫으셔도 됩니다.</div>';
+  }
+}
+
+function render() { renderTabs(); renderMain(); }
+
+function showDetail(catKey, idx) {
+  const cat  = categories.find(c => c.key === catKey);
+  const item = cat.items[idx];
+  const d    = item.detail || {};
+  document.getElementById("detailTitle").textContent = item.file;
+  const widgetPills = (d.widgets || []).map(w => `<span class="pill">${w}</span>`).join("");
+  document.getElementById("detailBody").innerHTML = `
+    <section class="detail-section">
+      <h3>📋 개요</h3>
+      <p>${d.overview || item.desc}</p>
+    </section>
+    <section class="detail-section">
+      <h3 style="display:flex;align-items:center;gap:10px;">
+        <span>📊 데이터 구성</span>
+        <a class="dl-btn"
+           href="/dataset-file?folder=${encodeURIComponent(cat.folder)}&file=${encodeURIComponent(item.file)}"
+           download="${item.file}"
+           title="${item.file} 다운로드">⬇ 다운로드</a>
+      </h3>
+      <ul>
+        <li><b>인스턴스 수:</b> ${d.instances ?? "-"}</li>
+        <li><b>속성 수:</b> ${d.attributes ?? "-"}</li>
+        <li><b>타겟 변수:</b> ${d.target ?? "-"}</li>
+      </ul>
+    </section>
+    ${widgetPills ? `
+    <section class="detail-section">
+      <h3>🔧 추천 위젯</h3>
+      <div class="pills">${widgetPills}</div>
+    </section>` : ""}
+    ${d.usage ? `
+    <section class="detail-section">
+      <h3>💡 활용 방법</h3>
+      <p>${d.usage}</p>
+    </section>` : ""}
+    <section class="detail-section">
+      <h3>📁 불러오기</h3>
+      <p class="load-instruction">
+        Orange3 캔버스 → <b>File</b> 위젯 더블클릭 → "Browse documentation datasets" 버튼
+        → 위 파일명 선택.
+      </p>
+    </section>`;
+  document.getElementById("detailOverlay").classList.add("show");
+}
+
+function hideDetail() {
+  document.getElementById("detailOverlay").classList.remove("show");
+}
+
+document.getElementById("main").addEventListener("click", e => {
+  const card = e.target.closest(".card");
+  if (!card) return;
+  showDetail(card.dataset.cat, +card.dataset.idx);
+});
+document.getElementById("detailClose").addEventListener("click", hideDetail);
+document.getElementById("detailOverlay").addEventListener("click", e => {
+  if (e.target.id === "detailOverlay") hideDetail();
+});
+document.getElementById("closeBtn").addEventListener("click", closeCatalog);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    // 상세 팝업이 열려있으면 팝업만, 아니면 카탈로그 전체 닫기
+    if (document.getElementById("detailOverlay").classList.contains("show")) {
+      hideDetail();
+    } else {
+      closeCatalog();
+    }
+  }
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orange3 Datasets — Compact</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
+    background: #ffffff; color: #1f1f23;
+    height: 100vh; overflow: hidden;
+  }
+  .top-bar {
+    display: flex; align-items: center;
+    padding: 0 12px; border-bottom: 1px solid #e5e7eb;
+    background: #ffffff; height: 36px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 6px;
+    font-weight: 700; font-size: 14px; color: #1f1f23;
+  }
+  .brand-icon {
+    width: 16px; height: 16px;
+    display: flex; flex-direction: column; gap: 2px; justify-content: center;
+  }
+  .brand-icon span { background: #1f1f23; height: 2px; border-radius: 1px; }
+
+  /* 닫기 버튼 (orange3_analysis_datasets.html .close-btn 참조) */
+  .close-btn {
+    margin-left: auto;
+    background: #ffffff; border: 1px solid #e5e7eb; color: #6b7280;
+    cursor: pointer; width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; flex-shrink: 0;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .close-btn:hover { color: #111827; background: #f9fafb; border-color: #d1d5db; }
+  .close-btn svg { display: block; }
+
+  .body-wrap { display: flex; height: calc(100vh - 36px); }
+  body.modal-mode .body-wrap { height: calc(100vh - 36px - 48px); }
+
+  .modal-footer {
+    display: none; align-items: center; justify-content: space-between;
+    padding: 8px 14px; border-top: 1px solid #e5e7eb;
+    background: #ffffff; height: 48px;
+  }
+  body.modal-mode .modal-footer { display: flex; }
+  .footer-info {
+    font-size: 12px; color: #6b7280;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 12px;
+  }
+  .footer-info b { color: #1e3a8a; font-weight: 600; }
+  .footer-info code {
+    font-family: "Consolas", monospace; background: #f1f3f5; color: #374151;
+    padding: 1px 5px; border-radius: 3px; font-size: 11px;
+  }
+  .footer-buttons { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn {
+    padding: 6px 14px; border-radius: 6px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; transition: background 0.1s, border-color 0.1s;
+  }
+  .btn-cancel { background: #ffffff; border-color: #d1d5db; color: #4b5563; }
+  .btn-cancel:hover { background: #f3f4f6; }
+  .btn-apply { background: #2563eb; color: #ffffff; }
+  .btn-apply:hover { background: #1d4ed8; }
+  .btn-apply:disabled { background: #93c5fd; cursor: not-allowed; }
+
+  .sidebar {
+    width: 200px; flex-shrink: 0;
+    background: #f9fafb; border-right: 1px solid #e5e7eb;
+    overflow-y: auto; padding: 8px 6px; scrollbar-width: thin;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar-title {
+    font-size: 10.5px; font-weight: 600; color: #9ca3af;
+    text-transform: uppercase; letter-spacing: 0.4px; padding: 4px 10px 6px;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; color: #4b5563; font-size: 12.5px;
+    cursor: pointer; border-radius: 6px; margin-bottom: 1px;
+    border-left: 3px solid transparent;
+    transition: color 0.12s, background 0.12s, border-color 0.12s;
+  }
+  .tab:hover { color: #1f1f23; background: #f1f3f5; }
+  .tab.active {
+    color: #1e3a8a; font-weight: 600; background: #dbeafe;
+    border-left-color: #2563eb;
+  }
+  .tab .tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tab .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tab .count {
+    background: #e5e7eb; color: #6b7280;
+    padding: 1px 7px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; flex-shrink: 0;
+  }
+  .tab.active .count { background: #2563eb; color: #ffffff; }
+
+  .dot-all            { background: #6b7280; }
+  .dot-classification { background: #3b82f6; }
+  .dot-regression     { background: #ef4444; }
+  .dot-clustering     { background: #f59e0b; }
+  .dot-text           { background: #8b5cf6; }
+  .dot-image          { background: #06b6d4; }
+  .dot-timeseries     { background: #10b981; }
+  .dot-bio            { background: #ec4899; }
+  .dot-misc           { background: #9ca3af; }
+
+  .main {
+    flex: 1; height: 100%; overflow-y: auto;
+    padding: 4px 12px 16px; background: #f8f9fb;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 700; margin: 6px 0 2px;
+    color: #111827; display: flex; align-items: baseline;
+    gap: 5px; line-height: 1.2;
+  }
+  .section-title:first-of-type { margin-top: 2px; }
+  .section-title .count { font-size: 10.5px; font-weight: 500; color: #6b7280; }
+
+  .list {
+    background: #ffffff; border: 1px solid #e5e7eb;
+    border-radius: 6px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .list-header, .list-row {
+    display: grid;
+    grid-template-columns: 50px 22px 1fr 1.8fr 100px;
+    gap: 8px; align-items: center;
+  }
+  .list-header {
+    padding: 7px 10px; background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 10.5px; font-weight: 600; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .list-row {
+    padding: 7px 10px; border-bottom: 1px solid #f1f3f5;
+    font-size: 12px; cursor: pointer; transition: background 0.1s;
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row:hover { background: #f9fafb; }
+  .list-row.selected { background: #dbeafe; border-bottom-color: #bfdbfe; }
+  .list-row.selected:hover { background: #c7defb; }
+  .list-row.selected .col-title { color: #1e3a8a; }
+
+  .col-select { display: flex; align-items: center; justify-content: center; }
+  .radio {
+    appearance: none; -webkit-appearance: none;
+    width: 15px; height: 15px;
+    border: 1.5px solid #c4cad1; border-radius: 50%;
+    background: #ffffff; cursor: pointer; position: relative;
+    transition: border-color 0.12s, background 0.12s; flex-shrink: 0;
+  }
+  .radio:hover { border-color: #2563eb; }
+  .radio:checked { border-color: #2563eb; background: #2563eb; }
+  .radio:checked::after {
+    content: ""; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px; height: 6px; border-radius: 50%; background: #ffffff;
+  }
+  .list-dot { width: 9px; height: 9px; border-radius: 50%; margin: 0 auto; }
+
+  .col-title { color: #111827; font-weight: 600; font-size: 12px; line-height: 1.35; }
+  .col-title .file {
+    display: block; font-size: 10px; font-weight: 400; color: #6b7280;
+    margin-top: 2px; line-height: 1.3;
+    font-family: "Consolas", "Courier New", monospace;
+  }
+  .loc-icon {
+    font-size: 10px; margin-left: 3px; opacity: 0.7;
+    cursor: help; vertical-align: middle;
+  }
+  .loc-icon:hover { opacity: 1; }
+  .col-desc {
+    color: #4b5563; font-size: 11.5px; line-height: 1.2;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  .col-meta {
+    font-size: 10.5px; color: #6b7280; font-family: "Consolas", monospace;
+    display: flex; flex-direction: column; gap: 1px; line-height: 1.3;
+  }
+  .col-meta .meta-rows { color: #374151; font-weight: 600; }
+  .col-meta .meta-feat { color: #6b7280; }
+  .empty {
+    text-align: center; padding: 20px; color: #9ca3af;
+    background: #ffffff; border: 1px solid #e5e7eb;
+    border-radius: 6px; font-size: 12.5px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+  @media (max-width: 640px) {
+    .list-header, .list-row {
+      grid-template-columns: 40px 20px 1fr 80px; gap: 6px;
+    }
+    .col-desc,
+    .list-header > div:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand">
+    <span class="brand-icon"><span></span><span></span><span></span></span>
+    Datasets
+  </div>
+  <button class="close-btn" id="closeBtn" title="닫기" aria-label="닫기">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+</div>
+
+<div class="body-wrap">
+  <aside class="sidebar">
+    <div class="sidebar-title">Categories</div>
+    <nav id="tabBar"></nav>
+  </aside>
+  <main class="main">
+    <div id="content"></div>
+  </main>
+</div>
+
+<footer class="modal-footer">
+  <div class="footer-info" id="footerInfo">선택된 항목 없음</div>
+  <div class="footer-buttons">
+    <button class="btn btn-cancel" id="btnCancel">취소</button>
+    <button class="btn btn-apply"  id="btnApply" disabled>샘플 데이터 적용하기</button>
+  </div>
+</footer>
+
+<script>
+const HOST_BASE      = "E:/_26_Use_Orange_New_set_/data";
+const CONTAINER_BASE = "/data";
+const CLASSIFICATION_LOCAL_DIR   = `${HOST_BASE}/Classification`;
+const CLASSIFICATION_SERVER_BASE = `${CONTAINER_BASE}/Classification`;
+
+const datasets = [
+  { cat:"classification", title:"Iris",                    file:"iris.tab",                    rows:150,  feat:"4 cont",  desc:"꽃잎/꽃받침 길이·너비로 3종 붓꽃 분류 — 분류 입문용 표준 데이터셋.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/iris.tab`,                    serverUrl:`${CLASSIFICATION_SERVER_BASE}/iris.tab` },
+  { cat:"classification", title:"Titanic",                 file:"titanic.tab",                 rows:2201, feat:"3 disc",  desc:"타이타닉호 승객의 생존 여부 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/titanic.tab`,                 serverUrl:`${CLASSIFICATION_SERVER_BASE}/titanic.tab` },
+  { cat:"classification", title:"Heart Disease",           file:"heart_disease.tab",           rows:303,  feat:"6c + 7d", desc:"심장병 진단 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/heart_disease.tab`,           serverUrl:`${CLASSIFICATION_SERVER_BASE}/heart_disease.tab` },
+  { cat:"classification", title:"Breast Cancer Wisconsin", file:"breast-cancer-wisconsin.tab", rows:699,  feat:"9 cont",  desc:"유방암 진단(양성/악성) 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/breast-cancer-wisconsin.tab`, serverUrl:`${CLASSIFICATION_SERVER_BASE}/breast-cancer-wisconsin.tab` },
+  { cat:"classification", title:"Lymphography",            file:"lymphography.tab",            rows:148,  feat:"18 disc", desc:"림프 조영술 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/lymphography.tab`,            serverUrl:`${CLASSIFICATION_SERVER_BASE}/lymphography.tab` },
+  { cat:"classification", title:"Zoo",                     file:"zoo.tab",                     rows:101,  feat:"16 disc", desc:"동물 분류 데이터 — 7개 클래스.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/zoo.tab`,                     serverUrl:`${CLASSIFICATION_SERVER_BASE}/zoo.tab` },
+  { cat:"classification", title:"Adult",                   file:"adult.tab",                   rows:32561,feat:"6c + 8d", desc:"미국 인구조사 소득 분류 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/adult.tab`,                   serverUrl:`${CLASSIFICATION_SERVER_BASE}/adult.tab` },
+  { cat:"classification", title:"Voting",                  file:"voting.tab",                  rows:435,  feat:"16 disc", desc:"미 상원 투표 기록 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/voting.tab`,                  serverUrl:`${CLASSIFICATION_SERVER_BASE}/voting.tab` },
+  { cat:"classification", title:"Promoters",               file:"promoters.tab",               rows:106,  feat:"57 disc", desc:"DNA 프로모터 시퀀스 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/promoters.tab`,               serverUrl:`${CLASSIFICATION_SERVER_BASE}/promoters.tab` },
+  { cat:"classification", title:"Car Evaluation",          file:"car.tab",                     rows:1728, feat:"6 disc",  desc:"자동차 평가 데이터.",
+    path:`${CLASSIFICATION_LOCAL_DIR}/car.tab`,                     serverUrl:`${CLASSIFICATION_SERVER_BASE}/car.tab` },
+
+  { cat:"regression", title:"Boston Housing", file:"housing.tab",  rows:506, feat:"13 cont", desc:"보스턴 주택 가격 데이터." },
+  { cat:"regression", title:"Auto MPG",       file:"auto-mpg.tab", rows:398, feat:"7 cont",  desc:"자동차 연비(MPG) 예측 데이터." },
+  { cat:"regression", title:"Servo",          file:"servo.tab",    rows:167, feat:"4 mixed", desc:"서보 시스템 응답 시간 데이터." },
+
+  { cat:"clustering", title:"Glass",          file:"glass.tab",          rows:214, feat:"9 cont",  desc:"유리 종류 분류 데이터." },
+  { cat:"clustering", title:"Wine",           file:"wine.tab",           rows:178, feat:"13 cont", desc:"와인 화학 성분 데이터 — 3종 와인." },
+  { cat:"clustering", title:"Brown Selected", file:"brown-selected.tab", rows:186, feat:"79 cont", desc:"효모 유전자 발현 데이터." },
+
+  { cat:"text", title:"Grimm Tales Selected", file:"grimm-tales-selected.tab", rows:44,    feat:"text", desc:"그림 형제 동화 선별 모음 (소형 시연용).",
+    path:`${HOST_BASE}/Text/grimm-tales-selected.tab`, serverUrl:`${CONTAINER_BASE}/Text/grimm-tales-selected.tab` },
+  { cat:"text", title:"Grimm Tales",          file:"grimm-tales.tab",          rows:200,   feat:"text", desc:"그림 형제 동화 전체 코퍼스.",
+    path:`${HOST_BASE}/Text/grimm-tales.tab`,          serverUrl:`${CONTAINER_BASE}/Text/grimm-tales.tab` },
+  { cat:"text", title:"Andersen",             file:"andersen.tab",             rows:23,    feat:"text", desc:"한스 크리스티안 안데르센 동화.",
+    path:`${HOST_BASE}/Text/andersen.tab`,             serverUrl:`${CONTAINER_BASE}/Text/andersen.tab` },
+  { cat:"text", title:"Deerwester",           file:"deerwester.tab",           rows:9,     feat:"text", desc:"Deerwester(1990) LSA 원전 9개 문서.",
+    path:`${HOST_BASE}/Text/deerwester.tab`,           serverUrl:`${CONTAINER_BASE}/Text/deerwester.tab` },
+  { cat:"text", title:"Book Excerpts",        file:"book-excerpts.tab",        rows:140,   feat:"text", desc:"여러 저자·장르 도서 발췌문 (분류 라벨).",
+    path:`${HOST_BASE}/Text/book-excerpts.tab`,        serverUrl:`${CONTAINER_BASE}/Text/book-excerpts.tab` },
+  { cat:"text", title:"Friends Transcripts",  file:"friends-transcripts.tab",  rows:236,   feat:"text", desc:"미국 시트콤 'Friends' 에피소드 대본.",
+    path:`${HOST_BASE}/Text/friends-transcripts.tab`,  serverUrl:`${CONTAINER_BASE}/Text/friends-transcripts.tab` },
+  { cat:"text", title:"Election Tweets 2016", file:"election-tweets-2016.tab", rows:6444,  feat:"text", desc:"2016 미국 대선 트윗 (감성 라벨).",
+    path:`${HOST_BASE}/Text/election-tweets-2016.tab`, serverUrl:`${CONTAINER_BASE}/Text/election-tweets-2016.tab` },
+  { cat:"text", title:"Slo Opinion Corpus",   file:"slo-opinion-corpus.tab",   rows:1700,  feat:"text", desc:"슬로베니아어 의견 코퍼스 (감성 분류).",
+    path:`${HOST_BASE}/Text/slo-opinion-corpus.tab`,   serverUrl:`${CONTAINER_BASE}/Text/slo-opinion-corpus.tab` },
+  { cat:"text", title:"20 Newsgroups (train)",file:"20newsgroups-train.tab",   rows:11314, feat:"text", desc:"20 뉴스그룹 게시물 분류 학습셋.",
+    path:`${HOST_BASE}/Text/20newsgroups-train.tab`,   serverUrl:`${CONTAINER_BASE}/Text/20newsgroups-train.tab` },
+  { cat:"text", title:"20 Newsgroups (test)", file:"20newsgroups-test.tab",    rows:7532,  feat:"text", desc:"20 뉴스그룹 데이터의 테스트 분할.",
+    path:`${HOST_BASE}/Text/20newsgroups-test.tab`,    serverUrl:`${CONTAINER_BASE}/Text/20newsgroups-test.tab` },
+  { cat:"text", title:"Reuters R8 (train)",   file:"reuters-r8-train.tab",     rows:5485,  feat:"text", desc:"Reuters-21578 R8 토픽(8개) 학습셋.",
+    path:`${HOST_BASE}/Text/reuters-r8-train.tab`,     serverUrl:`${CONTAINER_BASE}/Text/reuters-r8-train.tab` },
+  { cat:"text", title:"Reuters R8 (test)",    file:"reuters-r8-test.tab",      rows:2189,  feat:"text", desc:"Reuters R8 분할의 테스트셋.",
+    path:`${HOST_BASE}/Text/reuters-r8-test.tab`,      serverUrl:`${CONTAINER_BASE}/Text/reuters-r8-test.tab` },
+  { cat:"text", title:"Reuters R52 (train)",  file:"reuters-r52-train.tab",    rows:6532,  feat:"text", desc:"Reuters-21578 R52 토픽(52개) 학습셋.",
+    path:`${HOST_BASE}/Text/reuters-r52-train.tab`,    serverUrl:`${CONTAINER_BASE}/Text/reuters-r52-train.tab` },
+  { cat:"text", title:"Reuters R52 (test)",   file:"reuters-r52-test.tab",     rows:2568,  feat:"text", desc:"Reuters R52 분할의 테스트셋.",
+    path:`${HOST_BASE}/Text/reuters-r52-test.tab`,     serverUrl:`${CONTAINER_BASE}/Text/reuters-r52-test.tab` },
+
+  { cat:"image", title:"Painters",     file:"Painters",     rows:200,  feat:"images", desc:"화가별 회화 작품 이미지." },
+  { cat:"image", title:"Yoga Poses",   file:"Yoga poses",   rows:1500, feat:"images", desc:"요가 자세 이미지 데이터셋." },
+  { cat:"image", title:"Bone Healing", file:"Bone healing", rows:120,  feat:"images", desc:"골절 치유 X-ray 이미지." },
+
+  { cat:"timeseries", title:"Air Passengers",     file:"airpassengers",          rows:144,  feat:"1 cont", desc:"1949–1960년 항공 승객 수." },
+  { cat:"timeseries", title:"Amazon Stock",       file:"amzn_stock",             rows:5000, feat:"5 cont", desc:"아마존(AMZN) 주가 데이터." },
+  { cat:"timeseries", title:"Cyprus Yearly Temp", file:"cyp_yearly_temperature", rows:120,  feat:"1 cont", desc:"키프로스 연간 기온 데이터." },
+
+  { cat:"bio", title:"GDS Series",   file:"GDS*",         rows:"~", feat:"genes", desc:"NCBI GEO 유전자 발현 데이터셋 모음." },
+  { cat:"bio", title:"DictyExpress", file:"DictyExpress", rows:"~", feat:"genes", desc:"점균류 유전자 발현 데이터." },
+
+  { cat:"misc", title:"Bone Marrow",     file:"bone-marrow.tab",  rows:137, feat:"mixed",   desc:"골수 이식 데이터." },
+  { cat:"misc", title:"Sailing",         file:"sailing.tab",      rows:20,  feat:"4 disc",  desc:"항해 결정 데이터." },
+  { cat:"misc", title:"Friends Network", file:"friends.tab",      rows:"~", feat:"network", desc:"소셜 네트워크 예제 데이터." },
+  { cat:"misc", title:"Paid vs Free",    file:"paid-vs-free.tab", rows:"~", feat:"mixed",   desc:"유료/무료 앱 비교 데이터." },
+];
+
+const CATEGORY_DIR = {
+  classification: "Classification", regression: "Regression",
+  clustering:     "Clustering",     text:       "Text",
+  image:          "Image",          timeseries: "TimeSeries",
+  bio:            "Bio",            misc:       "Misc",
+};
+datasets.forEach(d => {
+  if (!d.serverUrl && CATEGORY_DIR[d.cat]) {
+    d.serverUrl = `${CONTAINER_BASE}/${CATEGORY_DIR[d.cat]}/${d.file}`;
+  }
+});
+
+const categoryLabels = {
+  classification: "분류 (Classification)",
+  regression:     "회귀 (Regression)",
+  clustering:     "군집화 (Clustering)",
+  text:           "텍스트 마이닝 (Text Mining)",
+  image:          "이미지 분석 (Image Analytics)",
+  timeseries:     "시계열 (Time Series)",
+  bio:            "생물정보학 (Bioinformatics)",
+  misc:           "기타 예제 (Misc Examples)"
+};
+
+const tabItems = [
+  { key:"all",            label:"All" },
+  { key:"classification", label:"분류" },
+  { key:"regression",     label:"회귀" },
+  { key:"clustering",     label:"군집화" },
+  { key:"text",           label:"텍스트 마이닝" },
+  { key:"image",          label:"이미지 분석" },
+  { key:"timeseries",     label:"시계열" },
+  { key:"bio",            label:"생물정보학" },
+  { key:"misc",           label:"기타" },
+];
+
+// URL 파라미터 ?cat=<key> 가 있고 유효한 키면 해당 탭으로 시작 (예: ?cat=text)
+let currentFilter = "all";
+try {
+  const _urlCat = new URLSearchParams(window.location.search).get("cat");
+  if (_urlCat && tabItems.some(it => it.key === _urlCat)) {
+    currentFilter = _urlCat;
+  }
+} catch (_) { /* SSR 등 환경에서 URL 미지원 시 무시 */ }
+let selectedId = null;
+let selectedDataset = null;
+const IS_MODAL = (window.parent && window.parent !== window);
+if (IS_MODAL) document.body.classList.add("modal-mode");
+
+function findById(id) { return datasets.find(d => `${d.cat}_${d.file}` === id) || null; }
+
+function selectRow(id) {
+  selectedId = id;
+  selectedDataset = findById(id);
+  document.querySelectorAll(".list-row").forEach(row => {
+    if (row.dataset.id === id) {
+      row.classList.add("selected");
+      const r = row.querySelector(".radio"); if (r) r.checked = true;
+    } else {
+      row.classList.remove("selected");
+      const r = row.querySelector(".radio"); if (r) r.checked = false;
+    }
+  });
+  if (IS_MODAL && selectedDataset) {
+    const fi = document.getElementById("footerInfo");
+    if (fi) fi.innerHTML =
+      `선택됨: <b>${selectedDataset.title}</b> → <code>${selectedDataset.serverUrl || "(경로 없음)"}</code>`;
+    const btn = document.getElementById("btnApply");
+    if (btn) btn.disabled = !selectedDataset.serverUrl;
+  }
+}
+
+function applySelection() {
+  if (!selectedDataset || !selectedDataset.serverUrl) return;
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage(
+      { type: "dataset-selected", path: selectedDataset.serverUrl,
+        file: selectedDataset.file, title: selectedDataset.title }, "*");
+  }
+}
+function cancelSelection() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type: "dataset-cancelled" }, "*");
+  }
+}
+
+function buildTabs() {
+  const bar = document.getElementById("tabBar");
+  bar.innerHTML = tabItems.map(it => {
+    const count = it.key === "all" ? datasets.length : datasets.filter(d => d.cat === it.key).length;
+    return `
+      <div class="tab ${it.key === currentFilter ? 'active' : ''}" data-key="${it.key}">
+        <span class="tab-dot dot-${it.key}"></span>
+        <span class="label">${it.label}</span>
+        <span class="count">${count}</span>
+      </div>`;
+  }).join("");
+  bar.querySelectorAll(".tab").forEach(el => {
+    el.onclick = () => { currentFilter = el.dataset.key; render(); };
+  });
+}
+
+function rowHTML(d) {
+  const id = `${d.cat}_${d.file}`;
+  const checked = selectedId === id ? "checked" : "";
+  const selCls  = selectedId === id ? "selected" : "";
+  const tooltip = d.path
+    ? `${d.title}\n🪟 호스트: ${d.path}\n🍊 Orange3 (컨테이너): ${d.serverUrl || "(미배치)"}`
+    : d.title;
+  const locIcon = d.path ? `<span class="loc-icon" title="위치 정보 보유">📁</span>` : "";
+  return `
+    <div class="list-row ${selCls}" data-id="${id}" title="${tooltip}">
+      <div class="col-select">
+        <input type="radio" name="dataset-select" class="radio" value="${id}" ${checked}>
+      </div>
+      <div><span class="list-dot dot-${d.cat}"></span></div>
+      <div class="col-title">${d.title} ${locIcon}<span class="file">${d.file}</span></div>
+      <div class="col-desc">${d.desc}</div>
+      <div class="col-meta">
+        <span class="meta-rows">${d.rows} rows</span>
+        <span class="meta-feat">${d.feat}</span>
+      </div>
+    </div>`;
+}
+
+function listHeaderHTML() {
+  return `
+    <div class="list-header">
+      <div style="text-align:center">선택</div>
+      <div></div><div>Name</div><div>Description</div><div>Size</div>
+    </div>`;
+}
+
+function render() {
+  buildTabs();
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+  let pool = datasets.filter(d => currentFilter === "all" || d.cat === currentFilter);
+  if (!pool.length) { content.innerHTML = `<div class="empty">데이터가 없습니다.</div>`; return; }
+
+  if (currentFilter === "all") {
+    Object.keys(categoryLabels).forEach(cat => {
+      const items = pool.filter(d => d.cat === cat);
+      if (!items.length) return;
+      const sec = document.createElement("div");
+      sec.innerHTML = `
+        <div class="section-title">${categoryLabels[cat]} <span class="count">${items.length}개</span></div>
+        <div class="list">${listHeaderHTML()}${items.map(rowHTML).join("")}</div>`;
+      content.appendChild(sec);
+    });
+  } else {
+    content.innerHTML = `
+      <div class="section-title">${categoryLabels[currentFilter]} <span class="count">${pool.length}개</span></div>
+      <div class="list">${listHeaderHTML()}${pool.map(rowHTML).join("")}</div>`;
+  }
+}
+
+document.getElementById("content").addEventListener("click", e => {
+  const row = e.target.closest(".list-row"); if (!row) return;
+  selectRow(row.dataset.id);
+});
+document.getElementById("content").addEventListener("dblclick", e => {
+  const row = e.target.closest(".list-row"); if (!row) return;
+  selectRow(row.dataset.id);
+  if (IS_MODAL) applySelection();
+});
+if (IS_MODAL) {
+  const btnApply  = document.getElementById("btnApply");
+  const btnCancel = document.getElementById("btnCancel");
+  if (btnApply)  btnApply.addEventListener("click", applySelection);
+  if (btnCancel) btnCancel.addEventListener("click", cancelSelection);
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") cancelSelection();
+    if (e.key === "Enter" && selectedDataset && selectedDataset.serverUrl) applySelection();
+  });
+}
+
+// 상단 바 닫기 버튼 — 취소(부모에 dataset-cancelled 전달)와 동일 동작
+const _closeBtn = document.getElementById("closeBtn");
+if (_closeBtn) _closeBtn.addEventListener("click", cancelSelection);
+
+render();
+</script>
+</body>
+</html>

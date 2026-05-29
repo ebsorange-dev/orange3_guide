@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+*.md
+orange_logo.png
+orange_mascot.png
+replace_logo.py

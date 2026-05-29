@@ -1,0 +1,173 @@
+# ── Xpra 전환 PoC 이미지 (Phase 1, 2026-05-23) ───────────────────────────────
+# 운영 orange3-gui 이미지를 베이스로 재사용 — Orange3·Qt·ibus-hangul·나눔폰트·
+# 레지스트리 캐시·compileall 결과를 그대로 물려받아 "화면 전송 계층"만 교체.
+# noVNC(jlesage 베이스 내장)는 그대로 둔 채 Xpra 만 추가로 얹는다.
+#
+# 빌드:  docker build -f Dockerfile.xpra -t orange3-xpra:poc .
+# 실행:  docker run --rm -p 13900:10000 orange3-xpra:poc
+#        → 브라우저 http://localhost:13900/
+FROM orange3-gui:latest
+
+USER root
+
+# ── Xpra + HTML5 클라이언트 설치 ──────────────────────────────────────────────
+# Ubuntu 22.04(jammy) universe 의 xpra 3.1 — HTML5 클라이언트가 xpra 패키지에
+# 내장(/usr/share/xpra/www)되어 별도 xpra-html5 패키지 불필요.
+# (Phase 4 대역폭 비교 단계에서 필요 시 xpra.org 최신 저장소로 격상)
+# DEBIAN_FRONTEND=noninteractive: xpra 가 끌어오는 X11/keyboard-configuration
+# postinst 의 "Country of origin for the keyboard:" 대화형 프롬프트 차단.
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        xpra \
+        xvfb \
+        openbox \
+        wmctrl \
+        x11-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── shap NumPy 2.x ABI 호환 (2026-05-24) ─────────────────────────────────────
+# orangecontrib.explain 이 shap 을 import → shap 의 C 확장(_cext) 이 NumPy 1.x
+# ABI 로 컴파일되어 있으면 "_ARRAY_API not found" 에러로 Orange3 다이얼로그 노출.
+# numpy 2.x 호환 빌드(shap>=0.45)로 강제 업그레이드.
+# --no-deps: 다른 의존성(scikit-learn 등) 버전 흔들기 방지 — Orange3 호환 유지.
+# numba 등 shap 보조 의존성은 이미 베이스 이미지에 설치되어 있음.
+RUN pip3 install --no-cache-dir --upgrade 'shap>=0.45,<1.0' \
+    && python3 -c "import shap; print('[build] shap OK', shap.__version__)" \
+    && python3 -c "import orangecontrib.explain; print('[build] explain OK')"
+
+# ── openbox application rule (Phase 5, 2026-05-23) ──────────────────────────
+# Orange3 메인 윈도우(name=orange-canvas) 를 처음부터 데코레이션 없이 + 최대화
+# 상태로 mapping. _MOTIF_WM_HINTS post-set 방식은 openbox 가 이미 reparent 한
+# 후라 무시됨 → application rule 로 mapping 전 결정.
+RUN mkdir -p /root/.config/openbox && \
+    printf '%s\n' \
+        '<?xml version="1.0" encoding="UTF-8"?>' \
+        '<openbox_config xmlns="http://openbox.org/3.4/rc">' \
+        '  <applications>' \
+        '    <application name="orange-canvas">' \
+        '      <decor>no</decor>' \
+        '      <maximized>true</maximized>' \
+        '      <skip_taskbar>yes</skip_taskbar>' \
+        '    </application>' \
+        '    <application class="orange-canvas">' \
+        '      <decor>no</decor>' \
+        '      <maximized>true</maximized>' \
+        '      <skip_taskbar>yes</skip_taskbar>' \
+        '    </application>' \
+        '    <application type="normal">' \
+        '      <decor>no</decor>' \
+        '    </application>' \
+        '  </applications>' \
+        '</openbox_config>' \
+        > /root/.config/openbox/rc.xml
+
+# ── Pillow 10+ 호환 (PIL.Image.ANTIALIAS 제거 → LANCZOS 별칭) ────────────────
+# Xpra 3.1 windowicon_source.py 가 Image.ANTIALIAS 를 호출하지만
+# Pillow 10+ 에서 이 상수가 제거됨 → 창 아이콘 인코딩 에러 로그 스팸.
+# 화면 전송 자체엔 영향 없으나 로그 노이즈 제거 위해 xpra 소스 직접 패치.
+RUN sed -i 's/Image\.ANTIALIAS/Image.Resampling.LANCZOS/g' \
+    /usr/lib/python3/dist-packages/xpra/server/window/windowicon_source.py
+
+# ── 사용자 노출 다이얼로그 차단 (Phase 5, 2026-05-24) ──────────────────────────
+# 운영 톤(흰 배경·미니멀)에 어긋나는 시스템 dialog 두 가지를 모두 무력화:
+#   1) /etc/X11/Xsession 의 xmessage popup ("true not found; falling back to
+#      default session" 등). xpra start-desktop 이 Xsession 을 "true" 인자로
+#      호출 → 20x11-common_process-args 가 file path 로 해석 못해 xmessage
+#      띄움. xmessage 자체를 /bin/true 로 대체 → Xsession 은 default session
+#      으로 정상 fallback, dialog 만 안 뜸.
+#   2) Xpra 서버의 "Network Performance Issue" 대역폭 경고 notify.
+#      windows_mixin.py:record_congestion_event 가 self.bandwidth_warnings
+#      True 일 때 사용자에 notify 전송 → client_connection.py 초기값 False
+#      로 패치. 대역폭 감지/조정 로직(--bandwidth-detection=yes) 은 유지.
+RUN if [ -x /usr/bin/xmessage ]; then \
+        mv /usr/bin/xmessage /usr/bin/xmessage.disabled && \
+        ln -sf /bin/true /usr/bin/xmessage; \
+    fi && \
+    sed -i 's|self\.bandwidth_warnings = True|self.bandwidth_warnings = False|' \
+        /usr/lib/python3/dist-packages/xpra/server/source/client_connection.py
+
+# ── Xpra HTML5 클라이언트 UI 숨김 (Phase 3A, 2026-05-23) ─────────────────────
+# #float_menu (좌상단 햄버거·창 목록·전체화면·음소거 등 컨트롤 바)
+# #float_tray (우측 tray 영역)
+# 두 요소를 CSS 로 감춰 Orange3 캔버스만 보이도록 한다 (R5 해결).
+# noVNC 의 x-hide-settings 패치와 동일한 패턴.
+RUN grep -q "x-hide-xpra-ui" /usr/share/xpra/www/index.html || \
+    sed -i 's|</head>|<style id="x-hide-xpra-ui">#float_menu,#float_tray{display:none !important}</style></head>|' \
+        /usr/share/xpra/www/index.html
+
+# ── Delete·Ctrl+A·Undo·Redo·F5 → 부모 wrapper postMessage (Phase 3D-2) ──────
+# Xpra HTML5 가 Orange3 창에 키를 forwarding 하지만 포커스 문제로 누락되는
+# 케이스(noVNC 운영 시 동일 증상)를 우회. 부모 wrapper 의 'vnc-del'·
+# 'vnc-selectall'·'vnc-undo'·'vnc-redo'·'vnc-reload' 핸들러가 이미 /sendkey
+# 를 통해 xdotool 로 Orange3 창에 명시 적용. 운영 Dockerfile 의 동일 패치.
+#
+# 패치 JS 는 별도 파일(xpra_key_intercept.html)로 분리 — sed 한 줄에 인라인하면
+# &, &&, 따옴표 escape 가 불안정해 빌드 실패가 발생함.
+COPY xpra_key_intercept.html /tmp/xpra_key_intercept.html
+RUN grep -q "x-del-intercept" /usr/share/xpra/www/index.html || \
+    python3 -c "import pathlib; \
+p=pathlib.Path('/usr/share/xpra/www/index.html'); \
+inj=pathlib.Path('/tmp/xpra_key_intercept.html').read_text(); \
+src=p.read_text(); \
+p.write_text(src.replace('</head>', inj + '</head>', 1))" && \
+    rm -f /tmp/xpra_key_intercept.html
+
+# ── Orange3 초기 다이얼로그·알림 비활성 (Phase 3A 보완, 2026-05-23) ────────────
+# 운영 startapp.sh 가 만드는 Orange.ini 초기값과 동일 — 시작 시 Welcome 창,
+# 인트로, 업데이트 알림 등을 자동으로 끈다.
+RUN mkdir -p /root/.config/biolab.si && \
+    printf '%s\n' \
+        '[application]' \
+        'language=English' \
+        '' \
+        '[startup]' \
+        'show-welcome-screen=false' \
+        'check-updates=false' \
+        '' \
+        '[introjuction]' \
+        'show-intro=false' \
+        '' \
+        '[notifications]' \
+        'check-notifications=false' \
+        'announcements=false' \
+        'blog=false' \
+        'new-features=false' \
+        > /root/.config/biolab.si/Orange.ini
+
+# ── Orange3 창 자동 최대화 스크립트 (Phase 3B, 2026-05-23) ────────────────────
+COPY maximize_orange3.sh /maximize_orange3.sh
+RUN chmod +x /maximize_orange3.sh
+
+# ── ibus hangul 활성 엔진 전환 (Phase 1 R1, 2026-05-23) ──────────────────────
+COPY init_ibus_hangul.sh /init_ibus_hangul.sh
+RUN chmod +x /init_ibus_hangul.sh
+
+# ── Orange3 커스텀 런처 (Phase 3D-3 fix v4, 2026-05-23) ──────────────────────
+# launcher 가 /config/.tool_activate 등 signal 파일을 polling 해 Qt QAction 을
+# 직접 trigger 한다. 운영 noVNC 와 동일 IPC 경로 — 키 forwarding · focus · keymap
+# 무관하게 Delete/Undo/Redo/SelectAll 이 동작한다.
+# /config 디렉토리는 launcher 가 signal 파일을 read/write 하는 위치.
+COPY orange3_launcher.py /app/orange3_launcher.py
+COPY ko_gui_patch.py     /app/ko_gui_patch.py
+RUN mkdir -p /config /config/xdg/config/biolab.si /config/xdg/cache
+
+# ── 마우스 커서 테마 (2026-05-24) — Windows 기본 흰색 화살표 (DMZ-White) ─────
+# Xpra HTML5 클라이언트는 사용자 OS 커서를 그대로 렌더하지 않고 서버측 X 커서를
+# 픽셀로 송신 → 컨테이너 안 X 서버 커서 테마가 사용자에게 보임. 기본 left_ptr
+# 검은 화살표 대신 Windows 11 과 시각적으로 유사한 DMZ-White 로 통일.
+ENV XCURSOR_THEME=DMZ-White
+ENV XCURSOR_SIZE=24
+RUN update-alternatives --set x-cursor-theme /usr/share/icons/DMZ-White/cursor.theme 2>/dev/null \
+    || echo "[build] cursor theme alternatives not set (best-effort)"
+
+# ── PoC 기동 스크립트 ─────────────────────────────────────────────────────────
+COPY startapp.xpra.sh /startapp.xpra.sh
+RUN chmod +x /startapp.xpra.sh
+
+# Xpra HTML5 서버 포트 (컨테이너 내부) — 운영 noVNC 포트대(10000-10199)와
+# 겹쳐 보이지만 별도 컨테이너이므로 무방. 호스트 매핑은 13900 등으로.
+EXPOSE 10000
+
+# jlesage 베이스의 s6 init 을 우회하고 Xpra 기동 스크립트를 직접 ENTRYPOINT 로.
+ENTRYPOINT []
+CMD ["/startapp.xpra.sh"]
