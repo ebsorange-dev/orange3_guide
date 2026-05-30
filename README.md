@@ -40,8 +40,14 @@ docker compose up -d                                              # 세션 매�
 # 세션 매니저: http://localhost:8888
 ```
 
-> **참고**: Docker 빌드는 한국어 번역이 적용된 Orange3 소스 트리(`orange3/`)에 의존한다.
-> `orange3/` 는 별도 벤더 저장소라 이 리포에는 포함되지 않는다(`.gitignore` 참조).
+> **빌드 의존성**: Orange3 본체는 빌드 시 `pip` 로 설치되고, 한국어 번역/오버라이드
+> 파일(`orange3/` 하위 21개)은 저장소에 포함되어 있어 **클린 클론만으로 빌드된다**.
+> (`orange3/` 벤더 트리 전체는 `.gitignore` 로 제외 — 빌드엔 불필요.)
+
+### 외부 배포 (Google Compute Engine)
+
+GCE 리눅스 VM 으로 외부 공개하려면 [`deploy/gce/README.md`](deploy/gce/README.md) 참고
+(VM 생성 · 방화벽 · `setup_gce.sh` 부트스트랩 · 빌드/기동 절차).
 
 ## 참고
 
