@@ -104,6 +104,79 @@ except ImportError:
     log.warning("[rate-limit] slowapi 미설치 — rate limit 비활성 (보안 약화)")
 
 
+# ── 관리자 인증 (Firebase, 2026-05-30) ───────────────────────────────────────
+# /admin/* 페이지는 셸만 서빙(클라이언트 로그인 오버레이가 가림). 실제 보호는
+# /api/admin/* + DELETE /admin/sessions/{sid} 를 서버에서 Firebase ID 토큰 검증.
+# 검증은 google-auth 의 verify_firebase_token 사용(projectId 만 필요 — 서비스
+# 계정 키 불필요). FIREBASE_PROJECT_ID 미설정 시 인증 비활성(개발 모드) —
+# env 로 점진 활성화 가능.
+FIREBASE_PROJECT_ID = os.environ.get("FIREBASE_PROJECT_ID", "").strip()
+# 페이지에 주입되는 웹 config(JSON, 공개 가능 — apiKey/authDomain/projectId 등)
+FIREBASE_WEB_CONFIG = os.environ.get("FIREBASE_WEB_CONFIG", "").strip()
+# 허용 관리자 이메일(쉼표 구분). 비우면 해당 Firebase 프로젝트의 모든 계정 허용.
+ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()}
+try:
+    from google.oauth2 import id_token as _g_id_token
+    from google.auth.transport import requests as _g_auth_requests
+    _g_auth_request = _g_auth_requests.Request()
+    _FIREBASE_VERIFY_OK = True
+except Exception:
+    _g_id_token = None
+    _FIREBASE_VERIFY_OK = False
+
+_ADMIN_AUTH_ENABLED = bool(FIREBASE_PROJECT_ID and _FIREBASE_VERIFY_OK)
+if FIREBASE_PROJECT_ID and not _FIREBASE_VERIFY_OK:
+    log.warning("[admin-auth] FIREBASE_PROJECT_ID 설정됐으나 google-auth 미설치 → 인증 비활성. "
+                "requirements 에 google-auth 추가 필요")
+elif _ADMIN_AUTH_ENABLED:
+    log.info(f"[admin-auth] Firebase 검증 활성 (project={FIREBASE_PROJECT_ID}, "
+             f"allowlist={len(ADMIN_EMAILS) or '제한없음'})")
+else:
+    log.warning("[admin-auth] FIREBASE_PROJECT_ID 미설정 → 관리자 인증 비활성(개발 모드)")
+
+
+def _verify_admin_email(authz_header: str):
+    """Authorization: Bearer <Firebase ID token> 검증 → 허용된 이메일 반환, 아니면 None.
+       동기 함수 — 미들웨어에서 run_in_executor 로 호출(첫 호출만 공개키 fetch, 이후 캐시)."""
+    if not authz_header or not authz_header.lower().startswith("bearer "):
+        return None
+    token = authz_header.split(" ", 1)[1].strip()
+    try:
+        claims = _g_id_token.verify_firebase_token(token, _g_auth_request, FIREBASE_PROJECT_ID)
+    except Exception:
+        return None
+    if not claims:
+        return None
+    email = str(claims.get("email", "")).lower()
+    if ADMIN_EMAILS and email not in ADMIN_EMAILS:
+        return None
+    return email or "(unknown)"
+
+
+def _is_admin_protected(path: str, method: str) -> bool:
+    """서버 검증이 필요한 경로 — /api/admin/* (모든 메서드) + DELETE /admin/sessions/{sid}.
+       /admin/* 페이지 GET 은 셸만 서빙하므로 보호 안 함(클라 오버레이가 가림)."""
+    if path.startswith("/api/admin"):
+        return True
+    if method == "DELETE" and path.startswith("/admin/sessions/"):
+        return True
+    return False
+
+
+@app.middleware("http")
+async def _admin_auth_guard(request: Request, call_next):
+    if _ADMIN_AUTH_ENABLED and _is_admin_protected(request.url.path, request.method):
+        authz = request.headers.get("authorization", "")
+        loop = asyncio.get_event_loop()
+        email = await loop.run_in_executor(None, _verify_admin_email, authz)
+        if not email:
+            return JSONResponse(
+                {"ok": False, "error": "unauthorized — 관리자 로그인이 필요합니다"},
+                status_code=401)
+        request.state.admin_email = email
+    return await call_next(request)
+
+
 # ── 보안 헤더 ────────────────────────────────────────────────────────────────
 # Tier A1 (2026-05-21): 진단보고서 S5/U5 대응
 # - X-Content-Type-Options: MIME 스니핑 방지
@@ -947,6 +1020,17 @@ async def _create_warm_container():
         _warm_inflight -= 1
 
 
+def _splash_loading_env_val() -> str:
+    """admin_settings.splashes.loading → ORANGE3_SPLASH_LOADING env 값.
+       '0'=숨김 / '1'=표시. launcher(orange3_launcher.py)가 이 값으로 Orange3
+       native splash 표시 여부를 결정한다. (noVNC spawn 들이 이 값을 전달해야
+       관리자의 '로딩 splash 노출' 설정이 실제로 적용된다 — 2026-05-30 버그 수정)"""
+    try:
+        return "1" if (_admin_load_settings().get("splashes", {}) or {}).get("loading", True) else "0"
+    except Exception:
+        return "1"
+
+
 async def _create_warm_container_inner():
     """실제 컨테이너 생성 — 세마포 안에서 호출됨."""
     try:
@@ -975,7 +1059,7 @@ async def _create_warm_container_inner():
                     **build_launcher_volume(),
                 },
                 labels={"orange3.session": warm_sid, "orange3.managed": "true"},
-                environment={"QT_STYLE_OVERRIDE": "Fusion"},
+                environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
                 remove=False,
                 mem_limit="3072m",
                 memswap_limit="3072m",
@@ -7703,8 +7787,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       position: fixed; left: 37px; bottom: 22px; z-index: 50;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       font-size: 10pt; color: #9ca3af; line-height: 1.55;
-      background: rgba(255,255,255,0.92);
-      padding: 6px 14px; border-radius: 6px;
+      /* 불투명 흰 박스가 좌하단 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
+         그림자로 캔버스 위 가독성 유지(위젯이 그대로 보임). 클릭은 pointer-events:none */
+      background: transparent;
+      padding: 0; border-radius: 0;
+      text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
       pointer-events: none;
       display: grid; grid-template-columns: auto auto; column-gap: 22px; row-gap: 2px;
     }}
@@ -7913,6 +8000,7 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
                             **build_launcher_volume(),
                         },
                         labels={"orange3.session": new_sid, "orange3.managed": "true"},
+                        environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
                         remove=False,
                         mem_limit="3072m",
                         memswap_limit="3072m",
@@ -8174,6 +8262,7 @@ async def new_session_api():
                 **build_launcher_volume(),
             },
             labels={"orange3.session": new_sid, "orange3.managed": "true"},
+            environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
             remove=False, mem_limit="3072m", memswap_limit="3072m",
             cpu_quota=400000, cpu_period=100000, shm_size="536870912",
         )
@@ -12361,15 +12450,10 @@ h2{font-size:16px;margin:0 0 4px;color:#1a1a1c}
 .phase-group .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
 .phase-group{margin-bottom:18px;padding:12px 14px;border:2px solid #e5e7eb;border-radius:8px;background:#fafafb}
 .phase-group:last-child{margin-bottom:0}
-.phase-group.phase-1{border-color:#3b82f6;background:#eff6ff}
-.phase-group.phase-2{border-color:#ef4444;background:#fef2f2}
-.phase-group.phase-3{border-color:#eab308;background:#fefce8}
-.phase-group.phase-4{border-color:#10b981;background:#ecfdf5}
+/* 단계별 컬러 배경 제거 → 회색으로 통일 (2026-05-30) */
+.phase-group.phase-1,.phase-group.phase-2,.phase-group.phase-3,.phase-group.phase-4{border-color:#e5e7eb;background:#fafafb}
 .phase-title{font-size:13.5px;font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:8px}
-.phase-1 .phase-title{color:#1e40af}
-.phase-2 .phase-title{color:#b91c1c}
-.phase-3 .phase-title{color:#854d0e}
-.phase-4 .phase-title{color:#047857}
+.phase-1 .phase-title,.phase-2 .phase-title,.phase-3 .phase-title,.phase-4 .phase-title{color:#4b5563}
 .phase-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#fff;border:1px solid currentColor}
 .lang-row{display:flex;align-items:center;gap:14px;padding:8px 4px;border-radius:6px}
 .lang-row:hover{background:#f5f5f7}
@@ -12388,6 +12472,12 @@ button:disabled{opacity:0.55;cursor:not-allowed}
 .meta{margin-top:18px;font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
 .quick-bar{display:flex;gap:8px;margin-bottom:14px}
 .quick-bar button{padding:5px 12px;font-size:12px;font-weight:500}
+/* 전체 선택/해제 버튼을 제목 줄 오른쪽으로 정렬 (2026-05-30) */
+.menu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.menu-head .quick-bar{margin-bottom:0;flex-shrink:0}
+.phase-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
+.phase-head .phase-title{margin:0}
+.phase-head .quick-bar{margin-bottom:0;flex-shrink:0}
 .admin-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin:0 0 24px}
 .admin-tabs a{padding:11px 18px;font-size:13.5px;font-weight:600;color:#6b7280;text-decoration:none;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
 .admin-tabs a:hover{color:#1a1a1c}
@@ -12432,8 +12522,129 @@ button:disabled{opacity:0.55;cursor:not-allowed}
 .wcat-refresh .cached-at{font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
 """
 
+# ── 관리자 Firebase 로그인 UI (2026-05-30) ───────────────────────────────────
+# _admin_nav_html() 및 세션 페이지에 주입되어 모든 관리자 페이지를 가린다.
+# - Firebase SDK(compat) 로드 + 로그인 오버레이
+# - window.fetch 인터셉터: /api/admin/* 요청에 ID 토큰 자동 첨부(기존 fetch 무수정)
+# - onAuthStateChanged: 미로그인 시 오버레이로 .wrap 가림
+# __FIREBASE_WEB_CONFIG__ 는 _admin_auth_html() 이 env JSON(없으면 null)으로 치환.
+# (f-string 아님 — JS 의 중괄호 그대로 사용)
+_ADMIN_AUTH_TEMPLATE = """
+<style>
+#fb-login-overlay{position:fixed;inset:0;z-index:100000;background:#fafafa;display:none;align-items:center;justify-content:center}
+#fb-login-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 6px 30px rgba(0,0,0,.08);padding:30px 32px;width:340px;max-width:90vw}
+#fb-login-card h2{margin:0 0 4px;font-size:19px;color:#1a1a1c}
+#fb-login-card .d{font-size:12.5px;color:#6b7280;margin-bottom:18px}
+#fb-login-card .fb-brand{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;margin-bottom:20px}
+#fb-login-card .fb-brand img{height:34px;width:auto;object-fit:contain}
+#fb-login-card .fb-brand-txt{font-size:20px;font-weight:700;color:#F47B20;letter-spacing:.3px}
+#fb-login-card input{width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border:1px solid #e5e7eb;border-radius:7px;font-size:14px}
+#fb-login-card button{width:100%;padding:11px;background:#fff;color:#1a1a1c;border:1px solid #e5e7eb;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer}
+#fb-login-card button:hover{background:#f5f5f7}
+#fb-remember-row{display:flex;align-items:center;gap:7px;margin:2px 0 12px;font-size:13px;color:#374151;cursor:pointer;user-select:none}
+#fb-remember-row input{width:15px;height:15px;margin:0;cursor:pointer;flex-shrink:0}
+#fb-login-err{color:#dc2626;font-size:12.5px;margin-top:10px;min-height:16px}
+#fb-logout-btn{position:fixed;top:14px;right:18px;z-index:99999;display:none;padding:6px 14px;font-size:12.5px;font-weight:600;background:#fff;border:1px solid #e5e7eb;border-radius:7px;cursor:pointer;color:#374151}
+#fb-logout-btn:hover{background:#f5f5f7}
+</style>
+<div id="fb-login-overlay"><div id="fb-login-card">
+  <div class="fb-brand"><img src="/logo" alt="Orange 3"><span class="fb-brand-txt">Orange 3</span></div>
+  <form id="fb-login-form" autocomplete="on">
+    <input id="fb-email" type="email" placeholder="이메일" autocomplete="username" maxlength="40" required>
+    <input id="fb-pass" type="password" placeholder="비밀번호" autocomplete="current-password" maxlength="40" required>
+    <label id="fb-remember-row"><input id="fb-remember" type="checkbox"> 아이디 저장</label>
+    <button type="submit">로그인</button>
+    <div id="fb-login-err"></div>
+  </form>
+</div></div>
+<button id="fb-logout-btn" onclick="window.__fbLogout&&window.__fbLogout()">로그아웃</button>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script>
+(function(){
+  var cfg = __FIREBASE_WEB_CONFIG__;
+  var _state; // true=로그인 표시, false=내용 표시
+  function whenReady(fn){ if(document.readyState!=='loading'){ fn(); } else { document.addEventListener('DOMContentLoaded', fn); } }
+  function setWrap(vis){ var w=document.querySelector('.wrap'); if(w) w.style.visibility = vis?'visible':'hidden'; }
+  function apply(){ if(_state===undefined) return;
+    var ov=document.getElementById('fb-login-overlay'); if(ov) ov.style.display = _state?'flex':'none';
+    var lo=document.getElementById('fb-logout-btn'); if(lo) lo.style.display = _state?'none':'block';
+    setWrap(!_state); }
+  if(!cfg || !cfg.apiKey){ console.warn('[admin-auth] Firebase config 미설정 — 로그인 비활성(개발 모드)'); return; }
+  if(typeof firebase==='undefined'){ console.error('[admin-auth] Firebase SDK 로드 실패'); return; }
+  // 오버레이·로그아웃 버튼은 .wrap 안에 주입되므로, .wrap 을 visibility:hidden 으로
+  // 가리면 자식인 오버레이까지 숨겨진다 → body 직속으로 이동시켜 분리.
+  whenReady(function(){
+    var ov=document.getElementById('fb-login-overlay'), lo=document.getElementById('fb-logout-btn');
+    if(ov && ov.parentNode!==document.body) document.body.appendChild(ov);
+    if(lo && lo.parentNode!==document.body) document.body.appendChild(lo);
+    apply(); // 이동 후 현재 상태 재반영
+  });
+  setWrap(false); whenReady(function(){ setWrap(false); }); // 인증 확인 전 내용 가림(플래시 방지)
+  firebase.initializeApp(cfg);
+  var auth = firebase.auth();
+  var _of = window.fetch.bind(window);
+  // 인증 상태가 처음 확정될 때까지 기다리는 게이트 — reload 직후 세션 복원 전에
+  // /api/admin 요청이 토큰 없이 나가 401 나는 레이스 방지.
+  var _authResolved=false, _authReadyResolve, _authReady=new Promise(function(r){ _authReadyResolve=r; });
+  window.fetch = function(input, init){
+    init = init || {};
+    var u = (typeof input==='string') ? input : (input && input.url) || '';
+    if(u.indexOf('/api/admin')!==-1 || u.indexOf('/admin/sessions/')!==-1){
+      return _authReady.then(function(){
+        var user = auth.currentUser;
+        if(user){ return user.getIdToken().then(function(t){
+          init.headers = Object.assign({}, init.headers||{}, {Authorization:'Bearer '+t});
+          return _of(input, init); }); }
+        return _of(input, init);
+      });
+    }
+    return _of(input, init);
+  };
+  auth.onAuthStateChanged(function(user){
+    _state = !user;
+    if(!_authResolved){ _authResolved=true; _authReadyResolve(); }
+    whenReady(apply);
+  });
+  whenReady(function(){
+    // 저장된 아이디 불러오기 → 이메일 채우고 체크박스 자동 체크
+    try {
+      var saved = localStorage.getItem('admin_saved_email') || '';
+      if(saved){
+        var emEl=document.getElementById('fb-email'); if(emEl) emEl.value=saved;
+        var rm=document.getElementById('fb-remember'); if(rm) rm.checked=true;
+      }
+    } catch(e){}
+    var f=document.getElementById('fb-login-form');
+    if(f) f.addEventListener('submit', function(e){
+      e.preventDefault();
+      var em=document.getElementById('fb-email').value.trim(), pw=document.getElementById('fb-pass').value;
+      // 아이디 저장 체크 시 이메일 보관, 해제 시 삭제
+      try {
+        var rmEl=document.getElementById('fb-remember');
+        if(rmEl && rmEl.checked) localStorage.setItem('admin_saved_email', em);
+        else localStorage.removeItem('admin_saved_email');
+      } catch(e2){}
+      document.getElementById('fb-login-err').textContent='';
+      auth.signInWithEmailAndPassword(em,pw).then(function(){ location.reload(); })
+        .catch(function(err){ document.getElementById('fb-login-err').textContent='로그인 실패: '+(err.code||err.message); });
+    });
+  });
+  window.__fbLogout = function(){ auth.signOut().then(function(){ location.reload(); }); };
+})();
+</script>
+"""
+
+
+def _admin_auth_html() -> str:
+    """관리자 페이지에 주입할 Firebase 로그인 블록. FIREBASE_WEB_CONFIG(JSON) 주입.
+       config 미설정 시 null → 클라 측 인증 비활성(개발 모드)."""
+    cfg = FIREBASE_WEB_CONFIG if FIREBASE_WEB_CONFIG else "null"
+    return _ADMIN_AUTH_TEMPLATE.replace("__FIREBASE_WEB_CONFIG__", cfg)
+
+
 def _admin_nav_html(active: str) -> str:
-    """공통 5-탭 nav. active ∈ {'menu','widgets','language','splash','sessions'}."""
+    """공통 5-탭 nav + Firebase 로그인 블록. active ∈ {'menu','widgets','language','splash','sessions'}."""
     def cls(name): return ' class="active"' if active == name else ''
     return (
         '<nav class="admin-tabs">'
@@ -12443,7 +12654,7 @@ def _admin_nav_html(active: str) -> str:
         f'<a href="/admin/splash"{cls("splash")}>로딩 이미지 설정</a>'
         f'<a href="/admin/sessions"{cls("sessions")}>활성 세션</a>'
         '</nav>'
-    )
+    ) + _admin_auth_html()
 
 
 @app.get("/admin/settings", response_class=HTMLResponse)
@@ -12466,11 +12677,15 @@ async def admin_menu_page():
   {nav}
 
   <div class="card">
-    <h2>메뉴 노출 설정</h2>
-    <div class="section-desc">시범 서비스 단계별로 그룹화되어 있습니다.</div>
-    <div class="quick-bar">
-      <button onclick="setAllMenu(true)">전체 선택</button>
-      <button onclick="setAllMenu(false)">전체 해제</button>
+    <div class="menu-head">
+      <div>
+        <h2>메뉴 노출 설정</h2>
+        <div class="section-desc">시범 서비스 단계별로 그룹화되어 있습니다.</div>
+      </div>
+      <div class="quick-bar">
+        <button onclick="setAllMenu(true)">전체 선택</button>
+        <button onclick="setAllMenu(false)">전체 해제</button>
+      </div>
     </div>
     <div class="grid" id="menu-grid"></div>
   </div>
@@ -12515,10 +12730,12 @@ function renderMenu(){{
   let html = '';
   _catPhases.forEach(ph => {{
     html += `<div class="phase-group phase-${{ph.phase}}">
-      <div class="phase-title"><span class="phase-badge">${{ph.phase}}차</span>${{esc(ph.title)}}</div>
-      <div class="quick-bar">
-        <button onclick="setPhaseMenu(${{ph.phase}}, true)">전체 선택</button>
-        <button onclick="setPhaseMenu(${{ph.phase}}, false)">전체 해제</button>
+      <div class="phase-head">
+        <div class="phase-title"><span class="phase-badge">${{ph.phase}}차</span>${{esc(ph.title)}}</div>
+        <div class="quick-bar">
+          <button onclick="setPhaseMenu(${{ph.phase}}, true)">전체 선택</button>
+          <button onclick="setPhaseMenu(${{ph.phase}}, false)">전체 해제</button>
+        </div>
       </div>
       <div class="grid">`;
     ph.categories.forEach(name => {{
@@ -13295,6 +13512,7 @@ tbody tr.admin-row:hover{background:#fef3c7}
     <a href="/admin/splash">로딩 이미지 설정</a>
     <a href="/admin/sessions" class="active">활성 세션</a>
   </nav>
+  __FB_AUTH_BLOCK__
 
   <div class="card">
     <div class="toolbar">
@@ -13643,7 +13861,7 @@ async function loadAll(){
 loadAll();
 setInterval(loadAll, 5000);
 </script>
-</body></html>""")
+</body></html>""".replace("__FB_AUTH_BLOCK__", _admin_auth_html()))
 
 
 @app.delete("/admin/sessions/{sid}")

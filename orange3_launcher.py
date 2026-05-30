@@ -159,19 +159,27 @@ def main():
 
     from orangecanvas.application.application import CanvasApplication  # type: ignore
 
-    # admin_settings.splashes.loading 이 False 면 Orange3 native splash 비활성화.
-    # session-manager 가 spawn 시 env var ORANGE3_SPLASH_LOADING=0/1 로 전달.
-    # QSettings 의 "startup/show-splash-screen" 키가 splash 표시 여부 결정.
-    if os.environ.get("ORANGE3_SPLASH_LOADING", "1") == "0":
-        try:
-            from PyQt5.QtCore import QSettings as _QSettings, QCoreApplication as _QCApp
-            # QSettings 가 application 정보 필요 — 임시로 미리 설정
-            _QCApp.setOrganizationName("Orange")
-            _QCApp.setApplicationName("Orange")
-            _QSettings().setValue("startup/show-splash-screen", False)
-            print("[launcher] Orange3 native splash 비활성화 (admin loading=False)", flush=True)
-        except Exception as _se:
-            print(f"[launcher] splash 비활성화 실패: {_se}", flush=True)
+    # ── 시작 시 노출되는 Orange 캔버스 요소 비활성화 (2026-05-30) ──────────────
+    #  · startup/show-welcome-screen → "Welcome to Orange" 환영 대화상자 (항상 off)
+    #  · startup/check-updates       → "Orange Update Available" 업데이트 알림 (항상 off)
+    #  · startup/show-splash-screen  → Orange3 native 로딩 splash (admin loading=False 시 off)
+    # 중요: Orange 와 동일한 QSettings 위치를 명시 지정해야 실제 반영된다.
+    #   Orange.canvas.config: OrganizationDomain="biolab.si", ApplicationName="Orange"
+    #   → IniFormat/UserScope, org="biolab.si", app="Orange" (biolab.si/Orange.ini)
+    #   (기존 org="Orange" 는 다른 파일에 기록돼 무효였음)
+    try:
+        from PyQt5.QtCore import QSettings as _QSettings
+        _qs = _QSettings(_QSettings.IniFormat, _QSettings.UserScope, "biolab.si", "Orange")
+        _qs.setValue("startup/show-welcome-screen", False)
+        _qs.setValue("startup/check-updates", False)
+        _splash_off = os.environ.get("ORANGE3_SPLASH_LOADING", "1") == "0"
+        if _splash_off:
+            _qs.setValue("startup/show-splash-screen", False)
+        _qs.sync()
+        print(f"[launcher] 시작 화면 정리: welcome=off, check-updates=off, "
+              f"splash={'off' if _splash_off else 'keep'}", flush=True)
+    except Exception as _se:
+        print(f"[launcher] 시작 화면 설정 실패: {_se}", flush=True)
 
     if QApplication.instance() is None:
         _qapp = CanvasApplication(sys.argv)                      # noqa: F841  GC 방지
