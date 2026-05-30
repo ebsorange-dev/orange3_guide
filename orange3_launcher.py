@@ -172,12 +172,21 @@ def main():
         _qs = _QSettings(_QSettings.IniFormat, _QSettings.UserScope, "biolab.si", "Orange")
         _qs.setValue("startup/show-welcome-screen", False)
         _qs.setValue("startup/check-updates", False)
+        # 알림 피드 전체 차단 — 공지/블로그/새기능/설문·통계 권유 등 모든 알림.
+        _qs.setValue("notifications/check-notifications", False)
+        _qs.setValue("notifications/announcements", False)
+        _qs.setValue("notifications/blog", False)
+        _qs.setValue("notifications/new-features", False)
+        # 비정상 종료 워크플로우 복원 프롬프트 차단 + 사용통계 전송 off.
+        _qs.setValue("startup/load-crashed-workflows", False)
+        _qs.setValue("reporting/send-statistics", False)
         _splash_off = os.environ.get("ORANGE3_SPLASH_LOADING", "1") == "0"
         if _splash_off:
             _qs.setValue("startup/show-splash-screen", False)
         _qs.sync()
-        print(f"[launcher] 시작 화면 정리: welcome=off, check-updates=off, "
-              f"splash={'off' if _splash_off else 'keep'}", flush=True)
+        print(f"[launcher] 시작 메시지 전체 차단: welcome/update/notifications/"
+              f"crashed-restore/statistics off, splash={'off' if _splash_off else 'keep'}",
+              flush=True)
     except Exception as _se:
         print(f"[launcher] 시작 화면 설정 실패: {_se}", flush=True)
 
