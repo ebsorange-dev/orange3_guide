@@ -28,7 +28,11 @@ EBS Orange3 웹 배포 — Docker 기반 한국어 Orange3 GUI를 브라우저�
 cp .env.example .env   # HOST_BASE, Google OAuth 값 입력 (.env 는 커밋 금지)
 ```
 
-## 실행
+## 배포 / 실행 (Docker)
+
+이 프로젝트는 **Docker 기반 배포만** 사용한다(서버리스/Vercel 미사용 — `vercel.json` 에서
+git 배포 비활성). 멀티 컨테이너(세션 매니저 + 동적 GUI 컨테이너 + 웹 서버)라 Docker
+호스트가 필요하다.
 
 ```bash
 docker compose -f docker-compose.yml --profile build-only build   # 이미지 빌드
