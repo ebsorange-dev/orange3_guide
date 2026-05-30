@@ -56,20 +56,20 @@ _IRIS_INFO_CACHE: dict | None = None
 
 
 def _load_iris_info() -> dict:
-    # iris 는 변하지 않는 빌트인 데이터셋이므로 정적 값으로 응답한다.
-    # (이 모듈은 Vercel 서버리스로도 배포된다 — Orange 를 import 하면 numpy/scipy/
-    #  scikit-learn/PyQt 등이 끌려와 번들이 ~800MB 가 되어 Lambda 500MB 한도를
-    #  초과한다. Orange.data.Table("iris") 의 결과와 동일한 값을 하드코딩해 의존 제거.)
-    return {
-        "status": "success",
-        "data": {
-            "name": "iris",
-            "instances": 150,
-            "attributes": ["sepal length", "sepal width",
-                           "petal length", "petal width"],
-            "class_var": "iris",
-        },
-    }
+    try:
+        import Orange
+        data = Orange.data.Table("iris")
+        return {
+            "status": "success",
+            "data": {
+                "name": data.name,
+                "instances": len(data),
+                "attributes": [v.name for v in data.domain.attributes],
+                "class_var": data.domain.class_var.name if data.domain.class_var else None,
+            },
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.on_event("startup")
