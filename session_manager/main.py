@@ -7784,7 +7784,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
     #x-meta-info {{
-      position: fixed; left: 37px; bottom: 22px; z-index: 50;
+      position: fixed; left: 39px; bottom: 22px; z-index: 50;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       font-size: 10pt; color: #9ca3af; line-height: 1.55;
       /* 불투명 흰 박스가 좌하단 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
