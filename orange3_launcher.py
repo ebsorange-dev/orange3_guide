@@ -18,12 +18,24 @@ Orange3 커스텀 런처
 # NumPy 2.0 에서 제거된 np.obj2sctype 를 사용 → AttributeError: _ARRAY_API
 # not found 발생 (사용자에게 큰 에러 다이얼로그 노출). 새 함수로 대체.
 # 참고: shap/plots/colors/_colorconv.py:819 가 호출 지점.
+import warnings as _warnings
+# ⚠ CPU 폭증 방지 (2026-05-31, py-spy 진단):
+#   Orange 의 warnings 핸들러(_log_warning, Orange/util.py:57)는 매 경고마다
+#   inspect.stack() (전 호출 프레임의 소스 파일을 읽음) 를 호출한다 — 극도로 비쌈.
+#   shap(orangecontrib.explain 의존) import 시 numpy Deprecation 경고가 대량
+#   발생 → inspect.stack() 가 수천 회 → 컨테이너당 코어 50~65% 소모 → 머신 포화.
+#   해당 경고들을 사전 필터로 무시하여 비싼 핸들러 경로 자체를 차단한다.
+_warnings.filterwarnings("ignore", category=DeprecationWarning)
+_warnings.filterwarnings("ignore", category=FutureWarning)
 try:
     import numpy as _np
     if not hasattr(_np, 'obj2sctype'):
         def _np_obj2sctype_compat(t, default=None):
+            # 경고 억제(이중 안전장치): shap 이 대량 호출 → _log_warning CPU 폭증 방지
             try:
-                return _np.dtype(t).type
+                with _warnings.catch_warnings():
+                    _warnings.simplefilter("ignore")
+                    return _np.dtype(t).type
             except Exception:
                 return default
         _np.obj2sctype = _np_obj2sctype_compat
@@ -180,7 +192,19 @@ def main():
         # 비정상 종료 워크플로우 복원 프롬프트 차단 + 사용통계 전송 off.
         _qs.setValue("startup/load-crashed-workflows", False)
         _qs.setValue("reporting/send-statistics", False)
-        _splash_off = os.environ.get("ORANGE3_SPLASH_LOADING", "1") == "0"
+        # loading splash 노출 여부 — 라이브 파일(/config/.splash_loading) 우선, 없으면
+        # env (2026-05-31). 라이브 파일은 session-manager 가 언어 변경/재시작 시 현재
+        # admin 설정으로 갱신 → 컨테이너 재생성 없이 토글이 다음 부팅부터 반영된다.
+        # show-splash-screen=False 는 splash UI 만 숨김(addon 로딩 등 내부 초기화는 유지).
+        _splash_val = os.environ.get("ORANGE3_SPLASH_LOADING", "1")
+        try:
+            with open("/config/.splash_loading") as _spf:
+                _spv = _spf.read().strip()
+            if _spv in ("0", "1"):
+                _splash_val = _spv
+        except Exception:
+            pass
+        _splash_off = _splash_val == "0"
         if _splash_off:
             _qs.setValue("startup/show-splash-screen", False)
         _qs.sync()

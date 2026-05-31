@@ -1151,6 +1151,13 @@ async def startup_event():
     except Exception as _pe:
         log.warning(f"[startup] admin pool override 적용 실패: {_pe}")
     log.info(f"[startup] WARM_POOL_SIZE={WARM_POOL_SIZE} (MAX={WARM_POOL_SIZE_MAX}) BOOT_CONCURRENCY={WARM_BOOT_CONCURRENCY}")
+    # widget-catalog 언어별 캐시를 디스크에서 로드 — 언어 변경 시 사이드바 즉시 응답
+    try:
+        _nwc = _wcat_load_disk()
+        if _nwc:
+            log.info(f"[startup] widget-catalog 캐시 {_nwc}개 언어 디스크 로드됨")
+    except Exception as _we:
+        log.warning(f"[startup] widget-catalog 캐시 로드 실패: {_we}")
 
     # ── 좀비 컨테이너 정리 ────────────────────────────────────────────────
     # 세션매니저 재시작 시 `sessions` 딕셔너리가 빈 상태가 되어 이전 워밍 컨테이너의
@@ -7784,7 +7791,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
     #x-meta-info {{
-      position: fixed; left: 39px; bottom: 22px; z-index: 50;
+      position: fixed; left: 47px; bottom: 22px; z-index: 50;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       font-size: 10pt; color: #9ca3af; line-height: 1.55;
       /* 불투명 흰 박스가 좌하단 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
@@ -8103,7 +8110,14 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         novnc_url = f"{_base}/?resize=remote&scaling=local&quality=6&compression=6&logging=warn&reconnect=true&reconnect_delay=2000"
         log.info(f"[{s8(sid)}] 래퍼 페이지(fast) → 포트 {info['port']} lang={lang}")
         try:
-            return html_response(WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang))
+            _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang)
+            # ready splash(로딩 완료 후 환영 카드) + loading splash 숨김 주입 —
+            # xpra 와 동일하게 noVNC 에도 적용 (2026-05-31 버그 수정: 기존엔 xpra 만
+            # 적용돼 Basic 모드에서 노출 토글이 안 먹던 문제)
+            _inject = _loading_cover_hide_css() + _ready_splash_html(lang)
+            if _inject:
+                _html = _html.replace("</head>", _inject + "</head>", 1)
+            return html_response(_html)
         except Exception as _we:
             # 래퍼 페이지 format() 실패 (escape 누락 등) → uvicorn plain text 500 대신
             # 친화 에러 페이지 표시. 새 세션 시작 / xpra 전환 옵션 제공.
@@ -9254,6 +9268,155 @@ async def category_icon(cat: str):
             return Response(status_code=500)
 
 
+# ── widget-catalog 캐시 (2026-05-31, 진단보고서 #3) ──────────────────────────
+# launcher 왕복(컨테이너 신호→Orange 레지스트리 생성→파일 폴링)은 ~1.2s TTFB.
+# raw 카탈로그는 언어별로 동일(같은 레지스트리)하므로 언어 키로 캐싱해 왕복을 제거한다.
+# admin 메뉴/위젯 필터는 캐시된 raw 에 매 요청 live 로 적용(설정 변경 즉시 반영).
+# addon 설치 등 레지스트리 변경 시에만 /api/admin/widgets/refresh 에서 무효화.
+_wcat_raw_cache: dict = {}
+_wcat_cache_lock = threading.Lock()
+_WCAT_DISK_PREFIX = ".wcat_cache_"   # CONTAINER_SESSIONS_PATH 하위 언어별 영속 파일
+
+
+def _wcat_disk_path(lang: str) -> str:
+    safe = "".join(ch for ch in (lang or "") if ch.isalnum() or ch in "-_")[:16] or "x"
+    return os.path.join(CONTAINER_SESSIONS_PATH, _WCAT_DISK_PREFIX + safe + ".json")
+
+
+def _wcat_save_disk(lang: str, data: dict) -> None:
+    """raw 카탈로그를 디스크에 영속화 — 재시작에도 캐시 유지(언어별 1회만 생성)."""
+    try:
+        import json as _j
+        p = _wcat_disk_path(lang); tmp = p + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            _j.dump(data, f, ensure_ascii=False)
+        os.replace(tmp, p)
+    except Exception as _e:
+        log.warning(f"[widget-catalog] 캐시 디스크 저장 실패({lang}): {_e}")
+
+
+def _wcat_load_disk() -> int:
+    """시작 시 디스크의 언어별 카탈로그 캐시를 메모리로 로드. 로드 개수 반환."""
+    import glob as _g, json as _j
+    n = 0
+    try:
+        for p in _g.glob(os.path.join(CONTAINER_SESSIONS_PATH, _WCAT_DISK_PREFIX + "*.json")):
+            try:
+                lang = os.path.basename(p)[len(_WCAT_DISK_PREFIX):-5]
+                with open(p, "r", encoding="utf-8") as f:
+                    d = _j.load(f)
+                with _wcat_cache_lock:
+                    _wcat_raw_cache[lang] = d
+                n += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return n
+
+
+def _wcat_clear_all() -> None:
+    """메모리 + 디스크 캐시 전체 무효화 (addon 변경/레지스트리 갱신 시)."""
+    import glob as _g
+    with _wcat_cache_lock:
+        _wcat_raw_cache.clear()
+    try:
+        for p in _g.glob(os.path.join(CONTAINER_SESSIONS_PATH, _WCAT_DISK_PREFIX + "*.json")):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+    except Exception:
+        pass
+
+
+def _session_lang_code(sid: str) -> str:
+    """세션 Orange.ini 의 현재 언어 코드(ko/en/sl). 마운트 파일 직접 읽기, 없으면 'en'."""
+    _m = {"Korean": "ko", "English": "en", "Slovenian": "sl", "Slovenčina": "sl"}
+    p = os.path.join(CONTAINER_SESSIONS_PATH, sid, "xdg", "config", "biolab.si", "Orange.ini")
+    try:
+        with open(p, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                if line.startswith("language="):
+                    return _m.get(line.split("=", 1)[1].strip(), "en")
+    except OSError:
+        pass
+    return "en"
+
+
+def _apply_catalog_admin_filter(data: dict) -> None:
+    """raw 위젯 카탈로그(data)에 admin 메뉴/위젯 visibility + phase 정렬을 in-place 적용.
+       widget_catalog 의 캐시/신규 경로 공용 (2026-05-31 추출)."""
+    try:
+        _admin_set = _admin_load_settings()
+        _menu = _admin_set.get("menu", {})
+        _widgets_vis = _admin_set.get("widgets") or {}
+        _qname_to_en_name: dict = {}
+        try:
+            _en_cat = _load_admin_widget_catalog()
+            if _en_cat:
+                for _ec in (_en_cat.get("categories") or []):
+                    for _ew in (_ec.get("widgets") or []):
+                        _eq = _ew.get("qualified_name", "")
+                        _en = _ew.get("name", "")
+                        if _eq and _en:
+                            _qname_to_en_name[_eq] = _en
+        except Exception as _qe:
+            log.warning(f"[widget-catalog] en-name map 빌드 실패: {_qe}")
+        cats_in = data.get("categories") or []
+        _by_canon: dict = {}
+        _no_canon: list = []
+        for c in cats_in:
+            cn = c.get("name", "")
+            canon = _ADMIN_CAT_ALIASES.get(cn)
+            if canon is None:
+                _no_canon.append(c)
+                continue
+            wc = len(c.get("widgets") or [])
+            prev = _by_canon.get(canon)
+            if prev is None or wc > len(prev.get("widgets") or []):
+                _by_canon[canon] = c
+        cats_in = list(_by_canon.values()) + _no_canon
+        cats_out = []
+        for c in cats_in:
+            cname = c.get("name", "")
+            canon = _ADMIN_CAT_ALIASES.get(cname, cname)
+            if not _menu.get(canon, True):
+                continue
+            if not (c.get("widgets") or []):
+                continue
+            wmap = _widgets_vis.get(canon) or {}
+            if wmap:
+                new_widgets = []
+                for w in (c.get("widgets") or []):
+                    wname = w.get("name", "")
+                    qname = w.get("qualified_name", "")
+                    lookup_name = _qname_to_en_name.get(qname, wname)
+                    if wmap.get(lookup_name, True):
+                        new_widgets.append(w)
+                    else:
+                        new_widgets.append({**w, "disabled": True})
+                c = {**c, "widgets": new_widgets}
+            cats_out.append(c)
+        _phase_idx: dict = {}
+        for _ph in _ADMIN_CATEGORY_PHASES:
+            for _i, _nm in enumerate(_ph["categories"]):
+                _phase_idx[_nm] = (_ph["phase"], _i)
+        def _cat_key(c):
+            cn = c.get("name", "")
+            canon = _ADMIN_CAT_ALIASES.get(cn, cn)
+            if canon in _phase_idx:
+                ph, idx = _phase_idx[canon]
+                c["phase"] = ph
+                return (0, ph, idx)
+            c["phase"] = 0
+            return (1, 0, cn.lower())
+        cats_out.sort(key=_cat_key)
+        data["categories"] = cats_out
+    except Exception as _fe:
+        log.warning(f"[widget-catalog] admin filter 실패: {_fe}")
+
+
 @app.get("/widget-catalog")
 @limiter.limit("20/minute")
 async def widget_catalog(request: Request, sid: str | None = None):
@@ -9274,6 +9437,23 @@ async def widget_catalog(request: Request, sid: str | None = None):
         info = sessions.get(sid)
     if not info:
         return JSONResponse({"ok": False, "error": "session not found"}, status_code=401)
+    import copy as _copy
+    lang = _session_lang_code(sid)
+    # 캐시 적중 → launcher 왕복(~1.2s) 생략, raw 복사본에 admin 필터만 live 적용 (#3)
+    # 카탈로그는 언어 비의존(위젯명 번역은 별도 경로) → 요청 언어 캐시가 없으면
+    # 다른 언어 캐시라도 즉시 제공. 언어 변경 직후 컨테이너 레지스트리 재생성(~수십초)을
+    # 기다리지 않아 사이드바가 즉시 응답한다.
+    with _wcat_cache_lock:
+        _cached = _wcat_raw_cache.get(lang)
+        if _cached is None and _wcat_raw_cache:
+            _cached = next(iter(_wcat_raw_cache.values()))
+    if _cached is not None:
+        with _lock:
+            if sid in sessions:
+                sessions[sid]["last_seen"] = time.time()
+        data = _copy.deepcopy(_cached)
+        _apply_catalog_admin_filter(data)
+        return JSONResponse({"ok": True, **data})
     sess_dir = os.path.join(CONTAINER_SESSIONS_PATH, sid)
     query_path    = os.path.join(sess_dir, ".widget_catalog_query")
     response_path = os.path.join(sess_dir, ".widget_catalog.json")
@@ -9290,7 +9470,7 @@ async def widget_catalog(request: Request, sid: str | None = None):
     except OSError as e:
         return JSONResponse({"ok": False, "error": f"signal write failed: {e}"}, status_code=500)
     # 응답 대기 (최대 30s — thumbnail 생성 등 부팅 직후 main thread busy 상황 대비)
-    deadline = time.time() + 30.0
+    deadline = time.time() + 75.0   # 언어 변경 후 새 언어 레지스트리 재생성이 30s+ 걸릴 수 있어 상향
     _last_parse_err = None
     while time.time() < deadline:
         if os.path.isfile(response_path):
@@ -9302,6 +9482,15 @@ async def widget_catalog(request: Request, sid: str | None = None):
                     data = _json.load(f)
                 with _lock:
                     sessions[sid]["last_seen"] = time.time()
+                # raw 카탈로그 캐싱(언어별) → 다음 요청부터 launcher 왕복 생략 (#3)
+                # 캐시 키는 세션 의도 언어(lang) — 조회 키(_session_lang_code)와 일치시켜
+                # 신뢰성 확보. data.get("language")는 전이 중 부정확할 수 있어 사용 안 함.
+                try:
+                    with _wcat_cache_lock:
+                        _wcat_raw_cache[lang] = _copy.deepcopy(data)
+                    _wcat_save_disk(lang, data)   # 디스크 영속 → 재시작에도 유지
+                except Exception:
+                    pass
                 # admin_settings.menu 적용 — 숨김 카테고리는 사이드바에서 제외
                 try:
                     _admin_set = _admin_load_settings()
@@ -9581,13 +9770,16 @@ async def pc_download_check(sid: str | None = None):
         return JSONResponse({"ok": False, "ready": False}, status_code=400)
     with _lock:
         info = sessions.get(sid)
-    if not info or client is None:
+    if not info:
         return JSONResponse({"ok": False, "ready": False})
+    # 성능(2026-05-31): docker exec 대신 마운트된 신호 파일 직접 읽기 (비차단, ~ms).
+    ready_path = os.path.join(CONTAINER_SESSIONS_PATH, sid, ".pc_download_ready")
     try:
-        container = client.containers.get(str(info["container_id"]))
-        ec, out = container.exec_run(["sh", "-c",
-            "[ -f /config/.pc_download_ready ] && cat /config/.pc_download_ready || echo ''"])
-        raw = (out or b"").decode().strip()
+        try:
+            with open(ready_path, "r", encoding="utf-8") as f:
+                raw = f.read().strip()
+        except OSError:
+            return JSONResponse({"ok": True, "ready": False})
         if not raw:
             return JSONResponse({"ok": True, "ready": False})
         import json as _json
@@ -10300,6 +10492,148 @@ async def xpra_wrapped_dispatch():
 </script></body></html>""")
 
 
+def _loading_cover_hide_css() -> str:
+    """① Loading splash 노출=False 시 vnc-cover 로딩 커튼의 splash 콘텐츠
+    (마스코트 + Orange 버전 + addon 리스트)를 숨긴다. 흰 배경 스켈레톤 커튼 자체는
+    유지해 연결 중 iframe 을 가림 — 즉 내부 로딩은 그대로, '노출만' 차단.
+    (2026-05-31: 기존엔 Orange 내부 boot splash env 만 제어해 워밍 세션에서
+    사용자가 보는 로딩 splash 토글이 안 먹던 문제 수정. noVNC·xpra 공통.)"""
+    try:
+        _sp = _admin_load_settings().get("splashes", {}) or {}
+        if _sp.get("loading", True):
+            return ""
+    except Exception:
+        return ""
+    # splash 이미지(마스코트 + 버전 + addon 리스트)는 숨기되, 원형 로딩 스피너는
+    # 표시해 "로딩 중" 피드백은 유지(빈 화면 방지). 내부 로딩은 그대로 진행.
+    return ('<style id="x-hide-loading-splash">'
+            '#vnc-cover .sk-splash-wrap,'
+            '#vnc-cover #sk-load-info{display:none !important}'
+            '#vnc-cover #sk-fallback-spinner{display:block !important}'
+            '</style>')
+
+
+def _ready_splash_html(init_lang: str) -> str:
+    """로딩 완료 후(ready) 환영 splash inject 문자열.
+    admin_settings.splashes.ready.enabled=False 또는 해당 언어 메시지가 비면 "".
+    noVNC·xpra 래퍼 공통 사용 (vnc-frame iframe + .hwd-cat 사이드바 감지 기반).
+    2026-05-31: 기존 xpra 라우트 인라인 코드를 헬퍼로 추출 — noVNC 에도 적용."""
+    try:
+        _sp_cfg = _admin_load_settings().get("splashes", {}) or {}
+        _ready_cfg = _sp_cfg.get("ready") or {}
+        if not isinstance(_ready_cfg, dict):
+            _ready_cfg = {}
+    except Exception:
+        _ready_cfg = {}
+    _ready_enabled = bool(_ready_cfg.get("enabled", True))
+    # 단순 토글 (2026-05-31): enabled 면 메시지가 비어 있어도 환영 카드(마스코트)를
+    # 표시한다. 언어별 메시지는 선택적 커스터마이즈 — 비면 메시지 영역만 숨김(:empty).
+    if not _ready_enabled:
+        return ""
+    _splash_msg = str(_ready_cfg.get(init_lang, "") or "").strip()
+    _splash_msg_js = (_splash_msg.replace("\\", "\\\\")
+                                  .replace("'", "\\'")
+                                  .replace("<", "\\x3c"))
+    return (
+        '<style id="x-splash-style">'
+        '#x-splash-overlay{'
+            'position:fixed;inset:0;z-index:99999;'
+            'background:rgba(255,255,255,0.92);'
+            'display:flex;align-items:center;justify-content:center;'
+            'transition:opacity .4s ease-in-out;'
+            'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif;'
+        '}'
+        '#x-splash-overlay.x-splash-out{opacity:0;pointer-events:none;}'
+        '#x-splash-card{'
+            'display:flex;flex-direction:column;align-items:center;gap:12px;'
+            'background:#ffffff;border-radius:14px;'
+            'box-shadow:0 10px 32px rgba(0,0,0,0.10),0 1px 4px rgba(0,0,0,0.05);'
+            'padding:20px 24px;max-width:600px;width:72vw;'
+        '}'
+        '#x-splash-msg-card{'
+            'width:100%;box-sizing:border-box;'
+            'background:transparent;border-radius:8px;'
+            'padding:10px 14px;color:#1a1a1c;'
+            'font-size:13.5px;font-weight:600;line-height:1.5;'
+            'letter-spacing:-0.2px;text-align:left;'
+        '}'
+        '#x-splash-msg-card:empty{display:none !important}'
+        '#x-splash-mascot-area{'
+            'display:flex;align-items:center;justify-content:center;'
+            'width:100%;max-width:380px;'
+        '}'
+        '#x-splash-mascot-area img{'
+            'width:100%;height:auto;display:block;max-width:100%;'
+        '}'
+        '#x-splash-btn-wrap{display:flex;justify-content:flex-end;width:100%;}'
+        '#x-splash-ok-btn{'
+            'background:#ffffff;color:#1a1a1c;'
+            'border:1px solid #e5e7eb;border-radius:7px;'
+            'padding:8px 22px;font-size:13.5px;font-weight:600;'
+            'cursor:pointer;'
+            'transition:background .12s,border-color .12s;'
+            'font-family:inherit;'
+        '}'
+        '#x-splash-ok-btn:hover{background:#f5f5f7;border-color:#d1d5db;}'
+        '#x-splash-ok-btn:active{background:#ececef;border-color:#c5c8cd;}'
+        '@media (max-width:720px){'
+            '#x-splash-card{flex-direction:column;padding:24px;gap:20px;}'
+            '#x-splash-mascot-area{min-height:200px;}'
+        '}'
+        '</style>'
+        '<script id="x-splash-script">'
+        '(function(){'
+        'try{'
+        '  var shown=false;'
+        '  function showSplash(){'
+        '    if(shown) return; shown=true;'
+        '    if(document.getElementById("x-splash-overlay")) return;'
+        '    var ov=document.createElement("div");ov.id="x-splash-overlay";'
+        '    ov.innerHTML='
+        '      \'<div id="x-splash-card">\'+'
+        '      \'  <div id="x-splash-msg-card">__SPLASH_WELCOME_MSG__</div>\'+'
+        '      \'  <div id="x-splash-mascot-area"><img src="/splash-mascot" alt=""></div>\'+'
+        '      \'  <div id="x-splash-btn-wrap"><button id="x-splash-ok-btn" type="button">확인</button></div>\'+'
+        '      \'</div>\';'
+        '    document.body.appendChild(ov);'
+        '    function hide(){ov.classList.add("x-splash-out");'
+        '      setTimeout(function(){if(ov.parentNode)ov.parentNode.removeChild(ov);},500);}'
+        '    var okBtn=document.getElementById("x-splash-ok-btn");'
+        '    if(okBtn){okBtn.addEventListener("click",function(e){e.stopPropagation();hide();});}'
+        '  }'
+        '  function countCats(){'
+        '    try{'
+        '      var fr=document.getElementById("vnc-frame");'
+        '      var doc=fr&&fr.contentDocument;'
+        '      if(!doc) return -1;'
+        '      return doc.querySelectorAll("#html-widget-dock .hwd-cat").length;'
+        '    }catch(e){return -1;}'
+        '  }'
+        '  function waitSidebarThenShow(){'
+        '    if(shown) return;'
+        '    var tries=0, stable=0, lastN=-1;'
+        '    var iv=setInterval(function(){'
+        '      if(shown){clearInterval(iv);return;}'
+        '      tries++;'
+        '      var n=countCats();'
+        '      if(n>0 && n===lastN){'
+        '        stable++;'
+        '        if(stable>=5){clearInterval(iv);showSplash();return;}'
+        '      } else {stable=0;lastN=n;}'
+        '      if(tries>=75){clearInterval(iv);showSplash();}'
+        '    },200);'
+        '  }'
+        '  document.addEventListener("DOMContentLoaded",function(){'
+        '    var f=document.getElementById("vnc-frame");'
+        '    if(f){f.addEventListener("load",function(){setTimeout(waitSidebarThenShow,500);});}'
+        '    setTimeout(waitSidebarThenShow,6000);'
+        '  });'
+        '}catch(e){}'
+        '})();'
+        '</script>'
+    ).replace("__SPLASH_WELCOME_MSG__", _splash_msg_js)
+
+
 # ── Phase 3C-3 (2026-05-23): 운영 WRAPPER_PAGE 안에 Xpra 임베드 ───────────────
 # iframe src 를 same-origin 프록시(`/xpra-proxy/<sid>/`)로 지정 → cross-origin
 # 차단 회피 → 운영 헤더·사이드바·툴바 안에 Orange3(Xpra) 가 보임.
@@ -10406,6 +10740,7 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
             'font-size:13.5px;font-weight:600;line-height:1.5;'
             'letter-spacing:-0.2px;text-align:left;'
         '}'
+        '#x-splash-msg-card:empty{display:none !important}'
         '#x-splash-mascot-area{'
             'display:flex;align-items:center;justify-content:center;'
             'width:100%;max-width:380px;'
@@ -10486,7 +10821,10 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
         '})();'
         '</script>'
     ).replace("__SPLASH_WELCOME_MSG__", _splash_msg_js)
-    html = html.replace("</head>", inject + splash + "</head>", 1)
+    # ready splash 는 _ready_splash_html() 헬퍼로 일원화 (noVNC 와 동일 동작 보장,
+    # ② 단순 토글 로직 한 곳에서 관리). 위 인라인 splash 계산은 미사용. (2026-05-31)
+    splash = _ready_splash_html(_init_lang)
+    html = html.replace("</head>", _loading_cover_hide_css() + inject + splash + "</head>", 1)
     return html_response(html)
 
 
@@ -11461,10 +11799,13 @@ def _xpra_apply_language_inplace(sid: str, session_dir: str, lang_name: str,
         except Exception:
             cfg = _cp.ConfigParser()
             cfg.optionxform = str
-    if "General" not in cfg:
-        cfg["General"] = {}
-    cfg["General"]["language"] = lang_name
-    cfg["General"]["last-used-language"] = other_lang
+    # Orange 는 언어를 [application] 섹션에서 읽는다(startapp.sh 도 [application] 에 기록).
+    # 기존엔 [General] 에 써서 Orange 가 무시 → Xpra 언어 변경 미반영 + /language 가
+    # [application] 옛값을 읽어 lang-sync 무한 루프("언어 변경 중…" 멈춤). (2026-05-31 수정)
+    if "application" not in cfg:
+        cfg["application"] = {}
+    cfg["application"]["language"] = lang_name
+    cfg["application"]["last-used-language"] = other_lang
     # 원자 쓰기 — write+rename
     tmp = ini_path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
@@ -11519,6 +11860,15 @@ async def set_language(sid: str | None = None, lang: str | None = None):
         with open(os.path.join(session_dir, ".clear_history"), "w") as _f:
             _f.write("1")
 
+        # 1-b) .splash_loading — 현재 admin loading splash 설정을 라이브 기록.
+        # 재시작되는 launcher 가 env 대신 이 파일을 읽어 토글을 즉시 반영
+        # (컨테이너 재생성 불필요). splash UI 만 숨기고 내부 로딩은 유지. (2026-05-31)
+        try:
+            with open(os.path.join(session_dir, ".splash_loading"), "w") as _f:
+                _f.write(_splash_loading_env_val())
+        except Exception:
+            pass
+
         # 2) .app_ready 삭제 → /ready 폴링이 즉시 false 반환
         try:
             os.remove(app_ready_path)
@@ -11559,7 +11909,11 @@ async def set_language(sid: str | None = None, lang: str | None = None):
 
 @app.get("/language")
 async def get_language(sid: str | None = None):
-    """Orange3 컨테이너의 현재 언어 설정 반환 — initLang 자동 동기화용"""
+    """Orange3 컨테이너의 현재 언어 설정 반환 — initLang 자동 동기화용.
+       성능(2026-05-31): docker exec 대신 마운트된 Orange.ini 직접 읽기.
+       exec_run 은 컨테이너 부팅 중 수백 ms 걸려 이벤트 루프를 막아 다른 경량 API 를
+       줄세웠음(진단보고서 #2). Orange.ini 는 세션 디렉터리에 마운트돼 있어 직접 읽으면
+       ~ms 로 끝나고 docker 호출이 없어 비차단."""
     INI_TO_CODE = {"Korean": "ko", "English": "en", "Slovenian": "sl", "Slovenčina": "sl"}
     if not sid:
         return JSONResponse({"lang": "en"})
@@ -11567,19 +11921,16 @@ async def get_language(sid: str | None = None):
         info = sessions.get(sid)
     if not info:
         return JSONResponse({"lang": "en"})
-    if client is None:
-        return JSONResponse({"lang": "en"})
+    ini_path = os.path.join(CONTAINER_SESSIONS_PATH, sid,
+                            "xdg", "config", "biolab.si", "Orange.ini")
     try:
-        container = client.containers.get(str(info["container_id"]))
-        r = container.exec_run(["sh", "-c",
-            "grep '^language=' /config/xdg/config/biolab.si/Orange.ini 2>/dev/null"
-            " | head -1 | cut -d= -f2"])
-        if r.exit_code == 0 and r.output:
-            lang_name = r.output.decode().strip()
-            code = INI_TO_CODE.get(lang_name, "en")
-            return JSONResponse({"lang": code})
-    except Exception as e:
-        log.warning(f"[{s8(sid)}] get-language 오류: {e}")
+        with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                if line.startswith("language="):
+                    lang_name = line.split("=", 1)[1].strip()
+                    return JSONResponse({"lang": INI_TO_CODE.get(lang_name, "en")})
+    except OSError:
+        pass
     return JSONResponse({"lang": "en"})
 
 
@@ -12125,6 +12476,8 @@ async def admin_widgets_refresh():
     except Exception as e:
         return JSONResponse({"ok": False, "error": f"save failed: {e}"},
                             status_code=500)
+    # 레지스트리 변경됨 → widget-catalog raw 캐시 무효화 (메모리+디스크, #3)
+    _wcat_clear_all()
     return JSONResponse({"ok": True,
         "total_categories": len(cat.get("categories", [])),
         "cached_at": cat.get("cached_at")})
@@ -13072,7 +13425,7 @@ async def admin_splash_page():
       </div>
       <div class="splash-body">
         <h3>② 로딩 완료 후 (Ready splash)</h3>
-        <div class="desc">사이드바 메뉴 로딩 완료 시 표시되는 환영 카드. 언어별로 메시지를 입력하면 해당 언어 사용자에게만 노출됩니다. <b>빈 값으로 두면 그 언어 사용자에겐 카드가 표시되지 않습니다.</b> 노출 사용 체크 해제 시 모든 언어에서 비노출.</div>
+        <div class="desc">사이드바 메뉴 로딩 완료 시 표시되는 환영 카드. <b>노출 사용 체크 시 표시, 해제 시 비노출.</b> 언어별 메시지는 선택 입력 — 입력하면 해당 언어 사용자에게 메시지가 함께 표시되고, 비우면 마스코트 카드만 표시됩니다.</div>
         <div class="splash-toggle">
           <input type="checkbox" id="splash-ready-enabled">
           <label for="splash-ready-enabled">노출 사용</label>
@@ -13080,15 +13433,15 @@ async def admin_splash_page():
         <div class="ready-msgs">
           <div class="ready-msg-row">
             <label for="ready-msg-ko">한국어 (ko)</label>
-            <textarea id="ready-msg-ko" rows="2" placeholder="비워두면 한국어 사용자에게 노출되지 않습니다"></textarea>
+            <textarea id="ready-msg-ko" rows="2" placeholder="비워두면 마스코트 카드만 표시 (선택 입력)"></textarea>
           </div>
           <div class="ready-msg-row">
             <label for="ready-msg-en">English (en)</label>
-            <textarea id="ready-msg-en" rows="2" placeholder="Leave blank to hide for English users"></textarea>
+            <textarea id="ready-msg-en" rows="2" placeholder="Leave blank to show mascot card only (optional)"></textarea>
           </div>
           <div class="ready-msg-row">
             <label for="ready-msg-sl">Slovenčina (sl)</label>
-            <textarea id="ready-msg-sl" rows="2" placeholder="Pustite prazno, da skrijete za slovenske uporabnike"></textarea>
+            <textarea id="ready-msg-sl" rows="2" placeholder="Pustite prazno za prikaz samo kartice z maskoto (izbirno)"></textarea>
           </div>
         </div>
         <div class="wcat-actions">
