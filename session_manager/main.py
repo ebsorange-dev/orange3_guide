@@ -7933,6 +7933,21 @@ def html_response(content: str, status_code: int = 200) -> HTMLResponse:
 
 # ── 라우트 ──
 
+@app.get("/load", response_class=HTMLResponse)
+async def load_index_page():
+    """서비스 구성도 / 이동 페이지. nginx(8889) 뿐 아니라 session_manager(8888,
+    GCE 방화벽 개방 포트)로도 서빙해 서버 외부에서도 접근 가능하게 함."""
+    for _p in ("/app/load_index.html", "/load_index.html"):
+        try:
+            with open(_p, encoding="utf-8") as _f:
+                return html_response(_f.read())
+        except FileNotFoundError:
+            continue
+        except Exception as _e:
+            return html_response(f"<h1>load 페이지 오류</h1><p>{_e}</p>", 500)
+    return html_response("<h1>load_index.html 없음</h1>", 404)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, sid: str | None = None, lang: str | None = None,
                 open_path: str | None = None, engine: str | None = None):

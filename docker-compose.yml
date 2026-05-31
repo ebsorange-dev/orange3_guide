@@ -33,6 +33,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # main.py 핫리로드: 파일 수정 후 docker restart만으로 반영
       - ./session_manager/main.py:/app/main.py:ro
+      # 서비스 구성도 / 이동 페이지 — /load 라우트가 8888 로 서빙 (서버 외부 접근용)
+      - ./load_index.html:/app/load_index.html:ro
       # 사이드바 최상단 메뉴 버튼용 로고 이미지
       - ./session_manager/orange_logo.png:/app/orange_logo.png:ro
       # HTML 페이지들 — 폴더 단위로 마운트 (Dataset 버튼 / Analysis-Datasets 버튼 / 분류 모달)
@@ -115,6 +117,39 @@ services:
       - FIREBASE_WEB_CONFIG=${FIREBASE_WEB_CONFIG:-}
       - ADMIN_EMAILS=${ADMIN_EMAILS:-}
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Nginx 리버스 프록시 + 정적 오프로드 (기본 서비스, 2026-05-31) ──────────
+  # upstream 풀 3개: ① session_manager(8080) ② web_server(9508) ③ LB 풀.
+  # 8889 로 노출 — 기존 8888(session-manager 직결)과 병행(비파괴). 외부 진입을
+  # nginx 로 전환하려면 session-manager 의 "8888:8080" 제거 + 아래 ports 를
+  # "8888:80" 으로 변경. (overlay 였던 docker-compose.nginx.yml 은 더 이상 불필요)
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: orange3-nginx
+    restart: unless-stopped
+    ports:
+      - "8889:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/errors:/etc/nginx/errors:ro
+      - ./html:/srv/html:ro
+      - ./session_manager/orange_logo.png:/srv/orange_logo.png:ro
+      # 서비스 구성도 / 이동 페이지 — nginx 가 /load 로 직접 서빙
+      - ./load_index.html:/srv/load_index.html:ro
+    depends_on:
+      - session-manager
+      - web-server
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/nginx-health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     logging:
       driver: "json-file"
       options:
