@@ -2615,6 +2615,150 @@ def main():
     except Exception as _e:
         print(f"[launcher] 크래시 복구 패치 실패: {_e}", flush=True)
 
+    # ── 4-a2. Edit Links 다이얼로그 카드 chrome (wiget_card_26_work.md §3 스펙) ──
+    # EditLinksDialog(QDialog)는 OWWidget 이 아니라 _apply_clean_chrome 미적용 대상.
+    # 동일 시각 스펙만 자족적으로 적용: 점(●)+제목+× 헤더, 헤더 #fafafa·상단 8px 둥글게,
+    # 하단 1px #d0d0d0 라인, 다이얼로그 흰 배경+1px 테두리+8px 둥근 모서리, 헤더 드래그 이동.
+    # windowwk.md 준수: windowFlags() 보존하며 FramelessWindowHint 만 추가(=Qt.Dialog 유지).
+    # OWWidget 전용 기능(색상 피커/노드색/statusbar)은 제외.
+    try:
+        from orangecanvas.document.editlinksdialog import EditLinksDialog as _ELD   # type: ignore
+        from PyQt5.QtCore import Qt as _ELQt, QTimer as _ELTimer                    # type: ignore
+        from PyQt5.QtWidgets import (QWidget as _ELW, QHBoxLayout as _ELHB,         # type: ignore
+                                      QLabel as _ELLbl, QPushButton as _ELBtn,
+                                      QFrame as _ELFrame)
+
+        def _editlinks_round_mask(dlg):
+            try:
+                from PyQt5.QtGui import QPainterPath, QRegion                       # type: ignore
+                from PyQt5.QtCore import QRectF                                     # type: ignore
+                p = QPainterPath()
+                p.addRoundedRect(QRectF(0, 0, dlg.width(), dlg.height()), 8, 8)
+                dlg.setMask(QRegion(p.toFillPolygon().toPolygon()))
+            except Exception:
+                pass
+
+        class _ELHdr(_ELW):
+            def __init__(self, parent, title_text):
+                super().__init__(parent)
+                self._t = parent
+                self._press = None
+                self._off = None
+                self._drag = False
+                self.setObjectName('__cleanHdr')
+                self.setFixedHeight(34)
+                self.setAttribute(_ELQt.WA_StyledBackground, True)
+                self.setStyleSheet(
+                    'QWidget#__cleanHdr{background-color:#fafafa;'
+                    'border-top-left-radius:8px;border-top-right-radius:8px;}'
+                    'QLabel#__cleanTitle{color:#222;font-size:13px;font-weight:500;}'
+                    'QLabel#__cleanDot{color:#bdbdbd;font-size:12px;}'
+                    'QPushButton#__cleanClose{background:#ffffff;border:1px solid #f0f0f0;'
+                    'border-radius:7px;color:#9ca3af;font-size:14px;font-weight:400;padding:0px;}'
+                    'QPushButton#__cleanClose:hover{background:#f8f8fa;'
+                    'border-color:#e0e0e0;color:#374151;}'
+                )
+                lay = _ELHB(self)
+                lay.setContentsMargins(12, 0, 6, 0)
+                lay.setSpacing(8)
+                dot = _ELLbl('●'); dot.setObjectName('__cleanDot')
+                ttl = _ELLbl(title_text); ttl.setObjectName('__cleanTitle')
+                btn = _ELBtn('×'); btn.setObjectName('__cleanClose')
+                btn.setFixedSize(26, 26)
+                btn.setCursor(_ELQt.PointingHandCursor)
+                btn.clicked.connect(parent.reject)   # × = Cancel (링크 편집 취소)
+                lay.addWidget(dot); lay.addWidget(ttl); lay.addStretch(); lay.addWidget(btn)
+                # 하단 1px 구분 라인 (border-bottom 보다 신뢰성↑ — md §3.2)
+                self._line = _ELFrame(self)
+                self._line.setStyleSheet('background-color:#d0d0d0;border:none;')
+                self._line.setFixedHeight(1)
+                self._line.setGeometry(0, 33, max(200, parent.width()), 1)
+                self._line.raise_()
+
+            def resizeEvent(self, ev):
+                super().resizeEvent(ev)
+                try:
+                    self._line.setGeometry(0, self.height() - 1, self.width(), 1)
+                    self._line.raise_()
+                except Exception:
+                    pass
+
+            def mousePressEvent(self, ev):
+                if ev.button() == _ELQt.LeftButton:
+                    self._press = ev.pos(); self._drag = False
+                    self._off = ev.globalPos() - self._t.frameGeometry().topLeft()
+                    ev.accept()
+
+            def mouseMoveEvent(self, ev):
+                if self._press is not None and \
+                        (ev.pos() - self._press).manhattanLength() > 4:
+                    self._drag = True
+                    self._t.move(ev.globalPos() - self._off)
+                    ev.accept()
+
+            def mouseReleaseEvent(self, ev):
+                self._press = None; self._off = None; self._drag = False
+
+        def _editlinks_chrome(dlg):
+            if getattr(dlg, '_clean_chrome_applied', False):
+                return
+            dlg._clean_chrome_applied = True
+            # 1) OS 타이틀바 제거 (windowFlags 보존)
+            dlg.setWindowFlags(dlg.windowFlags() | _ELQt.FramelessWindowHint)
+            # 2) 다이얼로그 카드 외형 — 흰 배경 + 1px 테두리 + 8px 둥근 모서리
+            _base = dlg.styleSheet() or ''
+            dlg.setProperty('cleanRoot', True)
+            dlg.setStyleSheet(
+                _base +
+                'QDialog[cleanRoot="true"]{background-color:#ffffff;'
+                'border:1px solid #d0d0d0;border-radius:8px;}'
+            )
+            # 3) 헤더 생성/표시
+            title_text = dlg.windowTitle() or 'Edit Links'
+            if ' — ' in title_text:
+                title_text = title_text.split(' — ', 1)[0]
+            hdr = _ELHdr(dlg, title_text)
+            hdr.setGeometry(0, 0, max(200, dlg.width()), 34)
+            hdr.show(); hdr.raise_()
+            dlg._clean_hdr = hdr
+            # 4) 본문이 헤더와 겹치지 않게 layout top margin +34
+            try:
+                _lay = dlg.layout()
+                if _lay is not None:
+                    _m = _lay.contentsMargins()
+                    _lay.setContentsMargins(_m.left(), _m.top() + 34,
+                                            _m.right(), _m.bottom())
+            except Exception:
+                pass
+            # 5) resize/show 시 헤더 폭 + 둥근 모서리 마스크 갱신
+            _orig_resize = dlg.resizeEvent
+            def _new_resize(ev):
+                try:
+                    hdr.setGeometry(0, 0, dlg.width(), 34)
+                    hdr.raise_()
+                    _editlinks_round_mask(dlg)
+                except Exception:
+                    pass
+                if callable(_orig_resize):
+                    _orig_resize(ev)
+            dlg.resizeEvent = _new_resize
+            # 초기 1회 (레이아웃 확정 후) — 모달 exec 직후 적용
+            _ELTimer.singleShot(0, lambda: (
+                hdr.setGeometry(0, 0, dlg.width(), 34),
+                hdr.raise_(), _editlinks_round_mask(dlg)))
+
+        _orig_eld_init = _ELD.__init__
+        def _patched_eld_init(self, *a, **k):
+            _orig_eld_init(self, *a, **k)
+            try:
+                _editlinks_chrome(self)
+            except Exception as _ce:
+                print(f"[launcher] Edit Links chrome 적용 실패: {_ce}", flush=True)
+        _ELD.__init__ = _patched_eld_init
+        print("[launcher] Edit Links 카드 chrome 패치 적용", flush=True)
+    except Exception as _e:
+        print(f"[launcher] Edit Links chrome 패치 실패: {_e}", flush=True)
+
     # ── 4-b. NewArrow/NewTextAnnotation mouseMoveEvent AssertionError 방어 ──
     # Orange3 버그: 다른 위젯(예: 드롭다운, 툴바)에서 마우스를 누르고 캔버스로
     # 진입하면 mousePress 없이 mouseMove가 fire되어 `assert self.down_pos is not None`
