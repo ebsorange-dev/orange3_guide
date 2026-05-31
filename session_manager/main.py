@@ -333,6 +333,11 @@ PORT_END           = int(os.environ.get("PORT_END", "8199"))
 SESSION_TIMEOUT    = int(os.environ.get("SESSION_TIMEOUT", "1800"))
 # 워밍풀 컨테이너 최대 생존 시간 (초) — 초과 시 자동 교체 (디스크 누적 방지)
 WARM_MAX_AGE       = int(os.environ.get("WARM_MAX_AGE", "1800"))
+# ── #2 컨테이너 메모리 상한 (2026-05-31) ──────────────────────────────────────
+# GUI 컨테이너 1개당 폭주 세션 상한선. 유휴 baseline(~775MB)은 그대로지만
+# 대용량 데이터 작업 시 호스트 RAM 과점유를 방지. 모든 spawn 경로(warm/hot/xpra)
+# 공통. 큰 데이터셋 분석 중 OOM 이 잦으면 "2560m"~"3g" 로 상향.
+CONTAINER_MEM_LIMIT = os.environ.get("CONTAINER_MEM_LIMIT", "2g")
 COOKIE_NAME        = "orange3_sid"
 
 HOST_SESSIONS_PATH      = os.environ.get("HOST_SESSIONS_PATH",      "/sessions_host")
@@ -504,6 +509,23 @@ _xpra_lock = threading.Lock()
 XPRA_WARM_POOL_SIZE = int(os.environ.get("XPRA_WARM_POOL_SIZE", "0"))
 # env 로 정의된 값은 admin 페이지에서 조정할 때의 상한(MAX).
 XPRA_WARM_POOL_SIZE_MAX = XPRA_WARM_POOL_SIZE
+# ── #1 Xpra 유휴 시간대 축소 (2026-05-31) ────────────────────────────────────
+# noVNC 워밍풀과 동일 패턴: 피크 시간(WARM_PEAK_HOURS)엔 XPRA_WARM_POOL_SIZE,
+# 그 외 유휴 시간엔 XPRA_WARM_POOL_SIZE_IDLE 로 축소해 상시 RAM 절감.
+# 기본값을 XPRA_WARM_POOL_SIZE 로 두면(미설정 시) 기존 동작과 동일(축소 없음).
+XPRA_WARM_POOL_SIZE_IDLE = int(os.environ.get("XPRA_WARM_POOL_SIZE_IDLE", str(XPRA_WARM_POOL_SIZE)))
+
+def _xpra_effective_pool_size() -> int:
+    """현재 시각(KST=UTC+9) 기준 목표 Xpra 워밍풀 크기.
+    WARM_PEAK_HOURS 안이면 XPRA_WARM_POOL_SIZE, 아니면 XPRA_WARM_POOL_SIZE_IDLE."""
+    try:
+        start_h, end_h = (int(x) for x in _WARM_PEAK_HOURS.split("-"))
+        hour = (time.gmtime().tm_hour + 9) % 24
+        is_peak = (start_h <= hour < end_h) if start_h <= end_h \
+            else (hour >= start_h or hour < end_h)
+        return XPRA_WARM_POOL_SIZE if is_peak else XPRA_WARM_POOL_SIZE_IDLE
+    except Exception:
+        return XPRA_WARM_POOL_SIZE
 _xpra_warm_pool: list = []          # 사용자 미배정 워밍 sid 목록 (xpra_sessions 와 sessions[] 양쪽에 등록됨)
 _xpra_warm_inflight = 0             # 현재 spawn 중인 워밍 컨테이너 수
 
@@ -575,7 +597,8 @@ def _spawn_xpra_container(sid: str):
             "ports": {"10000/tcp": port},
             "labels": {"orange3.xpra": "true", "orange3.session": sid},
             "name": name,
-            "mem_limit": "3g",
+            "mem_limit": CONTAINER_MEM_LIMIT,
+            "memswap_limit": CONTAINER_MEM_LIMIT,
             "environment": {
                 "ORANGE3_SPLASH_LOADING": _splash_loading_env,
             },
@@ -670,11 +693,13 @@ async def _xpra_spawn_warm() -> bool:
 
 
 async def _xpra_replenish_pool() -> None:
-    """워밍풀이 target 미만이면 부족분 만큼 spawn (포트 race 회피 위해 순차)."""
-    if XPRA_WARM_POOL_SIZE <= 0:
+    """워밍풀이 target 미만이면 부족분 만큼 spawn (포트 race 회피 위해 순차).
+    target 은 시간대별 _xpra_effective_pool_size() (#1 2026-05-31)."""
+    target = _xpra_effective_pool_size()
+    if target <= 0:
         return
     with _xpra_lock:
-        needed = XPRA_WARM_POOL_SIZE - len(_xpra_warm_pool) - _xpra_warm_inflight
+        needed = target - len(_xpra_warm_pool) - _xpra_warm_inflight
     if needed <= 0:
         return
     for _ in range(needed):
@@ -697,6 +722,29 @@ def _xpra_pop_warm():
     log.info(f"[xpra-warm] pool -1 sid={sid[:8]} (남은 size={len(_xpra_warm_pool)})")
     return sid
 
+
+def _xpra_remove_warm(sid: str) -> None:
+    """워밍풀의 Xpra 컨테이너 1개를 정지·제거 (#1 유휴 축소용).
+    _xpra_warm_pool / xpra_sessions / sessions 세 곳 모두 정리."""
+    with _xpra_lock:
+        if sid in _xpra_warm_pool:
+            _xpra_warm_pool.remove(sid)
+        info = xpra_sessions.pop(sid, None)
+    with _lock:
+        sessions.pop(sid, None)
+    if not info:
+        return
+    try:
+        c = client.containers.get(info["container_id"])
+        c.stop(timeout=3)
+        c.remove()
+    except Exception as e:
+        log.warning(f"[xpra-warm] 축소 제거 오류 sid={sid[:8]}: {e}")
+    finally:
+        try:
+            _release_xpra_port(info.get("port"))
+        except Exception:
+            pass
 
 
 def used_ports() -> set:
@@ -939,6 +987,20 @@ def cleanup_loop():
                     asyncio.run_coroutine_threadsafe(_replenish_pool(), _main_loop)
                 except Exception as _e:
                     log.warning(f"[warm refresh] 풀 보충 호출 실패: {_e}")
+            # 3-b) Xpra 워밍풀도 시간대별 목표로 조정 (#1 2026-05-31).
+            #      유휴 진입 → 초과분 제거(RAM 절감), 피크 복귀 → 보충.
+            xpra_target = _xpra_effective_pool_size()
+            with _xpra_lock:
+                xpra_excess = len(_xpra_warm_pool) - xpra_target
+                xpra_drop = list(_xpra_warm_pool[:xpra_excess]) if xpra_excess > 0 else []
+            for xsid in xpra_drop:
+                _xpra_remove_warm(xsid)
+                log.info(f"[xpra-warm] 유휴 축소 (목표 {xpra_target} 초과분 제거) sid={xsid[:8]}")
+            if xpra_excess < 0 and _main_loop is not None:
+                try:
+                    asyncio.run_coroutine_threadsafe(_xpra_replenish_pool(), _main_loop)
+                except Exception as _e:
+                    log.warning(f"[xpra-warm refresh] 풀 보충 호출 실패: {_e}")
 
 
 threading.Thread(target=cleanup_loop, daemon=True).start()
@@ -1061,8 +1123,8 @@ async def _create_warm_container_inner():
                 labels={"orange3.session": warm_sid, "orange3.managed": "true"},
                 environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
                 remove=False,
-                mem_limit="3072m",
-                memswap_limit="3072m",
+                mem_limit=CONTAINER_MEM_LIMIT,
+                memswap_limit=CONTAINER_MEM_LIMIT,
                 cpu_quota=400000,
                 cpu_period=100000,
                 shm_size="536870912",
@@ -8009,8 +8071,8 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
                         labels={"orange3.session": new_sid, "orange3.managed": "true"},
                         environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
                         remove=False,
-                        mem_limit="3072m",
-                        memswap_limit="3072m",
+                        mem_limit=CONTAINER_MEM_LIMIT,
+                        memswap_limit=CONTAINER_MEM_LIMIT,
                         cpu_quota=400000,
                         cpu_period=100000,
                         shm_size="536870912",
@@ -8277,7 +8339,7 @@ async def new_session_api():
             },
             labels={"orange3.session": new_sid, "orange3.managed": "true"},
             environment={"QT_STYLE_OVERRIDE": "Fusion", "ORANGE3_SPLASH_LOADING": _splash_loading_env_val()},
-            remove=False, mem_limit="3072m", memswap_limit="3072m",
+            remove=False, mem_limit=CONTAINER_MEM_LIMIT, memswap_limit=CONTAINER_MEM_LIMIT,
             cpu_quota=400000, cpu_period=100000, shm_size="536870912",
         )
     except Exception as e:
@@ -10157,7 +10219,7 @@ async def metrics_route():
         # Xpra (Phase 5)
         "xpra_active_sessions": xpra_active,
         "xpra_warm_pool": xpra_warm,
-        "xpra_warm_target": XPRA_WARM_POOL_SIZE,
+        "xpra_warm_target": _xpra_effective_pool_size(),
         "xpra_warm_inflight": xpra_inflight,
         "xpra_total_sessions": xpra_total,
         # 비율 (Phase 5 운영 적용 추적)
@@ -12490,7 +12552,7 @@ async def admin_widgets_refresh():
 
 def _apply_admin_pool_overrides() -> None:
     """startup 또는 PUT 직후 호출 — admin_settings.pools 값을 runtime 변수에 반영."""
-    global WARM_POOL_SIZE, WARM_POOL_SIZE_IDLE, XPRA_WARM_POOL_SIZE
+    global WARM_POOL_SIZE, WARM_POOL_SIZE_IDLE, XPRA_WARM_POOL_SIZE, XPRA_WARM_POOL_SIZE_IDLE
     s = _admin_load_settings()
     pools = s.get("pools") or {}
     m = pools.get("main")
@@ -12501,6 +12563,8 @@ def _apply_admin_pool_overrides() -> None:
     x = pools.get("xpra")
     if isinstance(x, int) and 0 <= x <= XPRA_WARM_POOL_SIZE_MAX:
         XPRA_WARM_POOL_SIZE = x
+        if XPRA_WARM_POOL_SIZE_IDLE > x:
+            XPRA_WARM_POOL_SIZE_IDLE = x
 
 
 @app.get("/api/admin/pool")
@@ -12518,9 +12582,11 @@ async def api_admin_pool_get():
         },
         "xpra": {
             "current": XPRA_WARM_POOL_SIZE,
+            "current_idle": XPRA_WARM_POOL_SIZE_IDLE,
             "max": XPRA_WARM_POOL_SIZE_MAX,
             "in_pool": len(_xpra_warm_pool),
             "in_flight": _xpra_warm_inflight,
+            "effective_target": _xpra_effective_pool_size(),
         },
     })
 
