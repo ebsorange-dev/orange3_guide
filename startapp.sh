@@ -49,6 +49,16 @@ fi
 # Orange3 시작 루프 (언어 변경 재시작 포함)
 while true; do
 
+# ── 언어 변경 재시작 감지 ─────────────────────────────────────────────────────
+# 아래 PYEOF 가 .lang_override 를 Orange.ini 에 적용한 뒤 삭제하므로 그 전에 확인한다.
+# _NEW_LANG = 적용할 새 언어 이름(English/Korean/Slovenian) → 언어별 사전 빌드 캐시 선택용.
+_LANG_CHANGED=""
+_NEW_LANG=""
+if [ -f /config/.lang_override ]; then
+    _LANG_CHANGED=1
+    _NEW_LANG=$(sed -n 's/^language=//p' /config/.lang_override | head -1)
+fi
+
 # ── Orange3 시작 전 설정 초기화 ──────────────────────────────────────────────
 # Orange3는 QSettings.setDefaultFormat(IniFormat)을 사용하므로
 # QSettings()와 QSettings(IniFormat) 모두 Orange.ini 에 읽고 씀
@@ -197,17 +207,29 @@ if os.path.exists(clear_flag):
 
 PYEOF
 
-# ── 언어 변경 여부 기록 (PYEOF 실행 전 .lang_override 존재 확인) ─────────────
-_LANG_CHANGED=""
-[ -f /config/.lang_override ] && _LANG_CHANGED=1
-
 # ── 레지스트리 캐시 처리 ──────────────────────────────────────────────────────
 if [ -n "$_LANG_CHANGED" ]; then
-    # 언어 변경 재시작: 캐시 삭제 (언어별 위젯 설명 불일치 방지)
-    rm -f /config/xdg/cache/Orange/3.*/registry-cache.pck \
-           /config/xdg/cache/Orange/3.*/widget-registry.pck 2>/dev/null || true
+    # 언어 변경 재시작: 새 언어의 사전 빌드 캐시를 복사해 재탐색(10s+, CPU 경합 시 수십초)을 회피.
+    # 동시에 last-used-language 를 새 언어와 일치시켜 Orange3 가 캐시를 신뢰하게 한다
+    # (language==last-used → language_changed()=False → 캐시 재사용, 재탐색 생략).
+    _SRC="/opt/orange3-regcache-$_NEW_LANG"
+    _INI="/config/xdg/config/biolab.si/Orange.ini"
+    if [ -n "$_NEW_LANG" ] && [ -d "$_SRC" ]; then
+        mkdir -p /config/xdg/cache
+        rm -rf /config/xdg/cache/Orange
+        cp -r "$_SRC/Orange" /config/xdg/cache/Orange 2>/dev/null || true
+        if [ -f "$_INI" ] && grep -q '^last-used-language=' "$_INI"; then
+            sed -i 's/^last-used-language=.*/last-used-language='"$_NEW_LANG"'/' "$_INI"
+        fi
+        echo "[startapp] 언어별 레지스트리 캐시 적용: $_NEW_LANG (재탐색 생략)"
+    else
+        # 사전 빌드 캐시 없는 언어 → 기존 동작(캐시 삭제 후 Orange3 가 재탐색)
+        rm -f /config/xdg/cache/Orange/3.*/registry-cache.pck \
+               /config/xdg/cache/Orange/3.*/widget-registry.pck 2>/dev/null || true
+        echo "[startapp] 사전 빌드 캐시 없음: $_NEW_LANG → 재탐색"
+    fi
 elif [ -d /opt/orange3-regcache ] && [ ! -d /config/xdg/cache/Orange ]; then
-    # 최초 기동: 사전 빌드된 캐시 복사 → Orange3 시작 시간 60-90s → 15-20s
+    # 최초 기동: 사전 빌드된 캐시(영어) 복사 → Orange3 시작 시간 60-90s → 15-20s
     mkdir -p /config/xdg/cache
     cp -r /opt/orange3-regcache/Orange /config/xdg/cache/Orange 2>/dev/null || true
     echo "[startapp] 레지스트리 캐시 복사 완료"

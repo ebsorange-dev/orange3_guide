@@ -15,6 +15,11 @@
 #      → wmctrl EWMH _NET_WM_STATE_MAXIMIZED_* 사용 (live 테스트 검증).
 export DISPLAY=:100
 
+# 언어 변경 재시작 등으로 남은 stale .app_ready 제거 — 아래 창 준비 후 재생성.
+# (noVNC startapp.sh 와 달리 xpra 는 app_ready 생성 로직이 없어, 언어 변경 후
+#  LOADING_PAGE 의 /ready 폴링이 끝나지 않던 무한 로딩 문제 수정. 2026-06-02)
+rm -f /config/.app_ready
+
 # Phase 5 (2026-05-24): X11 root window 흰색 강제. Xpra+Xvfb 의 root 기본은
 # 어두운 회색 — Orange3 캔버스 영역 양옆/위/아래에 노출됨. 재시도 루프로
 # X 서버 ready 직후 적용 보장. 운영 Dockerfile 의 /etc/openbox/autostart 와
@@ -66,6 +71,9 @@ for i in $(seq 1 90); do
         apply_max "$WIN"
         GEO=$(xdotool getwindowgeometry "$WIN" 2>/dev/null | tr '\n' ' ')
         echo "[max] Orange3 maximized: win=$WIN name='$NAME' after ${i}s | $GEO"
+        # GUI(메인 캔버스) 준비 완료 → .app_ready 생성 (LOADING_PAGE 의 /ready 폴링 종료 신호)
+        touch /config/.app_ready
+        echo "[max] .app_ready 생성됨"
         break
     fi
 done

@@ -173,16 +173,30 @@ RUN printf '%s\n' \
     >> /opt/noVNC/app/styles/base.css
 
 
-# ── Orange3 위젯 레지스트리 캐시 사전 생성 (컨테이너 첫 기동 시 복사 → 시작 시간 60-90s → 15-20s) ──
-RUN mkdir -p /opt/orange3-regcache && \
-    Xvfb :99 -screen 0 1280x800x24 -nolisten tcp & XVFB_PID=$! && \
-    sleep 2 && \
-    XDG_CACHE_HOME=/opt/orange3-regcache \
-    XDG_CONFIG_HOME=/tmp/orange3-prebuild-conf \
-    DISPLAY=:99 \
-    HOME=/root \
-    python3 -c "import sys, os, pickle, importlib.metadata; from PyQt5.QtWidgets import QApplication; from PyQt5.QtCore import QCoreApplication, QStandardPaths; app = QApplication(sys.argv); QCoreApplication.setApplicationName('Orange'); ver = importlib.metadata.version('Orange3'); QCoreApplication.setApplicationVersion(ver); cache_base = QStandardPaths.writableLocation(QStandardPaths.CacheLocation); cache_dir = os.path.join(cache_base, ver); os.makedirs(cache_dir, exist_ok=True); from orangecanvas.registry import WidgetRegistry; from orangewidget.workflow.discovery import WidgetDiscovery; r = WidgetRegistry(); d = WidgetDiscovery(r); d.run('orange.widgets'); cache_file = os.path.join(cache_dir, 'registry-cache.pck'); f = open(cache_file, 'wb'); pickle.dump(d.cached_descriptions, f); f.close(); print('[cache]', len(r.widgets()), 'cached to', cache_file)" \
-    2>&1; kill $XVFB_PID 2>/dev/null || true
+# ── shap numpy 2.x 호환 패치 (Orange3-Explain 위젯 복구) ──────────────────────
+# shap 0.42.1(orange3-explain 0.6.10 이 shap==0.42.1 로 핀)이 numpy 2.0 에서 제거된
+# np.obj2sctype 를 _colorconv.py 에서 사용 → explain 위젯(Explain Model/Prediction/
+# Predictions) import 실패로 레지스트리에서 누락됐었다. shap 버전 유지(핀 충족)하고
+# 해당 호출만 numpy2 호환(np.dtype().type)으로 치환. 검증: discovery 위젯 270→273 복구.
+RUN sed -i 's/np\.obj2sctype(\([^)]*\))/np.dtype(\1).type/g' \
+    /usr/local/lib/python3.10/dist-packages/shap/plots/colors/_colorconv.py
+
+# ── Orange3 위젯 레지스트리 캐시 언어별 사전 생성 (English/Korean/Slovenian) ──
+# 캐시에는 위젯명·카테고리 번역이 박혀 언어별로 다르다(실측 확인). 언어 변경 시
+# startapp.sh 가 해당 언어 캐시를 복사 → Orange3 재탐색(10s+, CPU 경합 시 수십초) 생략.
+# 각 언어는 반드시 별도 python3 프로세스로 — 한 프로세스 내 재import 시 번역 미반영.
+# /opt/orange3-regcache(접미사 없음)는 워밍풀 최초 기동(영어)용으로 English 복제 유지.
+RUN Xvfb :99 -screen 0 1280x800x24 -nolisten tcp & XVFB_PID=$!; \
+    sleep 2; \
+    for L in English Korean Slovenian; do \
+      mkdir -p /tmp/regconf-$L/biolab.si; \
+      printf '[application]\nlanguage=%s\nlast-used-language=%s\n' "$L" "$L" > /tmp/regconf-$L/biolab.si/Orange.ini; \
+      XDG_CACHE_HOME=/opt/orange3-regcache-$L XDG_CONFIG_HOME=/tmp/regconf-$L DISPLAY=:99 HOME=/root \
+      python3 -c "import sys, os, pickle, importlib.metadata; from PyQt5.QtWidgets import QApplication; from PyQt5.QtCore import QCoreApplication, QStandardPaths; app = QApplication(sys.argv); QCoreApplication.setApplicationName('Orange'); ver = importlib.metadata.version('Orange3'); QCoreApplication.setApplicationVersion(ver); cache_base = QStandardPaths.writableLocation(QStandardPaths.CacheLocation); cache_dir = os.path.join(cache_base, ver); os.makedirs(cache_dir, exist_ok=True); from orangecanvas.registry import WidgetRegistry; from orangewidget.workflow.discovery import WidgetDiscovery; r = WidgetRegistry(); d = WidgetDiscovery(r); d.run('orange.widgets'); cache_file = os.path.join(cache_dir, 'registry-cache.pck'); f = open(cache_file, 'wb'); pickle.dump(d.cached_descriptions, f); f.close(); print('[cache]', '$L', len(r.widgets()), 'cached to', cache_file)"; \
+    done; \
+    rm -rf /opt/orange3-regcache; cp -r /opt/orange3-regcache-English /opt/orange3-regcache; \
+    rm -rf /tmp/regconf-English /tmp/regconf-Korean /tmp/regconf-Slovenian; \
+    kill $XVFB_PID 2>/dev/null || true
 
 # ── 오렌지 캔버스 메뉴바 + 단축 아이콘 툴바 제거 ────────────────────────────────
 RUN sed -i \

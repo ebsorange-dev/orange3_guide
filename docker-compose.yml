@@ -96,11 +96,11 @@ services:
       - XPRA_PORT_START=13901
       - XPRA_PORT_END=13950
       # 워밍풀 크기 (Phase 5 준비, 2026-05-23). 0=비활성, >0=즉시 응답.
-      # #1 메모리 절감 (2026-05-31): 10→4. xpra 는 시간대 축소가 없어 상시 점유가
-      # 컸음 → 피크 4 / 유휴 2 로 분리.
-      - XPRA_WARM_POOL_SIZE=4
-      # #1 Xpra 유휴 시간대 축소 (2026-05-31): WARM_PEAK_HOURS 밖에서 이 크기로 축소.
-      - XPRA_WARM_POOL_SIZE_IDLE=2
+      # #1 메모리 절감 (2026-05-31): 10→4. 2026-06-02 사용자 요청으로 2배 증가(4→8).
+      # xpra 는 시간대 축소가 없어 상시 점유가 컸음 → 피크 8 / 유휴 4 로 분리.
+      - XPRA_WARM_POOL_SIZE=8
+      # Xpra 유휴 시간대 축소: WARM_PEAK_HOURS 밖에서 이 크기로 축소 (2→4, 2배).
+      - XPRA_WARM_POOL_SIZE_IDLE=4
       # ── Google Drive OAuth (OPEN 모달의 LOGIN TO GOOGLE 버튼) ──
       # 사용하려면 Google Cloud Console 에서 OAuth 2.0 클라이언트 ID 생성 후 값 입력.
       # · 승인된 리다이렉션 URI 에 GOOGLE_OAUTH_REDIRECT_URI 와 동일한 값 등록 필요.

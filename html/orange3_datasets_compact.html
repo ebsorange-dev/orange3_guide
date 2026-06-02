@@ -209,7 +209,7 @@
 
 <div class="top-bar">
   <div class="brand">
-    <span class="brand-icon"><span></span><span></span><span></span></span>
+    <svg class="brand-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
     Datasets
   </div>
   <button class="close-btn" id="closeBtn" title="닫기" aria-label="닫기">
@@ -357,6 +357,84 @@ const tabItems = [
   { key:"misc",           label:"기타" },
 ];
 
+// ── 다국어 (iframe ?lang= 로 전달; 없으면 ko) ─────────────────────────────────
+const LANG = new URLSearchParams(window.location.search).get("lang") || "ko";
+const UI_I18N = {
+  select:{ko:'선택',en:'Select',sl:'Izbor'},
+  count:{ko:'개',en:'',sl:''},
+  noData:{ko:'데이터가 없습니다.',en:'No data.',sl:'Ni podatkov.'},
+  noSelection:{ko:'선택된 항목 없음',en:'No item selected',sl:'Noben element ni izbran'},
+  selected:{ko:'선택됨: ',en:'Selected: ',sl:'Izbrano: '},
+  noPath:{ko:'(경로 없음)',en:'(no path)',sl:'(ni poti)'},
+  cancel:{ko:'취소',en:'Cancel',sl:'Prekliči'},
+  apply:{ko:'샘플 데이터 적용하기',en:'Apply Sample Data',sl:'Uporabi vzorčne podatke'}
+};
+const CAT_LABEL_I18N = {
+  classification:{en:'Classification',sl:'Klasifikacija'}, regression:{en:'Regression',sl:'Regresija'},
+  clustering:{en:'Clustering',sl:'Gručenje'}, text:{en:'Text Mining',sl:'Rudarjenje besedil'},
+  image:{en:'Image Analytics',sl:'Analiza slik'}, timeseries:{en:'Time Series',sl:'Časovne vrste'},
+  bio:{en:'Bioinformatics',sl:'Bioinformatika'}, misc:{en:'Misc Examples',sl:'Razni primeri'}
+};
+const TAB_I18N = {
+  classification:{en:'Classification',sl:'Klasifikacija'}, regression:{en:'Regression',sl:'Regresija'},
+  clustering:{en:'Clustering',sl:'Gručenje'}, text:{en:'Text Mining',sl:'Rudarjenje besedil'},
+  image:{en:'Image Analytics',sl:'Analiza slik'}, timeseries:{en:'Time Series',sl:'Časovne vrste'},
+  bio:{en:'Bioinformatics',sl:'Bioinformatika'}, misc:{en:'Misc',sl:'Razno'}
+};
+const DESC_I18N = {
+  'iris.tab':{en:'Classify 3 iris species by petal/sepal length and width — the standard intro dataset for classification.',sl:'Razvrščanje 3 vrst perunike po dolžini/širini venčnih in čašnih listov — standardna uvodna zbirka za klasifikacijo.'},
+  'titanic.tab':{en:'Titanic passenger survival data.',sl:'Podatki o preživetju potnikov Titanika.'},
+  'heart_disease.tab':{en:'Heart disease diagnosis data.',sl:'Podatki za diagnozo srčne bolezni.'},
+  'breast-cancer-wisconsin.tab':{en:'Breast cancer diagnosis (benign/malignant) data.',sl:'Podatki za diagnozo raka dojke (benigni/maligni).'},
+  'lymphography.tab':{en:'Lymphography data.',sl:'Podatki limfografije.'},
+  'zoo.tab':{en:'Animal classification data — 7 classes.',sl:'Podatki za klasifikacijo živali — 7 razredov.'},
+  'adult.tab':{en:'US census income classification data.',sl:'Podatki za klasifikacijo dohodka iz ameriškega popisa.'},
+  'voting.tab':{en:'US Congress voting records data.',sl:'Podatki o glasovanjih ameriškega kongresa.'},
+  'promoters.tab':{en:'DNA promoter sequence data.',sl:'Podatki o promotorskih zaporedjih DNK.'},
+  'car.tab':{en:'Car evaluation data.',sl:'Podatki za oceno avtomobilov.'},
+  'housing.tab':{en:'Boston housing price data.',sl:'Podatki o cenah stanovanj v Bostonu.'},
+  'auto-mpg.tab':{en:'Car fuel-efficiency (MPG) prediction data.',sl:'Podatki za napoved porabe goriva (MPG).'},
+  'servo.tab':{en:'Servo system response-time data.',sl:'Podatki o odzivnem času servo sistema.'},
+  'glass.tab':{en:'Glass type classification data.',sl:'Podatki za klasifikacijo vrst stekla.'},
+  'wine.tab':{en:'Wine chemical composition data — 3 wine types.',sl:'Podatki o kemični sestavi vina — 3 vrste.'},
+  'brown-selected.tab':{en:'Yeast gene-expression data.',sl:'Podatki o izražanju genov kvasovk.'},
+  'grimm-tales-selected.tab':{en:'Curated selection of Brothers Grimm tales (small, for demos).',sl:'Izbor pravljic bratov Grimm (majhen, za predstavitve).'},
+  'grimm-tales.tab':{en:'Full Brothers Grimm tales corpus.',sl:'Celoten korpus pravljic bratov Grimm.'},
+  'andersen.tab':{en:'Hans Christian Andersen fairy tales.',sl:'Pravljice Hansa Christiana Andersena.'},
+  'deerwester.tab':{en:'The 9 original LSA documents from Deerwester (1990).',sl:'9 izvirnih dokumentov LSA iz Deerwester (1990).'},
+  'book-excerpts.tab':{en:'Book excerpts from various authors/genres (with labels).',sl:'Odlomki iz knjig različnih avtorjev/žanrov (z oznakami).'},
+  'friends-transcripts.tab':{en:"Episode transcripts of the US sitcom 'Friends'.",sl:"Prepisi epizod ameriške serije 'Friends'."},
+  'election-tweets-2016.tab':{en:'2016 US election tweets (with sentiment labels).',sl:'Tviti ameriških volitev 2016 (z oznakami sentimenta).'},
+  'slo-opinion-corpus.tab':{en:'Slovenian opinion corpus (sentiment classification).',sl:'Slovenski korpus mnenj (klasifikacija sentimenta).'},
+  '20newsgroups-train.tab':{en:'20 Newsgroups post-classification training set.',sl:'Učna množica za klasifikacijo objav 20 Newsgroups.'},
+  '20newsgroups-test.tab':{en:'Test split of the 20 Newsgroups data.',sl:'Testni del podatkov 20 Newsgroups.'},
+  'reuters-r8-train.tab':{en:'Reuters-21578 R8 (8 topics) training set.',sl:'Učna množica Reuters-21578 R8 (8 tem).'},
+  'reuters-r8-test.tab':{en:'Test set of the Reuters R8 split.',sl:'Testna množica razdelitve Reuters R8.'},
+  'reuters-r52-train.tab':{en:'Reuters-21578 R52 (52 topics) training set.',sl:'Učna množica Reuters-21578 R52 (52 tem).'},
+  'reuters-r52-test.tab':{en:'Test set of the Reuters R52 split.',sl:'Testna množica razdelitve Reuters R52.'},
+  'Painters':{en:'Paintings by artist.',sl:'Slike slik po slikarju.'},
+  'Yoga poses':{en:'Yoga pose image dataset.',sl:'Zbirka slik jogijskih položajev.'},
+  'Bone healing':{en:'Bone-healing X-ray images.',sl:'Rentgenske slike celjenja kosti.'},
+  'airpassengers':{en:'International airline passengers, 1949–1960.',sl:'Mednarodni letalski potniki, 1949–1960.'},
+  'amzn_stock':{en:'Amazon (AMZN) stock price data.',sl:'Podatki o ceni delnice Amazon (AMZN).'},
+  'cyp_yearly_temperature':{en:'Cyprus annual temperature data.',sl:'Podatki o letni temperaturi Cipra.'},
+  'GDS*':{en:'Collection of NCBI GEO gene-expression datasets.',sl:'Zbirka zbirk izražanja genov NCBI GEO.'},
+  'DictyExpress':{en:'Slime-mold gene-expression data.',sl:'Podatki o izražanju genov sluzavk.'},
+  'bone-marrow.tab':{en:'Bone-marrow transplant data.',sl:'Podatki o presaditvi kostnega mozga.'},
+  'sailing.tab':{en:'Sailing decision data.',sl:'Podatki o odločitvi za jadranje.'},
+  'friends.tab':{en:'Social-network example data.',sl:'Primer podatkov družbenega omrežja.'},
+  'paid-vs-free.tab':{en:'Paid vs. free app comparison data.',sl:'Podatki za primerjavo plačljivih in brezplačnih aplikacij.'}
+};
+function _ui(k){ var m=UI_I18N[k]; if(!m) return ''; return (LANG!=='ko'&&m[LANG]!=null)?m[LANG]:m.ko; }
+function _catLbl(cat){ var m=CAT_LABEL_I18N[cat]; return (LANG!=='ko'&&m&&m[LANG])||categoryLabels[cat]; }
+function _tabLbl(it){ var m=TAB_I18N[it.key]; return (LANG!=='ko'&&m&&m[LANG])||it.label; }
+function _dsc(d){ var m=DESC_I18N[d.file]; return (LANG!=='ko'&&m&&m[LANG])||d.desc; }
+function applyStaticI18n(){
+  var bc=document.getElementById('btnCancel'); if(bc) bc.textContent=_ui('cancel');
+  var ba=document.getElementById('btnApply'); if(ba) ba.textContent=_ui('apply');
+  var fi=document.getElementById('footerInfo'); if(fi && !selectedDataset) fi.textContent=_ui('noSelection');
+}
+
 // URL 파라미터 ?cat=<key> 가 있고 유효한 키면 해당 탭으로 시작 (예: ?cat=text)
 let currentFilter = "all";
 try {
@@ -387,7 +465,7 @@ function selectRow(id) {
   if (IS_MODAL && selectedDataset) {
     const fi = document.getElementById("footerInfo");
     if (fi) fi.innerHTML =
-      `선택됨: <b>${selectedDataset.title}</b> → <code>${selectedDataset.serverUrl || "(경로 없음)"}</code>`;
+      `${_ui('selected')}<b>${selectedDataset.title}</b> → <code>${selectedDataset.serverUrl || _ui('noPath')}</code>`;
     const btn = document.getElementById("btnApply");
     if (btn) btn.disabled = !selectedDataset.serverUrl;
   }
@@ -414,7 +492,7 @@ function buildTabs() {
     return `
       <div class="tab ${it.key === currentFilter ? 'active' : ''}" data-key="${it.key}">
         <span class="tab-dot dot-${it.key}"></span>
-        <span class="label">${it.label}</span>
+        <span class="label">${_tabLbl(it)}</span>
         <span class="count">${count}</span>
       </div>`;
   }).join("");
@@ -438,7 +516,7 @@ function rowHTML(d) {
       </div>
       <div><span class="list-dot dot-${d.cat}"></span></div>
       <div class="col-title">${d.title} ${locIcon}<span class="file">${d.file}</span></div>
-      <div class="col-desc">${d.desc}</div>
+      <div class="col-desc">${_dsc(d)}</div>
       <div class="col-meta">
         <span class="meta-rows">${d.rows} rows</span>
         <span class="meta-feat">${d.feat}</span>
@@ -449,7 +527,7 @@ function rowHTML(d) {
 function listHeaderHTML() {
   return `
     <div class="list-header">
-      <div style="text-align:center">선택</div>
+      <div style="text-align:center">${_ui('select')}</div>
       <div></div><div>Name</div><div>Description</div><div>Size</div>
     </div>`;
 }
@@ -459,7 +537,7 @@ function render() {
   const content = document.getElementById("content");
   content.innerHTML = "";
   let pool = datasets.filter(d => currentFilter === "all" || d.cat === currentFilter);
-  if (!pool.length) { content.innerHTML = `<div class="empty">데이터가 없습니다.</div>`; return; }
+  if (!pool.length) { content.innerHTML = `<div class="empty">${_ui('noData')}</div>`; return; }
 
   if (currentFilter === "all") {
     Object.keys(categoryLabels).forEach(cat => {
@@ -467,13 +545,13 @@ function render() {
       if (!items.length) return;
       const sec = document.createElement("div");
       sec.innerHTML = `
-        <div class="section-title">${categoryLabels[cat]} <span class="count">${items.length}개</span></div>
+        <div class="section-title">${_catLbl(cat)} <span class="count">${items.length}${_ui('count')}</span></div>
         <div class="list">${listHeaderHTML()}${items.map(rowHTML).join("")}</div>`;
       content.appendChild(sec);
     });
   } else {
     content.innerHTML = `
-      <div class="section-title">${categoryLabels[currentFilter]} <span class="count">${pool.length}개</span></div>
+      <div class="section-title">${_catLbl(currentFilter)} <span class="count">${pool.length}${_ui('count')}</span></div>
       <div class="list">${listHeaderHTML()}${pool.map(rowHTML).join("")}</div>`;
   }
 }
@@ -502,6 +580,7 @@ if (IS_MODAL) {
 const _closeBtn = document.getElementById("closeBtn");
 if (_closeBtn) _closeBtn.addEventListener("click", cancelSelection);
 
+applyStaticI18n();
 render();
 </script>
 </body>

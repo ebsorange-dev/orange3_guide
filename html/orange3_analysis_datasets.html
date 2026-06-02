@@ -189,7 +189,7 @@
 <header class="top-header">
   <div class="brand">
     <div class="title">
-      <span class="brand-icon"><span></span><span></span><span></span><span></span></span>
+      <svg class="brand-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
       <span>Orange3 분석 데이터셋 카탈로그</span>
     </div>
     <div class="subtitle">카테고리 탭을 선택하고, 카드를 클릭하면 데이터셋 상세 정보가 팝업으로 열립니다.</div>
@@ -464,13 +464,100 @@ const categories = [
     ]},
 ];
 
+// ── 다국어 (iframe ?lang= 로 전달; 없으면 ko) ─────────────────────────────────
+const LANG = new URLSearchParams(location.search).get('lang') || 'ko';
+const UI_I18N = {
+  title:{ko:'Orange3 분석 데이터셋 카탈로그',en:'Orange3 Analysis Dataset Catalog',sl:'Katalog analiznih podatkovnih zbirk Orange3'},
+  subtitle:{ko:'카테고리 탭을 선택하고, 카드를 클릭하면 데이터셋 상세 정보가 팝업으로 열립니다.',en:'Select a category tab, then click a card to open dataset details in a popup.',sl:'Izberite zavihek kategorije in kliknite kartico, da se odprejo podrobnosti zbirke.'},
+  source:{ko:'출처: ',en:'Source: ',sl:'Vir: '},
+  overview:{ko:'📋 개요',en:'📋 Overview',sl:'📋 Pregled'},
+  composition:{ko:'📊 데이터 구성',en:'📊 Data Composition',sl:'📊 Sestava podatkov'},
+  download:{ko:'⬇ 다운로드',en:'⬇ Download',sl:'⬇ Prenos'},
+  instances:{ko:'인스턴스 수:',en:'Instances:',sl:'Primerki:'},
+  attributes:{ko:'속성 수:',en:'Attributes:',sl:'Atributi:'},
+  target:{ko:'타겟 변수:',en:'Target:',sl:'Cilj:'},
+  widgets:{ko:'🔧 추천 위젯',en:'🔧 Recommended Widgets',sl:'🔧 Priporočeni gradniki'},
+  usage:{ko:'💡 활용 방법',en:'💡 Usage',sl:'💡 Uporaba'},
+  load:{ko:'📁 불러오기',en:'📁 Loading',sl:'📁 Nalaganje'},
+  loadInstr:{ko:'Orange3 캔버스 → File 위젯 더블클릭 → "Browse documentation datasets" 버튼 → 위 파일명 선택.',en:'Orange3 canvas → double-click the File widget → "Browse documentation datasets" → select the file above.',sl:'Platno Orange3 → dvokliknite gradnik File → "Browse documentation datasets" → izberite zgornjo datoteko.'}
+};
+const CAT_I18N = {
+  classification:{label:{en:'Classification',sl:'Klasifikacija'},desc:{en:'Supervised learning — predicts categorical classes. Use with Tree, Logistic Regression, Random Forest.',sl:'Nadzorovano učenje — napoveduje kategorične razrede. Uporabite z gradniki Tree, Logistic Regression, Random Forest.'}},
+  regression:{label:{en:'Regression',sl:'Regresija'},desc:{en:'Supervised learning — predicts continuous numeric values.',sl:'Nadzorovano učenje — napoveduje zvezne številske vrednosti.'}},
+  clustering:{label:{en:'Clustering',sl:'Gručenje'},desc:{en:'Unsupervised learning — groups similar samples together.',sl:'Nenadzorovano učenje — združuje podobne primere.'}},
+  text:{label:{en:'Text',sl:'Besedilo'},desc:{en:'Text mining — document classification, topic modeling, sentiment analysis.',sl:'Rudarjenje besedil — klasifikacija dokumentov, modeliranje tem, analiza sentimenta.'}},
+  image:{label:{en:'Image',sl:'Slike'},desc:{en:'Image analysis — classify, cluster, and search via image embeddings.',sl:'Analiza slik — klasifikacija, gručenje in iskanje prek vložitev slik.'}},
+  timeseries:{label:{en:'Time Series',sl:'Časovne vrste'},desc:{en:'Time series analysis — trend, seasonality, forecasting.',sl:'Analiza časovnih vrst — trend, sezonskost, napovedovanje.'}},
+  bio:{label:{en:'Bioinformatics',sl:'Bioinformatika'},desc:{en:'Bioinformatics — gene expression and genome analysis.',sl:'Bioinformatika — izražanje genov in analiza genoma.'}},
+  misc:{label:{en:'Misc',sl:'Razno'},desc:{en:'Auxiliary datasets for tutorials and demos.',sl:'Pomožne zbirke za vadnice in predstavitve.'}}
+};
+const DATASET_I18N = {};  // file → {en:{desc,overview,usage}, sl:{...}}
+Object.assign(DATASET_I18N, {
+  'iris.tab':{en:{desc:'Iris 3-species classification (150 samples, 4 features)',overview:'A standard introductory dataset of statistics and machine learning — classifies setosa, versicolor, and virginica from petal/sepal length and width.',usage:'Ideal for comparing and visualizing classification algorithms. Use Scatter Plot to check class separation.'},sl:{desc:'Klasifikacija 3 vrst perunike (150 primerkov, 4 značilke)',overview:'Standardna uvodna zbirka statistike in strojnega učenja — razvršča setoso, versicolor in virginico glede na dolžino/širino venčnih in čašnih listov.',usage:'Idealno za primerjavo in vizualizacijo klasifikacijskih algoritmov. Z gradnikom Scatter Plot preverite ločljivost razredov.'}},
+  'titanic.tab':{en:{desc:'Titanic passenger survival (1309 samples)',overview:'Binary classification data predicting actual passenger survival in the Titanic disaster.',usage:'For learning discrete-variable classification and probability prediction.'},sl:{desc:'Preživetje potnikov Titanika (1309 primerkov)',overview:'Podatki za binarno klasifikacijo, ki napovedujejo dejansko preživetje potnikov v nesreči Titanika.',usage:'Za učenje klasifikacije na podlagi diskretnih spremenljivk in napovedi verjetnosti.'}},
+  'heart_disease.tab':{en:{desc:'Heart disease diagnosis (303 samples, 14 features)',overview:'Data diagnosing the presence of heart disease from patients\' medical test results.',usage:'For demonstrating medical classification and missing-value handling workflows.'},sl:{desc:'Diagnoza srčne bolezni (303 primerki, 14 značilk)',overview:'Podatki za diagnosticiranje srčne bolezni iz medicinskih izvidov pacientov.',usage:'Za prikaz delotokov medicinske klasifikacije in obravnave manjkajočih vrednosti.'}},
+  'breast-cancer-wisconsin.tab':{en:{desc:'Breast cancer diagnosis (benign/malignant)',overview:'The Wisconsin breast cancer data classifying benign/malignant from 9 cell-biopsy features.',usage:'Binary classification and diagnostic model training. Compare performance with ROC Analysis.'},sl:{desc:'Diagnoza raka dojke (benigni/maligni)',overview:'Wisconsinski podatki o raku dojke, ki razvrščajo benigno/maligno glede na 9 značilk biopsije celic.',usage:'Učenje binarne klasifikacije in diagnostičnih modelov. Primerjava uspešnosti z ROC Analysis.'}},
+  'lymphography.tab':{en:{desc:'Lymphography diagnosis data',overview:'Lymphography image-reading data classifying four diagnostic outcomes.',usage:'Introduction to medical-imaging diagnostic classification.'},sl:{desc:'Podatki diagnostike limfografije',overview:'Podatki branja slik limfografije, ki razvrščajo štiri diagnostične izide.',usage:'Uvod v diagnostično klasifikacijo medicinskih slik.'}},
+  'zoo.tab':{en:{desc:'Animal classification into 7 types (mammal, bird, etc.)',overview:'Predicts 7 taxonomic groups (mammal, bird, reptile, etc.) from 16 traits of 101 animals.',usage:'Learn multi-class classification and hierarchical clustering together.'},sl:{desc:'Klasifikacija živali v 7 vrst (sesalci, ptice itd.)',overview:'Napoveduje 7 taksonomskih skupin (sesalci, ptice, plazilci itd.) iz 16 značilnosti 101 živali.',usage:'Hkratno učenje večrazredne klasifikacije in hierarhičnega gručenja.'}},
+  'adult.tab':{en:{desc:'US census income classification (>50K or not)',overview:'Predicts whether annual income exceeds $50,000 from 1994 US census data.',usage:'For learning large-data and ensemble-model comparison.'},sl:{desc:'Klasifikacija dohodka iz ameriškega popisa (>50K ali ne)',overview:'Napoveduje, ali letni dohodek presega 50.000 USD, iz podatkov ameriškega popisa iz leta 1994.',usage:'Za učenje primerjave velikih podatkov in ansambelskih modelov.'}},
+  'voting.tab':{en:{desc:'US Congress voting records (Republican/Democrat)',overview:'Classifies party from US House members\' yea/nay votes on 16 issues.',usage:'Discrete-variable political-leaning classification.'},sl:{desc:'Zapisi glasovanj v ameriškem kongresu (republikanci/demokrati)',overview:'Razvršča stranko iz glasov za/proti članov predstavniškega doma o 16 vprašanjih.',usage:'Klasifikacija politične usmeritve na podlagi diskretnih spremenljivk.'}},
+  'promoters.tab':{en:{desc:'DNA promoter sequence classification',overview:'Biological sequence data determining whether a DNA sequence is a promoter.',usage:'Introduction to bioinformatics sequence classification.'},sl:{desc:'Klasifikacija promotorskih zaporedij DNK',overview:'Podatki o bioloških zaporedjih za ugotavljanje, ali je zaporedje DNK promotor.',usage:'Uvod v klasifikacijo zaporedij v bioinformatiki.'}},
+  'car.tab':{en:{desc:'Car evaluation (unacc/acc/good/vgood)',overview:'Evaluates a 4-level grade from 6 car attributes.',usage:'For learning ordinal and multi-class classification.'},sl:{desc:'Ocena avtomobilov (unacc/acc/good/vgood)',overview:'Ocenjuje 4-stopenjsko oceno iz 6 lastnosti avtomobila.',usage:'Za učenje ordinalne in večrazredne klasifikacije.'}},
+  'housing.tab':{en:{desc:'Boston housing price prediction (506 samples, 13 features)',overview:'Predicts Boston-area housing prices from 13 environmental/social attributes.',usage:'Standard regression-analysis example.'},sl:{desc:'Napoved cen stanovanj v Bostonu (506 primerkov, 13 značilk)',overview:'Napoveduje cene stanovanj na območju Bostona iz 13 okoljskih/družbenih atributov.',usage:'Standardni primer regresijske analize.'}},
+  'auto-mpg.tab':{en:{desc:'Car fuel-efficiency (MPG) prediction (398 samples)',overview:'Predicts fuel efficiency from car specifications.',usage:'For learning multivariate regression.'},sl:{desc:'Napoved porabe goriva (MPG) avtomobila (398 primerkov)',overview:'Napoveduje porabo goriva iz specifikacij avtomobila.',usage:'Za učenje večrazsežnostne regresije.'}},
+  'servo.tab':{en:{desc:'Servo system response-time prediction',overview:'Predicts the response time of a servo-motor system.',usage:'Demonstration of nonlinear regression modeling.'},sl:{desc:'Napoved odzivnega časa servo sistema',overview:'Napoveduje odzivni čas sistema servo motorja.',usage:'Prikaz nelinearnega regresijskega modeliranja.'}},
+  'glass.tab':{en:{desc:'Glass type classification',overview:'Clusters 6 glass types from 9 chemical components of glass samples.',usage:'For learning clustering and dimensionality reduction.'},sl:{desc:'Klasifikacija vrst stekla',overview:'Gruči 6 vrst stekla iz 9 kemičnih sestavin vzorcev stekla.',usage:'Za učenje gručenja in zmanjševanja dimenzij.'}},
+  'wine.tab':{en:{desc:'Wine chemical composition (3 types, 13 components)',overview:'13 chemical components of wines from 3 wineries in the same Italian region.',usage:'Standard clustering dataset.'},sl:{desc:'Kemična sestava vina (3 vrste, 13 sestavin)',overview:'13 kemičnih sestavin vin iz 3 vinarn v isti italijanski regiji.',usage:'Standardna zbirka za gručenje.'}},
+  'brown-selected.tab':{en:{desc:'Yeast gene-expression data',overview:'Expression measurements of 79 genes in baker\'s yeast.',usage:'Introduction to high-dimensional clustering and bioinformatics.'},sl:{desc:'Podatki o izražanju genov kvasovk',overview:'Meritve izražanja 79 genov pekovskih kvasovk.',usage:'Uvod v gručenje visokodimenzionalnih podatkov in bioinformatiko.'}}
+});
+Object.assign(DATASET_I18N, {
+  'grimm-tales-selected.tab':{en:{desc:'Selected Grimm fairy tales',overview:'A small curated corpus of selected Brothers Grimm tales (for quick demos).',usage:'Introduction to LDA topic-modeling workflows.'},sl:{desc:'Izbrane Grimmove pravljice',overview:'Majhen izbran korpus izbranih pravljic bratov Grimm (za hitre predstavitve).',usage:'Uvod v delotoke modeliranja tem LDA.'}},
+  'grimm-tales.tab':{en:{desc:'Full Grimm fairy tales',overview:'The full Brothers Grimm corpus (richer than the selected version).',usage:'Topic analysis on medium/large text data.'},sl:{desc:'Vse Grimmove pravljice',overview:'Celoten korpus bratov Grimm (bogatejši od izbrane različice).',usage:'Analiza tem na srednje/velikih besedilnih podatkih.'}},
+  'andersen.tab':{en:{desc:'Andersen fairy tales',overview:"A collection of Hans Christian Andersen's fairy tales.",usage:'Introduction to short-form literary text analysis.'},sl:{desc:'Andersenove pravljice',overview:'Zbirka pravljic Hansa Christiana Andersena.',usage:'Uvod v analizo kratkih literarnih besedil.'}},
+  'deerwester.tab':{en:{desc:'Classic information-retrieval example documents',overview:'The 9 documents from Deerwester (1990) — the original LSA-algorithm example.',usage:'For demonstrating LSA/TF-IDF/LSI (the smallest corpus).'},sl:{desc:'Klasični primeri dokumentov za iskanje informacij',overview:'9 dokumentov iz Deerwester (1990) — izvirni primer algoritma LSA.',usage:'Za prikaz LSA/TF-IDF/LSI (najmanjši korpus).'}},
+  'book-excerpts.tab':{en:{desc:'Book excerpts',overview:'A collection of book excerpts from various authors/genres (with classification labels).',usage:'Document classification workflow.'},sl:{desc:'Odlomki iz knjig',overview:'Zbirka odlomkov iz knjig različnih avtorjev/žanrov (z oznakami za klasifikacijo).',usage:'Delotok klasifikacije dokumentov.'}},
+  'friends-transcripts.tab':{en:{desc:"'Friends' TV show transcripts",overview:"A collection of episode transcripts from the US sitcom 'Friends'.",usage:'Analyze dialogue patterns by character and track topic shifts by season.'},sl:{desc:"Prepisi serije 'Prijatelji'",overview:"Zbirka prepisov epizod ameriške humoristične serije 'Friends'.",usage:'Analiza vzorcev dialoga po likih in spremljanje sprememb tem po sezonah.'}},
+  'election-tweets-2016.tab':{en:{desc:'2016 US election tweets',overview:'Tweets collected during the 2016 US presidential election (with sentiment labels).',usage:'For learning social-media sentiment analysis and topic extraction.'},sl:{desc:'Tviti ameriških volitev 2016',overview:'Tviti, zbrani med ameriškimi predsedniškimi volitvami 2016 (z oznakami sentimenta).',usage:'Za učenje analize sentimenta in pridobivanja tem iz družbenih omrežij.'}},
+  'slo-opinion-corpus.tab':{en:{desc:'Slovenian opinion corpus',overview:'Slovenian online opinion texts (for sentiment classification).',usage:'For demonstrating multilingual sentiment analysis on non-English text.'},sl:{desc:'Slovenski korpus mnenj',overview:'Slovenska spletna mnenjska besedila (za klasifikacijo sentimenta).',usage:'Za prikaz večjezične analize sentimenta na neangleških besedilih.'}},
+  '20newsgroups-train.tab':{en:{desc:'20 Newsgroups training set',overview:'A dataset classifying posts from 20 newsgroups (training split).',usage:'Standard benchmark for large-scale multi-class document classification.'},sl:{desc:'Učna množica 20 Newsgroups',overview:'Zbirka za klasifikacijo objav iz 20 novičarskih skupin (učni del).',usage:'Standardni merilnik za obsežno večrazredno klasifikacijo dokumentov.'}},
+  '20newsgroups-test.tab':{en:{desc:'20 Newsgroups test set',overview:'A separate test split of the 20 Newsgroups data.',usage:'For train/test split evaluation.'},sl:{desc:'Testna množica 20 Newsgroups',overview:'Ločen testni del podatkov 20 Newsgroups.',usage:'Za vrednotenje z ločitvijo učenje/test.'}},
+  'reuters-r8-train.tab':{en:{desc:'Reuters R8 training set',overview:'The R8 split (8 topics) of the Reuters-21578 data, for training.',usage:'Mid-scale topic-classification benchmark.'},sl:{desc:'Učna množica Reuters R8',overview:'Razdelitev R8 (8 tem) podatkov Reuters-21578 za učenje.',usage:'Srednje velik merilnik klasifikacije tem.'}},
+  'reuters-r8-test.tab':{en:{desc:'Reuters R8 test set',overview:'The test set of the Reuters R8 split.',usage:'For evaluating R8 models.'},sl:{desc:'Testna množica Reuters R8',overview:'Testni del razdelitve Reuters R8.',usage:'Za vrednotenje modelov R8.'}},
+  'reuters-r52-train.tab':{en:{desc:'Reuters R52 training set',overview:'The R52 split (52 topics) of the Reuters-21578 data, for training.',usage:'Challenging multi-class (52) topic classification.'},sl:{desc:'Učna množica Reuters R52',overview:'Razdelitev R52 (52 tem) podatkov Reuters-21578 za učenje.',usage:'Zahtevna večrazredna (52) klasifikacija tem.'}},
+  'reuters-r52-test.tab':{en:{desc:'Reuters R52 test set',overview:'The test set of the Reuters R52 split.',usage:'For evaluating R52 models.'},sl:{desc:'Testna množica Reuters R52',overview:'Testni del razdelitve Reuters R52.',usage:'Za vrednotenje modelov R52.'}}
+});
+Object.assign(DATASET_I18N, {
+  'Painters':{en:{desc:'Paintings by artist',overview:'A collection of painting images by several famous artists.',usage:'Image embedding → classification/clustering workflow.'},sl:{desc:'Slike slikarjev',overview:'Zbirka slik različnih znanih slikarjev.',usage:'Vložitev slik → delotok klasifikacije/gručenja.'}},
+  'Yoga poses':{en:{desc:'Yoga pose images',overview:'A collection of images of various yoga poses.',usage:'Pose classification and embedding visualization.'},sl:{desc:'Slike jogijskih položajev',overview:'Zbirka slik različnih jogijskih položajev.',usage:'Klasifikacija položajev in vizualizacija vložitev.'}},
+  'Bone healing':{en:{desc:'Bone-healing X-ray images',overview:'X-ray images grouped by bone-healing stage.',usage:'Medical-imaging analysis workflow.'},sl:{desc:'Rentgenske slike celjenja kosti',overview:'Rentgenske slike po stopnji celjenja kosti.',usage:'Delotok analize medicinskih slik.'}},
+  'airpassengers':{en:{desc:'Air passengers (1949–1960)',overview:'Monthly international airline passengers, 1949–1960.',usage:'Standard example of seasonality/trend decomposition and ARIMA forecasting.'},sl:{desc:'Letalski potniki (1949–1960)',overview:'Mesečno število mednarodnih letalskih potnikov, 1949–1960.',usage:'Standardni primer razgradnje sezonskosti/trenda in napovedi ARIMA.'}},
+  'amzn_stock':{en:{desc:'Amazon (AMZN) stock data',overview:'Daily open/high/low/close/volume data for Amazon stock.',usage:'Financial time-series forecasting and moving-average analysis.'},sl:{desc:'Delniški podatki Amazon (AMZN)',overview:'Dnevni podatki odprtja/najvišje/najnižje/zaprtja/obsega za delnico Amazon.',usage:'Napovedovanje finančnih časovnih vrst in analiza drsečih povprečij.'}},
+  'cyp_yearly_temperature':{en:{desc:'Cyprus annual temperature',overview:'A time series of annual mean temperature in Cyprus.',usage:'Long-term trend analysis and seasonality detection.'},sl:{desc:'Letna temperatura Cipra',overview:'Časovna vrsta letne povprečne temperature na Cipru.',usage:'Analiza dolgoročnega trenda in zaznavanje sezonskosti.'}},
+  'GDS':{en:{desc:'NCBI Gene Expression Omnibus series',overview:'A collection of gene-expression datasets from the NCBI GEO database.',usage:'Differential gene-expression analysis.'},sl:{desc:'Serija NCBI Gene Expression Omnibus',overview:'Zbirka zbirk izražanja genov iz podatkovne baze NCBI GEO.',usage:'Analiza diferencialnega izražanja genov.'}},
+  'DictyExpress':{en:{desc:'Slime-mold developmental biology data',overview:'Gene expression by developmental stage of the slime mold Dictyostelium.',usage:'Developmental-biology time-series expression analysis.'},sl:{desc:'Podatki razvojne biologije sluzavk',overview:'Izražanje genov po razvojni stopnji sluzavke Dictyostelium.',usage:'Analiza časovnih vrst izražanja v razvojni biologiji.'}},
+  'bone-marrow.tab':{en:{desc:'Bone-marrow transplant outcome data',overview:'Bone-marrow transplant outcome data.',usage:'Survival-analysis example. Analyze risk factors with Cox regression.'},sl:{desc:'Podatki o izidih presaditve kostnega mozga',overview:'Podatki o izidih presaditve kostnega mozga.',usage:'Primer analize preživetja. Analiza dejavnikov tveganja s Coxovo regresijo.'}},
+  'sailing.tab':{en:{desc:'Sailing decision data',overview:'Data on whether to set sail based on weather conditions.',usage:'The smallest standard example for learning decision trees.'},sl:{desc:'Podatki o odločitvi za jadranje',overview:'Podatki o tem, ali izpluti glede na vremenske razmere.',usage:'Najmanjši standardni primer za učenje odločitvenih dreves.'}},
+  'friends.tab':{en:{desc:'Social-network friendships',overview:'Example graph data of friendships in a social network.',usage:'For demonstrating graph analysis and relationship visualization.'},sl:{desc:'Prijateljstva v družbenem omrežju',overview:'Primer grafnih podatkov o prijateljstvih v družbenem omrežju.',usage:'Za prikaz analize grafov in vizualizacije odnosov.'}},
+  'paid-vs-free.tab':{en:{desc:'Paid vs. free apps',overview:'Comparison data of various metrics between paid and free apps.',usage:'A/B comparison analysis and descriptive-statistics visualization.'},sl:{desc:'Plačljive proti brezplačnim aplikacijam',overview:'Primerjalni podatki različnih metrik med plačljivimi in brezplačnimi aplikacijami.',usage:'Analiza primerjave A/B in vizualizacija opisne statistike.'}}
+});
+function _ui(k){ var m=UI_I18N[k]; if(!m) return ''; return (LANG!=='ko'&&m[LANG])||m.ko; }
+function _catLabel(c){ var m=CAT_I18N[c.key]; return (LANG!=='ko'&&m&&m.label&&m.label[LANG])||c.label; }
+function _catDesc(c){ var m=CAT_I18N[c.key]; return (LANG!=='ko'&&m&&m.desc&&m.desc[LANG])||c.desc; }
+function _dsT(item,field){ var m=DATASET_I18N[item.file]; if(LANG!=='ko'&&m&&m[LANG]&&m[LANG][field]!=null) return m[LANG][field]; if(field==='desc')return item.desc; return (item.detail&&item.detail[field])||''; }
+function applyStaticI18n(){
+  try { document.title = _ui('title'); } catch(_){}
+  var t=document.querySelector('.brand .title > span:not(.brand-icon)'); if(t) t.textContent=_ui('title');
+  var s=document.querySelector('.brand .subtitle'); if(s) s.textContent=_ui('subtitle');
+  var f=document.querySelector('.footer'); if(f && f.firstChild && f.firstChild.nodeType===3) f.firstChild.textContent=_ui('source')+'Orange3 documentation datasets · ';
+}
+
 let currentCat = "classification";
 const IS_MODAL = (window.parent && window.parent !== window);   // iframe 모드 감지
 
 function renderTabs() {
   const bar = document.getElementById("tabs");
   bar.innerHTML = categories.map(c =>
-    `<div class="tab${c.key === currentCat ? ' active' : ''}" data-key="${c.key}">${c.label}</div>`
+    `<div class="tab${c.key === currentCat ? ' active' : ''}" data-key="${c.key}">${_catLabel(c)}</div>`
   ).join("");
   bar.querySelectorAll(".tab").forEach(el => {
     el.onclick = () => { currentCat = el.dataset.key; render(); };
@@ -482,10 +569,10 @@ function renderMain() {
   const cards = cat.items.map((it, idx) => `
     <div class="card" data-cat="${cat.key}" data-idx="${idx}">
       <div class="card-file">${it.file}</div>
-      <div class="card-desc">${it.desc}</div>
+      <div class="card-desc">${_dsT(it,'desc')}</div>
     </div>`).join("");
   document.getElementById("main").innerHTML = `
-    <div class="desc-box">${cat.desc}</div>
+    <div class="desc-box">${_catDesc(cat)}</div>
     <div class="grid">${cards}</div>`;
 }
 
@@ -503,7 +590,7 @@ function closeCatalog() {
   }
 }
 
-function render() { renderTabs(); renderMain(); }
+function render() { applyStaticI18n(); renderTabs(); renderMain(); }
 
 function showDetail(catKey, idx) {
   const cat  = categories.find(c => c.key === catKey);
@@ -511,41 +598,40 @@ function showDetail(catKey, idx) {
   const d    = item.detail || {};
   document.getElementById("detailTitle").textContent = item.file;
   const widgetPills = (d.widgets || []).map(w => `<span class="pill">${w}</span>`).join("");
+  const _ov = _dsT(item,'overview') || _dsT(item,'desc');
+  const _us = _dsT(item,'usage');
   document.getElementById("detailBody").innerHTML = `
     <section class="detail-section">
-      <h3>📋 개요</h3>
-      <p>${d.overview || item.desc}</p>
+      <h3>${_ui('overview')}</h3>
+      <p>${_ov}</p>
     </section>
     <section class="detail-section">
       <h3 style="display:flex;align-items:center;gap:10px;">
-        <span>📊 데이터 구성</span>
+        <span>${_ui('composition')}</span>
         <a class="dl-btn"
            href="/dataset-file?folder=${encodeURIComponent(cat.folder)}&file=${encodeURIComponent(item.file)}"
            download="${item.file}"
-           title="${item.file} 다운로드">⬇ 다운로드</a>
+           title="${item.file}">${_ui('download')}</a>
       </h3>
       <ul>
-        <li><b>인스턴스 수:</b> ${d.instances ?? "-"}</li>
-        <li><b>속성 수:</b> ${d.attributes ?? "-"}</li>
-        <li><b>타겟 변수:</b> ${d.target ?? "-"}</li>
+        <li><b>${_ui('instances')}</b> ${d.instances ?? "-"}</li>
+        <li><b>${_ui('attributes')}</b> ${d.attributes ?? "-"}</li>
+        <li><b>${_ui('target')}</b> ${d.target ?? "-"}</li>
       </ul>
     </section>
     ${widgetPills ? `
     <section class="detail-section">
-      <h3>🔧 추천 위젯</h3>
+      <h3>${_ui('widgets')}</h3>
       <div class="pills">${widgetPills}</div>
     </section>` : ""}
-    ${d.usage ? `
+    ${_us ? `
     <section class="detail-section">
-      <h3>💡 활용 방법</h3>
-      <p>${d.usage}</p>
+      <h3>${_ui('usage')}</h3>
+      <p>${_us}</p>
     </section>` : ""}
     <section class="detail-section">
-      <h3>📁 불러오기</h3>
-      <p class="load-instruction">
-        Orange3 캔버스 → <b>File</b> 위젯 더블클릭 → "Browse documentation datasets" 버튼
-        → 위 파일명 선택.
-      </p>
+      <h3>${_ui('load')}</h3>
+      <p class="load-instruction">${_ui('loadInstr')}</p>
     </section>`;
   document.getElementById("detailOverlay").classList.add("show");
 }

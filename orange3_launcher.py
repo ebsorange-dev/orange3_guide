@@ -1627,6 +1627,14 @@ def main():
                     sc = v.scene()
                     if sc is not None:
                         sc.setSceneRect(QRectF(0, 0, _CANVAS_W, _CANVAS_H))
+                        # view viewport 배경도 흰색 강제 — sceneRect 바깥(어두운 기본)이
+                        # 노출돼 경계가 검은 라인으로 보이던 문제 제거 (언어 변경 재시작 후
+                        # sceneRect 재적용 시 특히 두드러짐, 2026-06-02)
+                        try:
+                            from PyQt5.QtGui import QBrush as _QBr, QColor as _QCl
+                            v.setBackgroundBrush(_QBr(_QCl(255, 255, 255)))
+                        except Exception:
+                            pass
                         # 시작 viewport 위치 조정 — 빨간 박스 기준점:
                         # 가로 중앙 + 세로 상단(약 30%) 지점이 view 중심에 오도록
                         try:
