@@ -11003,8 +11003,9 @@ button:hover{{background:#d96b10}}
 
 def _xpra_session_error_page() -> str:
     return _friendly_error_page(
-        title="접속이 원활하지 않습니다",
-        message="",
+        title="Xpra 세션을 찾을 수 없습니다",
+        message="세션이 만료되었거나 서버가 재시작되었을 수 있습니다.<br>다시 시도해 주세요.",
+        hint="xpra session not found",
         retry_label="다시 시도",
         retry_action="/xpra-go",   # 새 Xpra 세션 즉시 spawn → wrapper redirect
     )
@@ -11026,6 +11027,11 @@ async def _http_exception_handler(request: Request, exc: _StarletteHTTPException
         if request.url.path.startswith("/api/") or "application/json" in accept and "text/html" not in accept:
             return JSONResponse({"error": "Not Found", "path": request.url.path},
                                 status_code=404)
+        # Xpra 관련 경로의 404(예: 잘못 결합된 /xpra-go… URL, 만료된 /xpra-wrapped)
+        # 는 generic 404 대신 Xpra 전용 친화 페이지(이미지2) 로 — "다시 시도" 가
+        # /xpra-go 로 새 세션을 즉시 발급해 자연 복구되도록.
+        if request.url.path.startswith("/xpra"):
+            return HTMLResponse(_xpra_session_error_page(), status_code=404)
         return HTMLResponse(
             _friendly_error_page(
                 title="페이지를 찾을 수 없습니다",
