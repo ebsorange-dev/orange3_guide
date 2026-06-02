@@ -32,16 +32,32 @@ else
   echo "[i] Docker 이미 설치됨: $(docker --version)"
 fi
 
-# ── 2) .env 생성 (HOST_BASE = repo 절대경로) ─────────────────────────────────
+# ── 2) .env 생성/교정 (HOST_BASE = repo 절대경로) ────────────────────────────
 # docker.sock 으로 띄우는 GUI 컨테이너의 bind 마운트는 호스트 절대경로가 필요하다.
+# ★ 재발방지: .env 가 이미 있어도 HOST_BASE 가 현재 repo 경로와 다르면 강제 교정.
+#   (로컬 Windows 의 .env(HOST_BASE=/e/...) 가 따라온 채로 기동되면 위젯 스타일이
+#    조용히 빠지는 사고를 차단한다.)
 if [ ! -f .env ]; then
   cp deploy/gce/.env.gce.example .env
-  # __HOST_BASE__ → 실제 절대경로
   sed -i "s#__HOST_BASE__#${REPO_DIR}#g" .env
   echo "[+] .env 생성 — HOST_BASE=${REPO_DIR}"
   echo "    (Google OAuth 를 쓸 경우 .env 의 GOOGLE_OAUTH_* 와 외부 IP/도메인 편집)"
 else
-  echo "[i] .env 이미 존재 — 건드리지 않음"
+  CUR_HB="$(sed -n 's/^HOST_BASE=//p' .env | head -1)"
+  if [ "$CUR_HB" = "$REPO_DIR" ]; then
+    echo "[i] .env 존재 — HOST_BASE 정상(${CUR_HB})"
+  else
+    cp .env ".env.bak.$(date +%Y%m%d%H%M%S)"
+    if grep -q '^HOST_BASE=' .env; then
+      sed -i "s#^HOST_BASE=.*#HOST_BASE=${REPO_DIR}#" .env
+    else
+      printf '\nHOST_BASE=%s\n' "${REPO_DIR}" >> .env
+    fi
+    echo "[!] .env 의 HOST_BASE 를 교정: '${CUR_HB:-<없음>}' → '${REPO_DIR}' (백업: .env.bak.*)"
+    case "$CUR_HB" in
+      /[A-Za-z]/*) echo "    ※ 이전 값이 Windows 드라이브식 경로였음 — GCP 에선 위젯 스타일 누락 원인." ;;
+    esac
+  fi
 fi
 
 # ── 3) 런타임 디렉터리 보장 (compose 볼륨 대상) ──────────────────────────────

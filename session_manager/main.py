@@ -451,6 +451,70 @@ def build_launcher_volume() -> dict:
     return {LAUNCHER_HOST_PATH: {"bind": "/app/orange3_launcher.py", "mode": "ro"}}
 
 
+def _validate_host_mounts() -> None:
+    """기동 시 호스트 바인드(위젯 오버라이드 + QSS 런처)가 실제로 유효한지 검증.
+
+    GCP 등으로 이관 후 HOST_BASE 가 잘못되면(예: 로컬 .env 의 /e/... 가 그대로 남음)
+    Docker 가 존재하지 않는 bind 소스를 '빈 디렉터리'로 자동 생성해, 위젯 스타일이
+    아무 에러 없이 조용히 빠진다. 이를 시작 단계에서 크게 잡아낸다.
+
+    STRICT_WIDGET_OVERRIDE=1 이면 문제 발견 시 기동을 중단(raise)한다.
+    """
+    strict = os.environ.get("STRICT_WIDGET_OVERRIDE", "0").lower() in ("1", "true", "yes")
+    problems: list = []
+
+    # 1) 정적 검사 — env 미설정
+    if not WIDGETS_HOST_PATH:
+        problems.append("WIDGETS_HOST_PATH 미설정 — 위젯 오버라이드(스타일) 마운트 비활성")
+    if not LAUNCHER_HOST_PATH:
+        problems.append("LAUNCHER_HOST_PATH 미설정 — QSS 스타일 런처 마운트 비활성")
+
+    # 2) 세션매니저 자체 마운트(/widgets_override)에 파일이 있는지 (compose 마운트 점검)
+    local_n = 0
+    try:
+        for pat in ("**/*.py", "**/*.svg", "**/*.png"):
+            local_n += len(glob.glob(os.path.join(WIDGETS_LOCAL_PATH, pat), recursive=True))
+    except Exception:
+        pass
+    if local_n == 0:
+        problems.append(f"{WIDGETS_LOCAL_PATH} 가 비어있음 — './widgets_override' compose 마운트 확인 필요")
+
+    # 3) 능동 프로브 — 실제 호스트 바인드가 컨테이너에서 비어있지 않은지(가장 확실한 검증)
+    probe_size = None
+    if client is not None and LAUNCHER_HOST_PATH \
+            and os.environ.get("WIDGET_MOUNT_PROBE", "1").lower() not in ("0", "false", "no"):
+        try:
+            out = client.containers.run(
+                ORANGE3_IMAGE,
+                command=["sh", "-c", "cat /probe_launcher 2>/dev/null | wc -c"],
+                volumes={LAUNCHER_HOST_PATH: {"bind": "/probe_launcher", "mode": "ro"}},
+                network_mode="none", remove=True, stdout=True, stderr=False,
+            )
+            probe_size = int((out or b"0").decode(errors="ignore").strip() or "0")
+        except Exception as e:  # 프로브 실패는 치명적이지 않게 — 경고만
+            log.warning(f"[mount-check] 프로브 컨테이너 실행 실패(능동검증 건너뜀): {e}")
+        if probe_size is not None and probe_size < 100:
+            problems.append(
+                f"호스트 바인드 검증 실패 — '{LAUNCHER_HOST_PATH}' 가 컨테이너에서 비어있음({probe_size}B). "
+                f"HOST_BASE 가 이 호스트의 실제 repo 절대경로가 아닙니다."
+            )
+
+    if problems:
+        win_drive = re.match(r"^/[A-Za-z]/", WIDGETS_HOST_PATH or "")
+        msg = "위젯 스타일/오버라이드 마운트 문제 감지:\n  - " + "\n  - ".join(problems)
+        if win_drive:
+            msg += (f"\n  ※ WIDGETS_HOST_PATH='{WIDGETS_HOST_PATH}' 가 Windows 드라이브식 경로입니다 — "
+                    f"리눅스(GCP) 호스트면 repo 절대경로(예: /opt/orange3web)로 HOST_BASE 를 바꾸세요.")
+        msg += ("\n  → 조치: .env 의 HOST_BASE 를 이 호스트의 repo 절대경로로 설정 후 "
+                "`docker compose down && docker compose up -d`. (자세한 내용: gcloud.md)")
+        log.error("[mount-check] " + msg)
+        if strict:
+            raise RuntimeError("위젯 오버라이드 마운트 검증 실패 — STRICT_WIDGET_OVERRIDE=1 로 기동 중단")
+    else:
+        log.info(f"[mount-check] 위젯 오버라이드/런처 호스트 바인드 정상 "
+                 f"(launcher {probe_size}B, override local {local_n}개)")
+
+
 # 세션 저장소: {sid: {"container_id", "port", "last_seen"}}
 sessions: dict = {}
 _lock = threading.Lock()
@@ -1213,6 +1277,13 @@ async def startup_event():
     except Exception as _pe:
         log.warning(f"[startup] admin pool override 적용 실패: {_pe}")
     log.info(f"[startup] WARM_POOL_SIZE={WARM_POOL_SIZE} (MAX={WARM_POOL_SIZE_MAX}) BOOT_CONCURRENCY={WARM_BOOT_CONCURRENCY}")
+    # 호스트 바인드(위젯 오버라이드/QSS 런처) 유효성 검증 — GCP 이관 시 HOST_BASE 오설정 조기 감지
+    try:
+        _validate_host_mounts()
+    except RuntimeError:
+        raise  # STRICT 모드에서는 기동 중단
+    except Exception as _ve:
+        log.warning(f"[startup] 마운트 검증 중 예외(무시): {_ve}")
     # widget-catalog 언어별 캐시를 디스크에서 로드 — 언어 변경 시 사이드바 즉시 응답
     try:
         _nwc = _wcat_load_disk()
@@ -4348,7 +4419,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       _lastDatasetModalCategory = category || '';
       const overlay = document.getElementById('dataset-modal-overlay');
       const iframe = document.getElementById('dataset-modal-iframe');
-      var url = '/datasets-catalog?_t=' + Date.now();
+      var url = '/datasets-catalog?lang=' + INIT_LANG + '&_t=' + Date.now();
       if (category) url += '&cat=' + encodeURIComponent(category);
       iframe.src = url;
       overlay.style.display = 'flex';
@@ -5152,7 +5223,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     /* 서버가 HTML 생성 시 언어 코드를 직접 삽입 — dropdown 은 스크립트 블록 이후에 위치하므로 DOM 완성 후 호출 */
     const INIT_LANG = '{init_lang}';
-    document.addEventListener('DOMContentLoaded', function() {{ applyLangUI(INIT_LANG); }});
+    document.addEventListener('DOMContentLoaded', function() {{ applyLangUI(INIT_LANG); try {{ applyLcLang(); }} catch(e) {{}} }});
     /* admin default 와 컨테이너 실제 언어가 다르면 자동 정렬 (워밍풀은 영어로 부팅됨).
        setLang() 의 reload 경로는 noVNC 전용이라 xpra 에서 못 쓰므로 직접 호출 +
        현재 URL reload. 1회만 시도 — reload 후엔 컨테이너 lang == INIT_LANG 라 재발화 안 됨.
@@ -5197,7 +5268,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       _ensureDatasetModal();
       const overlay = document.getElementById('dataset-modal-overlay');
       const iframe  = document.getElementById('dataset-modal-iframe');
-      iframe.src = '/analysis-datasets?_t=' + Date.now();
+      iframe.src = '/analysis-datasets?lang=' + INIT_LANG + '&_t=' + Date.now();
       overlay.style.display = 'flex';
     }}
 
@@ -5211,34 +5282,83 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
 
     /* ── 교안 Workflows 갤러리 ── */
+    /* 모달 텍스트 i18n — data-cat/category 는 식별자라 유지하고 '표시' 텍스트만 INIT_LANG
+       으로 치환한다. ko 는 HTML 하드코딩 원본을 그대로 둔다(치환 안 함). */
+    var LC_CAT_I18N = {{
+      '초등 Workflow': {{en:'Elementary Workflow', sl:'Osnovnošolski potek'}},
+      '중등 Workflow': {{en:'Secondary Workflow', sl:'Srednješolski potek'}},
+      '공통 Workflow': {{en:'Common Workflow', sl:'Skupni potek'}},
+      '교재 BOOK': {{en:'Textbook', sl:'Učbenik'}}
+    }};
+    var LC_NOTE_I18N = {{
+      en:'Select a category and click a card to instantly run an Orange3 workflow.',
+      sl:'Izberite kategorijo in kliknite kartico za takojšen zagon poteka Orange3.'
+    }};
+    /* 카테고리 식별자 → 현재 언어 표시명 (없으면 원본 식별자 그대로) */
+    function _lcDisplayCat(cat) {{
+      var m = LC_CAT_I18N[cat];
+      if (m && INIT_LANG !== 'ko' && m[INIT_LANG]) return m[INIT_LANG];
+      return cat;
+    }}
+    /* 사이드바 카테고리명·헤더 안내·heading 을 INIT_LANG 으로 갱신 (ko 는 원본 유지) */
+    function applyLcLang() {{
+      if (INIT_LANG === 'ko') return;
+      document.querySelectorAll('#lesson-sidebar .lc-cat').forEach(function(el) {{
+        var c = el.getAttribute('data-cat');
+        var m = LC_CAT_I18N[c];
+        if (!m || !m[INIT_LANG]) return;
+        var sp = el.querySelector('span:not(.lc-caret)');  // 캐럿(▾)은 건드리지 않음
+        if (sp) sp.textContent = m[INIT_LANG];
+      }});
+      var note = document.getElementById('lesson-header-note');
+      if (note && LC_NOTE_I18N[INIT_LANG]) note.textContent = LC_NOTE_I18N[INIT_LANG];
+      var h = document.getElementById('lesson-heading');
+      if (h) h.textContent = _lcDisplayCat(_lcActiveCat);
+    }}
     var _lcActiveCat = 'All Templates';
     var _lcSearch = '';
     var _lcTemplates = [
       // 초등 Workflow: /upload_ows/elementary/*.ows lazy fetch (_ensureElementaryLoaded)
       {{ vendor:'중등', vendorIcon:'M', title:'기초 통계 분석',
          desc:'평균·분산·표준편차 등 기본 통계량 계산과 분포 시각화.',
-         category:'중등 Workflow', badges:['중등','통계'], color:'#5B6BFF' }},
+         category:'중등 Workflow', badges:['중등','통계'], color:'#5B6BFF',
+         i18n:{{ en:{{vendor:'Secondary', title:'Basic Statistics', desc:'Compute basic statistics such as mean, variance, and standard deviation, and visualize distributions.', badges:['Secondary','Statistics']}},
+                sl:{{vendor:'Srednja', title:'Osnovna statistika', desc:'Izračun osnovnih statistik (povprečje, varianca, standardni odklon) in vizualizacija porazdelitev.', badges:['Srednja','Statistika']}} }} }},
       {{ vendor:'중등', vendorIcon:'M', title:'분류 모델 학습',
          desc:'로지스틱 회귀와 의사결정 트리로 분류 모델 학습·평가.',
-         category:'중등 Workflow', badges:['중등','분류','ML'], color:'#9B6BFF' }},
+         category:'중등 Workflow', badges:['중등','분류','ML'], color:'#9B6BFF',
+         i18n:{{ en:{{vendor:'Secondary', title:'Classification Model Training', desc:'Train and evaluate classification models with logistic regression and decision trees.', badges:['Secondary','Classification','ML']}},
+                sl:{{vendor:'Srednja', title:'Učenje klasifikacijskega modela', desc:'Učenje in vrednotenje klasifikacijskih modelov z logistično regresijo in odločitvenimi drevesi.', badges:['Srednja','Klasifikacija','ML']}} }} }},
       {{ vendor:'중등', vendorIcon:'M', title:'클러스터링 실습',
          desc:'k-Means와 계층적 클러스터링으로 데이터 군집화.',
-         category:'중등 Workflow', badges:['중등','클러스터링'], color:'#6BD9FF' }},
+         category:'중등 Workflow', badges:['중등','클러스터링'], color:'#6BD9FF',
+         i18n:{{ en:{{vendor:'Secondary', title:'Clustering Practice', desc:'Cluster data using k-Means and hierarchical clustering.', badges:['Secondary','Clustering']}},
+                sl:{{vendor:'Srednja', title:'Gručenje', desc:'Gručenje podatkov z metodama k-Means in hierarhičnim gručenjem.', badges:['Srednja','Gručenje']}} }} }},
       {{ vendor:'공통', vendorIcon:'C', title:'PCA 차원 축소',
          desc:'주성분 분석으로 고차원 데이터를 2D로 축소·시각화합니다.',
-         category:'공통 Workflow', badges:['공통','PCA'], color:'#FF6B9C' }},
+         category:'공통 Workflow', badges:['공통','PCA'], color:'#FF6B9C',
+         i18n:{{ en:{{vendor:'Common', title:'PCA Dimensionality Reduction', desc:'Reduce high-dimensional data to 2D and visualize it using Principal Component Analysis.', badges:['Common','PCA']}},
+                sl:{{vendor:'Skupno', title:'Zmanjšanje dimenzij (PCA)', desc:'Zmanjšanje visokodimenzionalnih podatkov na 2D in vizualizacija z analizo glavnih komponent.', badges:['Skupno','PCA']}} }} }},
       {{ vendor:'공통', vendorIcon:'C', title:'교차 검증',
          desc:'k-fold 교차 검증으로 모델 성능을 안정적으로 평가합니다.',
-         category:'공통 Workflow', badges:['공통','평가'], color:'#A48BFF' }},
+         category:'공통 Workflow', badges:['공통','평가'], color:'#A48BFF',
+         i18n:{{ en:{{vendor:'Common', title:'Cross-Validation', desc:'Evaluate model performance robustly with k-fold cross-validation.', badges:['Common','Evaluation']}},
+                sl:{{vendor:'Skupno', title:'Navzkrižno preverjanje', desc:'Robustno vrednotenje uspešnosti modela s k-kratnim navzkrižnim preverjanjem.', badges:['Skupno','Vrednotenje']}} }} }},
       {{ vendor:'공통', vendorIcon:'C', title:'결측값 처리',
          desc:'결측값 대치·제거 전략별 비교.',
-         category:'공통 Workflow', badges:['공통','데이터'], color:'#A0C8E8' }},
+         category:'공통 Workflow', badges:['공통','데이터'], color:'#A0C8E8',
+         i18n:{{ en:{{vendor:'Common', title:'Missing Value Handling', desc:'Compare strategies for imputing and removing missing values.', badges:['Common','Data']}},
+                sl:{{vendor:'Skupno', title:'Obravnava manjkajočih vrednosti', desc:'Primerjava strategij za imputacijo in odstranjevanje manjkajočih vrednosti.', badges:['Skupno','Podatki']}} }} }},
       {{ vendor:'Getting Started', vendorIcon:'G', title:'Orange3 첫걸음',
          desc:'위젯·연결·실행의 기본 흐름을 가장 작게 보여주는 시작 워크플로우.',
-         category:'Getting Started', badges:['시작','기본'], color:'#5BD3D9' }},
+         category:'Getting Started', badges:['시작','기본'], color:'#5BD3D9',
+         i18n:{{ en:{{title:'Orange3 First Steps', desc:'The smallest workflow demonstrating the basic flow of widgets, links, and execution.', badges:['Start','Basics']}},
+                sl:{{title:'Prvi koraki z Orange3', desc:'Najmanjši potek, ki prikazuje osnovni tok gradnikov, povezav in izvajanja.', badges:['Začetek','Osnove']}} }} }},
       {{ vendor:'Getting Started', vendorIcon:'G', title:'파일 → 데이터 테이블',
          desc:'CSV/TAB 파일을 불러와 데이터 테이블 위젯에 연결합니다.',
-         category:'Getting Started', badges:['시작','데이터'], color:'#FF6B6B' }},
+         category:'Getting Started', badges:['시작','데이터'], color:'#FF6B6B',
+         i18n:{{ en:{{title:'File → Data Table', desc:'Load a CSV/TAB file and connect it to the Data Table widget.', badges:['Start','Data']}},
+                sl:{{title:'Datoteka → Tabela podatkov', desc:'Naložite datoteko CSV/TAB in jo povežite z gradnikom Tabela podatkov.', badges:['Začetek','Podatki']}} }} }},
       // '베이직'(Example Workflow) 카테고리는 _ensureBasicLoaded() 가 Orange3 내장 examples 채움.
       // 'Basic' 카테고리(통합 보기) + 8개 카테고리 sub 는 _ensureOrange3CatLoaded(cat) 가 채움.
       // Example Workflow 아래 9개 sub: Basic / Bioinformatics / Classification / Clustering /
@@ -5556,7 +5676,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       // 카테고리 표시명 매핑 (data-cat 내부값 → 화면 표시 라벨)
       // v7: '베이직' 자리가 'Basic' sub 로 이동, 'Example Workflow' 는 통합 부모.
       var _CAT_DISPLAY = {{ '베이직': 'Basic' }};
-      var headingText = _CAT_DISPLAY[_lcActiveCat] || _lcActiveCat;
+      var headingText = _CAT_DISPLAY[_lcActiveCat] || _lcDisplayCat(_lcActiveCat);
       if (_isBookCat) {{
         var _bid = _lcActiveCat.slice('교재:'.length);
         var _bmeta = _lcBooks.find(function(b) {{ return b.id === _bid; }});
@@ -5652,9 +5772,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         }}
       }}
       filtered.forEach(function(t, idx) {{
-        var titleEsc = (t.title||'').replace(/[<>]/g,'');
-        var descEsc = (t.desc||'').replace(/[<>]/g,'');
-        var vendorEsc = (t.vendor||'').replace(/[<>]/g,'');
+        // 언어별 표시 — i18n 있으면 INIT_LANG 번역, 없으면(동적 .ows 카드 등) 기본값 폴백
+        var _Li = (t.i18n && INIT_LANG !== 'ko') ? (t.i18n[INIT_LANG] || t.i18n.en) : null;
+        var titleEsc = ((_Li && _Li.title) || t.title || '').replace(/[<>]/g,'');
+        var descEsc = ((_Li && _Li.desc) || t.desc || '').replace(/[<>]/g,'');
+        var vendorEsc = ((_Li && _Li.vendor) || t.vendor || '').replace(/[<>]/g,'');
+        var _badges = (_Li && _Li.badges) || t.badges || [];
         // 항상 흰 배경 (2026-05-29) — 썸네일 SVG 가 있으면 위에 오버레이.
         // 이전 그라데이션 fallback 제거 (사용자 요청: 로딩 전 placeholder 흰색 통일).
         // loading="lazy" 추가 — 화면 보이는 카드만 즉시 로드, 나머지는 스크롤 시 (Tier1①)
@@ -5668,7 +5791,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         html += thumbInner;
         html += '    <div class="lc-vendor"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:' + t.color + ';"></span>' + vendorEsc + '</div>';
         html += '    <div class="lc-badges">';
-        (t.badges || []).forEach(function(b) {{
+        _badges.forEach(function(b) {{
           html += '<span class="lc-badge">' + b.replace(/[<>]/g,'') + '</span>';
         }});
         html += '    </div>';
@@ -6262,6 +6385,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
 
     function _hwdShowTip(target) {{
+      // 비활성(admin 에서 off) 위젯은 회색 표시이므로 툴팁도 노출하지 않음 (2026-06-02)
+      if (target.classList && target.classList.contains('is-disabled')) return;
       var text = target.getAttribute('data-tip');
       if (!text) return;
       var tip = _hwdEnsureTip();
@@ -8181,6 +8306,17 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         )
         return html_response(dispatch)
 
+    # xpra 세션은 noVNC 래퍼(WRAPPER_PAGE·novnc_url)로 처리하면 깨진다 — xpra-wrapped 로 보낸다.
+    # (언어 변경 후 '/?sid=&lang' 재진입이 noVNC iframe 으로 가 무한 로딩되던 문제 수정. 2026-06-02)
+    if (info.get("engine") or "novnc") == "xpra":
+        log.info(f"[{s8(sid)}] xpra 세션 → xpra-wrapped 재진입 lang={lang}")
+        return html_response(
+            "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
+            "<style>body{background:#fff;margin:0}</style></head><body>"
+            f"<script>location.replace('/xpra-wrapped/{sid}?lang={lang}');</script>"
+            "</body></html>"
+        )
+
     host = request.headers.get("x-forwarded-host") or request.url.hostname
     app_ready_path = os.path.join(CONTAINER_SESSIONS_PATH, sid, ".app_ready")
 
@@ -9521,14 +9657,14 @@ async def widget_catalog(request: Request, sid: str | None = None):
         return JSONResponse({"ok": False, "error": "session not found"}, status_code=401)
     import copy as _copy
     lang = _session_lang_code(sid)
-    # 캐시 적중 → launcher 왕복(~1.2s) 생략, raw 복사본에 admin 필터만 live 적용 (#3)
-    # 카탈로그는 언어 비의존(위젯명 번역은 별도 경로) → 요청 언어 캐시가 없으면
-    # 다른 언어 캐시라도 즉시 제공. 언어 변경 직후 컨테이너 레지스트리 재생성(~수십초)을
-    # 기다리지 않아 사이드바가 즉시 응답한다.
+    # 캐시 적중 → launcher 왕복(~1.2s) 생략, raw 복사본에 admin 필터만 live 적용 (#3).
+    # 주의: 카탈로그 위젯명·카테고리명은 '언어 의존'이다. 과거엔 '언어 비의존' 전제로
+    # 요청 언어 캐시가 없으면 '다른 언어 캐시라도' 폴백 반환했으나, 그 탓에 ① 요청 언어(ko)
+    # 캐시가 영영 채워지지 않고(launcher 생성 경로로 못 감) ② 영어 사이드바가 고착됐다.
+    # 폴백을 제거 → 캐시 미스 시 아래 launcher 생성으로 '정확한 언어'를 만들어 캐싱한다
+    # (첫 요청만 ~수초, 이후 디스크 영속 캐시로 즉시).
     with _wcat_cache_lock:
         _cached = _wcat_raw_cache.get(lang)
-        if _cached is None and _wcat_raw_cache:
-            _cached = next(iter(_wcat_raw_cache.values()))
     if _cached is not None:
         with _lock:
             if sid in sessions:
@@ -9564,13 +9700,27 @@ async def widget_catalog(request: Request, sid: str | None = None):
                     data = _json.load(f)
                 with _lock:
                     sessions[sid]["last_seen"] = time.time()
-                # raw 카탈로그 캐싱(언어별) → 다음 요청부터 launcher 왕복 생략 (#3)
-                # 캐시 키는 세션 의도 언어(lang) — 조회 키(_session_lang_code)와 일치시켜
-                # 신뢰성 확보. data.get("language")는 전이 중 부정확할 수 있어 사용 안 함.
+                # raw 카탈로그 캐싱 → 다음 요청부터 launcher 왕복 생략 (#3).
+                # 캐시 키는 응답 '내용'으로 판정한 실제 언어. 과거엔 세션 의도 언어(lang)로
+                # 키했으나, 언어 변경 재시작 '전이 중'에는 Orange.ini=Korean(QSettings·lang=ko)
+                # 인데 구 registry 가 아직 영어라 → 영어 데이터가 ko 키로 저장되고 디스크 영속으로
+                # 영구 오염(사이드바 영어 고착)됐다. data["language"](QSettings 기반)도 같은 이유로
+                # registry 와 불일치할 수 있다. 카테고리명 번역 자체가 registry 의 정확한 언어
+                # 신호이므로 그것으로 판정 — 영어 응답은 en 키로만 가서 ko/sl 을 오염시키지 않는다.
                 try:
-                    with _wcat_cache_lock:
-                        _wcat_raw_cache[lang] = _copy.deepcopy(data)
-                    _wcat_save_disk(lang, data)   # 디스크 영속 → 재시작에도 유지
+                    _cat_names = {(_c.get("name") or "") for _c in (data.get("categories") or [])}
+                    if "데이터" in _cat_names:
+                        _real_lang = "ko"
+                    elif "Podatki" in _cat_names:
+                        _real_lang = "sl"
+                    elif "Data" in _cat_names:
+                        _real_lang = "en"
+                    else:
+                        _real_lang = None   # 판정 불가 → 캐시하지 않음 (오염 방지)
+                    if _real_lang:
+                        with _wcat_cache_lock:
+                            _wcat_raw_cache[_real_lang] = _copy.deepcopy(data)
+                        _wcat_save_disk(_real_lang, data)   # 디스크 영속 → 재시작에도 유지
                 except Exception:
                     pass
                 # admin_settings.menu 적용 — 숨김 카테고리는 사이드바에서 제외
@@ -11896,23 +12046,45 @@ def _xpra_apply_language_inplace(sid: str, session_dir: str, lang_name: str,
     if "application" not in cfg:
         cfg["application"] = {}
     cfg["application"]["language"] = lang_name
-    cfg["application"]["last-used-language"] = other_lang
+    # ① 언어별 사전 빌드 캐시(/opt/orange3-regcache-<Lang>) 존재 시: 그 캐시를 세션 캐시로
+    # 복사하고 last-used 를 새 언어와 일치시켜 재탐색을 건너뛴다(noVNC startapp.sh ① 과 동일).
+    # 캐시가 없으면(구 xpra 이미지) 기존 동작(last-used 불일치 + 캐시 삭제 → 재탐색)으로 폴백.
+    _c = None
+    _has_lang_cache = False
+    _src = "/opt/orange3-regcache-" + lang_name
+    try:
+        _c = client.containers.get(container_id)
+        if _c.exec_run(["test", "-d", _src + "/Orange"]).exit_code == 0:
+            _has_lang_cache = True
+    except Exception as _ce0:
+        log.warning(f"[{s8(sid)}] xpra 언어캐시 확인 실패: {_ce0}")
+    cfg["application"]["last-used-language"] = lang_name if _has_lang_cache else other_lang
     # 원자 쓰기 — write+rename
     tmp = ini_path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         cfg.write(f, space_around_delimiters=False)
     os.replace(tmp, ini_path)
-    # 레지스트리 캐시 삭제 — 언어 변경 시 위젯 설명 캐시 불일치 방지
-    try:
-        cache_dir = os.path.join(session_dir, "xdg", "cache", "Orange")
-        if os.path.isdir(cache_dir):
-            import shutil as _sh
-            _sh.rmtree(cache_dir, ignore_errors=True)
-    except Exception as _ce:
-        log.warning(f"[{s8(sid)}] xpra cache 정리 실패: {_ce}")
+    if _has_lang_cache and _c is not None:
+        # 새 언어 캐시 복사(컨테이너 안 /config = 세션 디렉터리 마운트) → 재탐색 skip
+        try:
+            _c.exec_run(["sh", "-c",
+                         "rm -rf /config/xdg/cache/Orange && mkdir -p /config/xdg/cache && "
+                         "cp -r " + _src + "/Orange /config/xdg/cache/Orange"])
+            log.info(f"[{s8(sid)}] xpra ① 언어캐시 적용: {lang_name} (재탐색 생략)")
+        except Exception as _cce:
+            log.warning(f"[{s8(sid)}] xpra 언어캐시 복사 실패: {_cce}")
+    else:
+        # 폴백: 레지스트리 캐시 삭제 → Orange3 가 재탐색
+        try:
+            cache_dir = os.path.join(session_dir, "xdg", "cache", "Orange")
+            if os.path.isdir(cache_dir):
+                import shutil as _sh
+                _sh.rmtree(cache_dir, ignore_errors=True)
+        except Exception as _ce:
+            log.warning(f"[{s8(sid)}] xpra cache 정리 실패: {_ce}")
     # 컨테이너 재시작 — startapp.xpra.sh 가 다시 돌면 Orange3 가 새 언어로 기동
     try:
-        c = client.containers.get(container_id)
+        c = _c or client.containers.get(container_id)
         c.restart(timeout=3)
     except Exception as _re:
         log.warning(f"[{s8(sid)}] xpra container.restart 실패: {_re}")
@@ -12739,6 +12911,42 @@ async def api_admin_nginx_get():
         info["image"] = (attrs.get("Config") or {}).get("Image", "?")
         # Upstream — nginx.conf 에 하드코딩된 값
         info["upstream"] = "orange3-session-manager:8080"
+
+        # 풀 수(upstream 블록 개수) + 접속 수(stub_status) — nginx 컨테이너 내부 조회
+        def _nginx_pools_conns():
+            import re as _re
+            pools_n = conns = None
+            extra: dict = {}
+            try:
+                rc, out = c.exec_run(
+                    ["sh", "-c", "grep -cE '^[[:space:]]*upstream ' /etc/nginx/nginx.conf"])
+                if rc == 0:
+                    pools_n = int(out.decode().strip())
+            except Exception:
+                pass
+            try:
+                rc, out = c.exec_run(["wget", "-qO-", "http://127.0.0.1/nginx-status"])
+                txt = out.decode() if rc == 0 else ""
+                m = _re.search(r"Active connections:\s*(\d+)", txt)
+                if m:
+                    conns = int(m.group(1))
+                m2 = _re.search(r"Reading:\s*(\d+)\s+Writing:\s*(\d+)\s+Waiting:\s*(\d+)", txt)
+                if m2:
+                    extra = {"reading": int(m2.group(1)), "writing": int(m2.group(2)),
+                             "waiting": int(m2.group(3))}
+            except Exception:
+                pass
+            return pools_n, conns, extra
+        try:
+            _p, _conn, _extra = await asyncio.get_event_loop().run_in_executor(
+                None, _nginx_pools_conns)
+            info["pools"] = _p
+            info["active_connections"] = _conn
+            if _extra:
+                info["conn_detail"] = _extra
+        except Exception:
+            info["pools"] = info["active_connections"] = None
+
         return JSONResponse(info)
     except Exception as e:
         log.warning(f"[admin-nginx] 조회 실패: {e}")
@@ -13195,7 +13403,9 @@ function renderMenu(){{
     }});
     html += `</div></div>`;
   }});
-  const orphans = _knownCats.filter(n => !grouped.has(n));
+  // Orange Obsolete 계열은 admin 위젯 설정의 "기타" 그룹에도 노출하지 않음 (2026-06-02)
+  const _hiddenAdminCats = {{ 'Orange Obsolete': 1, 'Orange 사용 중단됨': 1, 'Zastarelo': 1 }};
+  const orphans = _knownCats.filter(n => !grouped.has(n) && !_hiddenAdminCats[n]);
   if (orphans.length) {{
     html += `<div class="phase-group">
       <div class="phase-title">기타</div><div class="grid">`;
@@ -14283,6 +14493,14 @@ function renderNginx(d){
     <div class="nginx-stat">
       <div class="label">가동 시간</div>
       <div class="value">${esc(fmtUptime(d.uptime_sec))}</div>
+    </div>
+    <div class="nginx-stat">
+      <div class="label">풀 수 (upstream)</div>
+      <div class="value">${d.pools != null ? d.pools + '개' : '—'}</div>
+    </div>
+    <div class="nginx-stat">
+      <div class="label">접속 수 (active)</div>
+      <div class="value">${d.active_connections != null ? d.active_connections : '—'}${d.conn_detail ? ' <span style="font-size:11px;color:#6b7280;font-weight:400">R'+d.conn_detail.reading+' W'+d.conn_detail.writing+' 대기'+d.conn_detail.waiting+'</span>' : ''}</div>
     </div>
   </div>`;
 }
