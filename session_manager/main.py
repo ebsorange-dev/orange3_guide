@@ -3764,9 +3764,14 @@ WRAPPER_PAGE = """<!DOCTYPE html>
                 r.blob().then(function(blob) {{
                   _checkBright(blob).then(function(bright) {{
                     if (bright) {{
-                      // 메인 캔버스 확인 + iframe load 후 RESIZE_SETTLE_MS 보장 (resize=remote 안정화)
+                      // 메인 캔버스 확인 → 커버 제거. 단, post-load nudgeResize(=프레임버퍼
+                      // 재정렬)가 iframe load +1500ms 에 발화하므로, 그 정착 이후까지 커버를
+                      // 유지해야 한다. 그 전에 제거하면 리사이즈 정착 중 캔버스 경계가
+                      // 검은 라인으로 잠깐 노출됨(언어 변경 후 로딩에서 재현, 2026-06-02).
+                      var NUDGE_DELAY_MS = 1500;   // = frame.load 후 nudgeResize 발화 시점
                       var elapsed = Date.now() - _iframeLoadTime;
-                      var wait = Math.max(RESIZE_SETTLE_MS, RESIZE_SETTLE_MS - elapsed);
+                      var wait = Math.max(RESIZE_SETTLE_MS,
+                                          NUDGE_DELAY_MS + RESIZE_SETTLE_MS - elapsed);
                       setTimeout(_removeCover, wait);
                     }} else {{
                       // 아직 어두움(스플래시/검은 배경) → 0.5초 후 재폴링
@@ -10767,7 +10772,10 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
               "}"
               "document.addEventListener('DOMContentLoaded',function(){"
               "var f=document.getElementById('vnc-frame');"
-              "if(f){f.addEventListener('load',function(){setTimeout(rm,1500);});}"
+              # iframe load +3200ms: post-load nudgeResize(+1500ms) 의 프레임버퍼
+              # 재정렬 정착 이후에 커버 제거 — 그 전에 제거하면 리사이즈 정착 중
+              # 캔버스 경계가 검은 라인으로 노출됨(언어 변경 후 로딩, 2026-06-02).
+              "if(f){f.addEventListener('load',function(){setTimeout(rm,3200);});}"
               "setTimeout(rm,7000);"
               "});"
               "})();</script>")
