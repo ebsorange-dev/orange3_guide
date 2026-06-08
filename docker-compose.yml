@@ -35,6 +35,9 @@ services:
       - ./session_manager/main.py:/app/main.py:ro
       # 서비스 구성도 / 이동 페이지 — /load 라우트가 8888 로 서빙 (서버 외부 접근용)
       - ./load_index.html:/app/load_index.html:ro
+      # admin 기본 설정(위젯 가시성 등) — 런타임 파일(sessions/admin_settings.json) 없을 때
+      # 1회 시드. 삭제한 위젯이 클론·신규 서버에도 유지되게 함 (A안).
+      - ./admin_settings.default.json:/app/admin_settings.default.json:ro
       # 사이드바 최상단 메뉴 버튼용 로고 이미지
       - ./session_manager/orange_logo.png:/app/orange_logo.png:ro
       # HTML 페이지들 — 폴더 단위로 마운트 (Dataset 버튼 / Analysis-Datasets 버튼 / 분류 모달)

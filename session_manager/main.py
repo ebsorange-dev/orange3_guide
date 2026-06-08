@@ -12202,6 +12202,12 @@ async def get_language(sid: str | None = None):
 # /sessions/admin_settings.json (호스트에서도 직접 편집 가능). 후속 단계에서
 # /widget-catalog · /set-language 가 이 설정을 참조하도록 통합 예정.
 ADMIN_SETTINGS_PATH = os.path.join(CONTAINER_SESSIONS_PATH, "admin_settings.json")
+# A안(2026-06-09): 위젯 가시성 등 admin 기본 설정을 레포에 커밋(admin_settings.default.json)하고,
+# 런타임 파일이 없을 때(GitHub 클론·신규 서버 첫 부팅) 이 기본값으로 1회 시드한다.
+# → 삭제(숨김)한 위젯이 클론에도 유지됨. 서버별 변경은 이후 sessions/admin_settings.json 에 override.
+# (sessions/ 는 .gitignore 라 런타임 파일 자체는 git 에 안 들어감 — 그래서 시드가 필요)
+ADMIN_SETTINGS_DEFAULT_PATH = os.environ.get(
+    "ADMIN_SETTINGS_DEFAULT_PATH", "/app/admin_settings.default.json")
 
 # 알려진 카테고리 — 시범 서비스 단계별 그룹화 (Phase 5, 2026-05-24).
 # 신규 addon 설치 시 해당 단계 그룹에 수동 추가.
@@ -12314,6 +12320,16 @@ def _admin_default_settings() -> dict:
 def _admin_load_settings() -> dict:
     """파일에서 로드, 없으면 default 생성 후 반환. 잘못된 JSON 은 default."""
     import json as _json
+    # 런타임 파일 없음 → 커밋된 기본 설정(admin_settings.default.json)에서 1회 시드 (A안)
+    if not os.path.isfile(ADMIN_SETTINGS_PATH):
+        try:
+            if ADMIN_SETTINGS_DEFAULT_PATH and os.path.isfile(ADMIN_SETTINGS_DEFAULT_PATH):
+                os.makedirs(os.path.dirname(ADMIN_SETTINGS_PATH), exist_ok=True)
+                import shutil as _sh
+                _sh.copyfile(ADMIN_SETTINGS_DEFAULT_PATH, ADMIN_SETTINGS_PATH)
+                log.info(f"[admin-settings] 런타임 설정 없음 → 기본값 시드: {ADMIN_SETTINGS_DEFAULT_PATH}")
+        except Exception as _se:
+            log.warning(f"[admin-settings] 기본값 시드 실패: {_se}")
     if not os.path.isfile(ADMIN_SETTINGS_PATH):
         return _admin_default_settings()
     try:
