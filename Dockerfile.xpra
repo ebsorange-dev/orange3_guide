@@ -136,11 +136,11 @@ RUN mkdir -p /root/.config/biolab.si && \
 
 # ── Orange3 창 자동 최대화 스크립트 (Phase 3B, 2026-05-23) ────────────────────
 COPY maximize_orange3.sh /maximize_orange3.sh
-RUN chmod +x /maximize_orange3.sh
+RUN sed -i 's/\r$//' /maximize_orange3.sh && chmod +x /maximize_orange3.sh
 
 # ── ibus hangul 활성 엔진 전환 (Phase 1 R1, 2026-05-23) ──────────────────────
 COPY init_ibus_hangul.sh /init_ibus_hangul.sh
-RUN chmod +x /init_ibus_hangul.sh
+RUN sed -i 's/\r$//' /init_ibus_hangul.sh && chmod +x /init_ibus_hangul.sh
 
 # ── Orange3 커스텀 런처 (Phase 3D-3 fix v4, 2026-05-23) ──────────────────────
 # launcher 가 /config/.tool_activate 등 signal 파일을 polling 해 Qt QAction 을
@@ -162,7 +162,8 @@ RUN update-alternatives --set x-cursor-theme /usr/share/icons/DMZ-White/cursor.t
 
 # ── PoC 기동 스크립트 ─────────────────────────────────────────────────────────
 COPY startapp.xpra.sh /startapp.xpra.sh
-RUN chmod +x /startapp.xpra.sh
+# CRLF 방어 (.gitattributes 와 함께 belt-and-suspenders)
+RUN sed -i 's/\r$//' /startapp.xpra.sh && chmod +x /startapp.xpra.sh
 
 # Xpra HTML5 서버 포트 (컨테이너 내부) — 운영 noVNC 포트대(10000-10199)와
 # 겹쳐 보이지만 별도 컨테이너이므로 무방. 호스트 매핑은 13900 등으로.

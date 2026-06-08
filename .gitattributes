@@ -1,0 +1,36 @@
+# =============================================================================
+# 줄바꿈 정규화 — 컨테이너에서 실행되는 쉘 스크립트는 항상 LF
+# =============================================================================
+# Windows 에서 git clone (core.autocrlf=true 가 기본) 시 텍스트 파일이 CRLF 로
+# 변환되면, .sh 의 shebang 이 '#!/bin/sh\r' 가 되어 리눅스 컨테이너에서
+#     exec: /startapp.sh: not found      (status 127)
+# 가 발생한다. 아래 규칙으로 쉘 스크립트는 어떤 OS·git 설정에서도 LF 로
+# 체크아웃되도록 강제한다. (git archive / ZIP 다운로드에도 동일 적용)
+
+# 기본: Git 이 텍스트를 자동 감지하고 저장소에는 LF 로 정규화
+* text=auto
+
+# ── 컨테이너 실행 스크립트 / 엔트리포인트 — 반드시 LF ──
+*.sh              text eol=lf
+*.bash            text eol=lf
+startapp.sh       text eol=lf
+startapp.xpra.sh  text eol=lf
+maximize_orange3.sh   text eol=lf
+init_ibus_hangul.sh   text eol=lf
+Dockerfile        text eol=lf
+Dockerfile.*      text eol=lf
+*.conf            text eol=lf
+
+# ── 바이너리 — 줄바꿈 변환·diff 금지 ──
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.gz    binary
+*.tar   binary
+*.zip   binary
+*.pck   binary
+*.ows   binary
+*.woff  binary
+*.woff2 binary

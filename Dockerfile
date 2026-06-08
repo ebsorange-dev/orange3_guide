@@ -158,7 +158,9 @@ COPY orange3/orangecontrib/timeseries/widgets/__init__.py ${SITE}/orangecontrib/
 # ── 애드온 번역: Network ──────────────────────────────────────────────────────
 COPY orange3/orangecontrib/network/i18n/Korean.json   ${SITE}/orangecontrib/network/i18n/Korean.json
 
-RUN chmod +x /startapp.sh
+# CRLF 방어: 빌드 컨텍스트에 CRLF 가 섞여도(Windows 클론·ZIP 등) 컨테이너 실행 보장.
+# .gitattributes 로 LF 강제하지만 belt-and-suspenders 로 \r 제거 후 실행권한 부여.
+RUN sed -i 's/\r$//' /startapp.sh && chmod +x /startapp.sh
 
 # ── noVNC 컨트롤 바(좌측 하단 아이콘) 제거 ──────────────────────────────────
 RUN printf '%s\n' \
