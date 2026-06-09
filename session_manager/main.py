@@ -10566,14 +10566,57 @@ def _usage_aggregate(day: str) -> dict:
     }
 
 
+def _live_session_widgets() -> tuple[dict, int]:
+    """진행 중(활성) 세션들의 .usage_widgets.jsonl 을 읽어 위젯 빈도 집계 (실시간).
+    아직 세션 종료 수확이 안 된 분 → '중간 사용 현황' 표시용. (counts, 활성세션수)."""
+    counts: dict = {}
+    try:
+        with _lock:
+            sids = [s for s, v in sessions.items() if v.get("started_at")]
+        for sid in sids:
+            wpath = os.path.join(CONTAINER_SESSIONS_PATH, sid, ".usage_widgets.jsonl")
+            if not os.path.isfile(wpath):
+                continue
+            try:
+                with open(wpath, encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            w = json.loads(line).get("widget", "?")
+                            counts[w] = counts.get(w, 0) + 1
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+        return counts, len(sids)
+    except Exception:
+        return counts, 0
+
+
 @app.get("/api/admin/usage/summary")
 async def api_admin_usage_summary(date: str | None = None):
-    """일별 이용 패턴 요약 (admin). date=YYYYMMDD (기본 오늘 UTC)."""
+    """일별 이용 패턴 요약 (admin). date=YYYYMMDD (기본 오늘 UTC).
+    오늘이면 진행 중(미종료) 세션의 위젯 사용도 실시간 합산해 Top 위젯에 반영."""
     day = date or time.strftime("%Y%m%d", time.gmtime())
     if not (len(day) == 8 and day.isdigit()):
         return JSONResponse({"ok": False, "error": "date=YYYYMMDD 형식"}, status_code=400)
     try:
-        return JSONResponse(_usage_aggregate(day))
+        res = _usage_aggregate(day)
+        if res.get("ok") and day == time.strftime("%Y%m%d", time.gmtime()):
+            live, live_sess = _live_session_widgets()
+            # 로그(종료 세션) Top + 진행 중 세션 위젯 합산 → 중복 없음
+            # (진행 중 세션은 아직 widget.add 로그에 없음)
+            merged = {w["widget"]: w["count"] for w in res.get("top_widgets", [])}
+            for w, c in live.items():
+                merged[w] = merged.get(w, 0) + c
+            res["top_widgets"] = [
+                {"widget": w, "count": c}
+                for w, c in sorted(merged.items(), key=lambda kv: kv[1], reverse=True)[:20]]
+            res["live_widget_total"] = sum(live.values())
+            res["active_sessions"] = live_sess
+        return JSONResponse(res)
     except Exception as e:
         log.warning(f"[usage-summary] 집계 실패: {e}")
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
@@ -13573,7 +13616,7 @@ async def admin_usage_page():
     <div style="margin-bottom:8px"><b>언어</b> <span class="pills" id="u-lang"></span></div>
     <div><b>종료사유</b> <span class="pills" id="u-reason"></span></div>
   </div>
-  <div class="u-sec"><h2>Top 위젯</h2><div id="u-widgets"></div></div>
+  <div class="u-sec"><h2>Top 위젯 <span id="u-widgets-note" style="font-size:12px;font-weight:400;color:#6b7280"></span></h2><div id="u-widgets"></div></div>
 </div>
 <script>
 function pills(el, obj){{
@@ -13596,7 +13639,9 @@ async function loadDay(day){{
   const tw=document.getElementById('u-widgets');
   tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ? d.top_widgets.map(w=>
     `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span class="c">${{w.count}}</span></div>`).join('')
-    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (세션 종료 후 집계됨)</span>';
+    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (캔버스에 위젯을 추가하면 집계됨)</span>';
+  const note=document.getElementById('u-widgets-note');
+  if(note) note.textContent = (d.active_sessions ? `· 진행 중 세션 ${{d.active_sessions}}개 실시간 포함(위젯 ${{d.live_widget_total||0}})` : '');
 }}
 (async function(){{
   const sel=document.getElementById('u-date');
