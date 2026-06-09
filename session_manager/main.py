@@ -14461,6 +14461,7 @@ tbody tr.admin-row:hover{background:#fef3c7}
     <a href="/admin/language">언어 설정</a>
     <a href="/admin/splash">로딩 이미지 설정</a>
     <a href="/admin/sessions" class="active">활성 세션</a>
+    <a href="/admin/usage">이용 현황</a>
   </nav>
   __FB_AUTH_BLOCK__
 
