@@ -2623,6 +2623,33 @@ def main():
     except Exception as _e:
         print(f"[launcher] 크래시 복구 패치 실패: {_e}", flush=True)
 
+    # ── 4-a1. 위젯 사용 로깅 (이용 패턴 2단계, 2026-06-09) ──────────────────────
+    # Scheme.add_node 를 후킹해 위젯 추가 시 /config/.usage_widgets.jsonl 에 한 줄
+    # 기록(위젯 qualified id + 시각). session-manager 가 세션 종료 시 이 파일을
+    # 수확해 usage 로그(widget.add)로 집계 → Top 위젯·구성 시퀀스 분석.
+    # 데이터 내용은 기록 안 함(위젯 식별자만). 실패해도 캔버스 동작엔 영향 없음.
+    try:
+        from orangecanvas.scheme.scheme import Scheme as _UScheme   # type: ignore
+        import json as _ujson
+        _u_orig_add_node = _UScheme.add_node
+        def _u_patched_add_node(self, node, *a, **k):
+            r = _u_orig_add_node(self, node, *a, **k)
+            try:
+                _desc = getattr(node, "description", None)
+                _wid = (getattr(_desc, "id", None)
+                        or getattr(node, "qualified_name", None) or "?")
+                with open("/config/.usage_widgets.jsonl", "a", encoding="utf-8") as _wf:
+                    _wf.write(_ujson.dumps(
+                        {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                         "widget": _wid}, ensure_ascii=False) + "\n")
+            except Exception:
+                pass
+            return r
+        _UScheme.add_node = _u_patched_add_node
+        print("[launcher] 위젯 사용 로깅 패치 적용", flush=True)
+    except Exception as _e:
+        print(f"[launcher] 위젯 사용 로깅 패치 실패: {_e}", flush=True)
+
     # ── 4-a2. Edit Links 다이얼로그 카드 chrome (wiget_card_26_work.md §3 스펙) ──
     # EditLinksDialog(QDialog)는 OWWidget 이 아니라 _apply_clean_chrome 미적용 대상.
     # 동일 시각 스펙만 자족적으로 적용: 점(●)+제목+× 헤더, 헤더 #fafafa·상단 8px 둥글게,

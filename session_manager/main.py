@@ -966,6 +966,27 @@ def remove_session(sid: str, reason: str = "?"):
                 duration_sec=int(time.time() - info["started_at"]), reason=reason)
         except Exception:
             pass
+        # 2단계: 위젯 사용 수확 — 런처가 쌓은 .usage_widgets.jsonl 을 읽어
+        # widget.add 이벤트로 집계(파일 순서 유지 → 구성 시퀀스 분석 가능). rmtree 전에 실행.
+        try:
+            _wpath = os.path.join(CONTAINER_SESSIONS_PATH, sid, ".usage_widgets.jsonl")
+            if os.path.isfile(_wpath):
+                _seq = 0
+                with open(_wpath, encoding="utf-8") as _wf:
+                    for _wl in _wf:
+                        _wl = _wl.strip()
+                        if not _wl:
+                            continue
+                        try:
+                            _wr = json.loads(_wl)
+                            _seq += 1
+                            usage_event("widget.add", sid=s8(sid),
+                                        widget=_wr.get("widget", "?"),
+                                        seq=_seq, at=_wr.get("ts"))
+                        except Exception:
+                            pass
+        except Exception:
+            pass
     if not info or client is None:
         return
     try:
