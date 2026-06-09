@@ -10653,6 +10653,68 @@ async def api_admin_usage_days():
     return JSONResponse({"ok": True, "days": sorted(days, reverse=True)})
 
 
+def _kst_date_hour(ts: str):
+    """UTC ISO ts → (KST 날짜 YYYYMMDD, KST 시각 0-23). 실패 시 (None,None)."""
+    ep = _usage_ts_epoch(ts)
+    if ep is None:
+        return None, None
+    k = time.gmtime(ep + 9 * 3600)   # KST = UTC+9
+    return time.strftime("%Y%m%d", k), k.tm_hour
+
+
+@app.get("/api/admin/usage/heatmap")
+async def api_admin_usage_heatmap(days: int = 14):
+    """일자 × 시간대(KST) 세션 시작 히트맵 (admin). 최근 N일.
+    반환: rows=[{date, hours:[24]}] (최신일 먼저), max(셀 최대값)."""
+    days = max(1, min(days, 90))
+    today_kst = time.strftime("%Y%m%d", time.gmtime(time.time() + 9 * 3600))
+    # 대상 KST 날짜 집합 (최근 N일)
+    want = set()
+    base = _usage_ts_epoch(today_kst[:4] + "-" + today_kst[4:6] + "-" + today_kst[6:8] + "T00:00:00Z")
+    for i in range(days):
+        want.add(time.strftime("%Y%m%d", time.gmtime((base or time.time()) - i * 86400)))
+    mat: dict = {}   # date -> [24]
+    try:
+        files = [fn for fn in os.listdir(USAGE_LOG_DIR)
+                 if fn.startswith("usage-") and fn.endswith(".jsonl")]
+        # UTC 파일명이 KST 날짜와 ±1일 차이날 수 있어 want ± 1일 범위 파일만 읽음
+        want_utc = set()
+        for d in want:
+            want_utc.add(d)
+            try:
+                ep0 = _usage_ts_epoch(d[:4] + "-" + d[4:6] + "-" + d[6:8] + "T00:00:00Z")
+                if ep0:
+                    want_utc.add(time.strftime("%Y%m%d", time.gmtime(ep0 - 86400)))
+                    want_utc.add(time.strftime("%Y%m%d", time.gmtime(ep0 + 86400)))
+            except Exception:
+                pass
+        for fn in files:
+            if fn[6:14] not in want_utc:
+                continue
+            try:
+                with open(os.path.join(USAGE_LOG_DIR, fn), encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or '"session.start"' not in line:
+                            continue
+                        try:
+                            r = json.loads(line)
+                            if r.get("event") != "session.start":
+                                continue
+                            d, h = _kst_date_hour(r.get("ts", ""))
+                            if d in want and h is not None:
+                                mat.setdefault(d, [0] * 24)[h] += 1
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+    rows = [{"date": d, "hours": mat.get(d, [0] * 24)} for d in sorted(want, reverse=True)]
+    mx = max((max(r["hours"]) for r in rows), default=0)
+    return JSONResponse({"ok": True, "tz": "KST", "rows": rows, "max": mx})
+
+
 # ── Xpra 전환 실험 라우트 (Phase 2, 2026-05-23) ─────────────────────────────
 # 운영 noVNC(/?sid=...) 와 별개 경로. /xpra 호출 시 즉시 Xpra 컨테이너 1개 기동.
 @app.get("/xpra")
@@ -13613,6 +13675,10 @@ async def admin_usage_page():
   .pill{{background:#f3f4f6;border-radius:16px;padding:4px 12px;font-size:12.5px}}
   .pill b{{color:#1f2937}}
   select{{padding:6px 10px;border:1px solid #d5d9e0;border-radius:7px;font-size:13px}}
+  .hm{{border-collapse:collapse;font-size:10px}}
+  .hm th{{color:#9ca3af;font-weight:500;padding:2px 2px;text-align:center;min-width:16px}}
+  .hm td.d{{color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap;text-align:right}}
+  .hm td.c{{width:16px;height:16px;border:1px solid #fff;border-radius:2px}}
 </style></head><body>
 <div class="wrap">
   <h1>이용 현황</h1>
@@ -13629,6 +13695,15 @@ async def admin_usage_page():
     <div class="u-card"><div class="v" id="c-completed">–</div><div class="l">종료(완료) 세션</div></div>
   </div>
   <div class="u-sec"><h2>시간대별 세션 시작 (UTC)</h2><div class="bars" id="u-hours"></div><div style="height:18px"></div></div>
+  <div class="u-sec">
+    <h2>일자 × 시간대 히트맵 (KST)
+      <select id="hm-days" style="font-size:12px;font-weight:400">
+        <option value="7">최근 7일</option><option value="14" selected>최근 14일</option><option value="30">최근 30일</option>
+      </select>
+      <span style="font-size:11.5px;font-weight:400;color:#9ca3af">· 진할수록 세션 시작 많음</span>
+    </h2>
+    <div id="u-heatmap" style="overflow-x:auto"></div>
+  </div>
   <div class="u-sec"><h2>엔진 · 언어 · 종료 사유</h2>
     <div style="margin-bottom:8px"><b>엔진</b> <span class="pills" id="u-engine"></span></div>
     <div style="margin-bottom:8px"><b>언어</b> <span class="pills" id="u-lang"></span></div>
@@ -13663,7 +13738,31 @@ async function loadDay(day){{
   const note=document.getElementById('u-widgets-note');
   if(note) note.textContent = (d.active_sessions ? `· 진행 중 세션 ${{d.active_sessions}}개 실시간 포함(위젯 ${{d.live_widget_total||0}})` : '');
 }}
+async function loadHeatmap(){{
+  const n=document.getElementById('hm-days').value;
+  const el=document.getElementById('u-heatmap');
+  try{{
+    const r=await fetch('/api/admin/usage/heatmap?days='+n,{{cache:'no-store'}});
+    const d=await r.json();
+    if(!d.ok || !d.rows.length){{ el.textContent='데이터 없음'; return; }}
+    const mx=Math.max(1,d.max);
+    let h='<table class="hm"><tr><th></th>';
+    for(let i=0;i<24;i++) h+=`<th>${{i}}</th>`;
+    h+='</tr>';
+    d.rows.forEach(row=>{{
+      const lbl=row.date.slice(4,6)+'/'+row.date.slice(6,8);
+      h+=`<tr><td class="d">${{lbl}}</td>`;
+      row.hours.forEach((v,hr)=>{{
+        const a=v?(0.12+0.88*v/mx):0;
+        h+=`<td class="c" style="background:rgba(232,130,12,${{a.toFixed(2)}})" title="${{lbl}} ${{hr}}시: ${{v}}"></td>`;
+      }});
+      h+='</tr>';
+    }});
+    el.innerHTML=h+'</table>';
+  }}catch(e){{ el.textContent='불러오기 오류'; }}
+}}
 (async function(){{
+  const hm=document.getElementById('hm-days'); if(hm) hm.onchange=loadHeatmap; loadHeatmap();
   const sel=document.getElementById('u-date');
   let days=[];
   try{{ const r=await fetch('/api/admin/usage/days',{{cache:'no-store'}}); const d=await r.json(); days=d.days||[]; }}catch(e){{}}
