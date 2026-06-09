@@ -86,3 +86,7 @@ Thumbs.db
 # 이용 로그(런타임 JSONL) — 디렉터리만 유지
 logs/*
 !logs/.gitkeep
+
+# 사용자 업로드 로딩 스플래시 (런타임)
+splash_custom/*
+!splash_custom/.gitkeep

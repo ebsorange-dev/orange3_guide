@@ -9465,28 +9465,45 @@ async def logo():
     )
 
 
+SPLASH_CUSTOM_DIR = os.environ.get("SPLASH_CUSTOM_DIR", "/splash_custom")
+
+def _loading_splash_file():
+    """현재 로딩 스플래시 이미지 파일 (admin 선택: default=기본 / custom=업로드).
+    custom 선택 + 업로드 파일 존재 시 그것을, 아니면 Orange 기본 후보를 반환.
+    (path, mime) 또는 (None, None)."""
+    try:
+        src = (_admin_load_settings().get("splashes", {}) or {}).get("loading_source", "default")
+    except Exception:
+        src = "default"
+    if src == "custom":
+        for p, m in ((os.path.join(SPLASH_CUSTOM_DIR, "loading.png"), "image/png"),
+                     (os.path.join(SPLASH_CUSTOM_DIR, "loading.jpg"), "image/jpeg")):
+            if os.path.isfile(p):
+                return p, m
+    # default (Orange 기본 마스코트)
+    for p, m in (("/app/html/orange-splash.png", "image/png"),
+                 ("/app/html/orange-splash-02.png", "image/png"),
+                 ("/app/html/orange-splash-01.png", "image/png"),
+                 ("/app/html/orange-splash-03.png", "image/png")):
+        if os.path.isfile(p):
+            return p, m
+    return None, None
+
+
+def _serve_loading_splash():
+    path, mime = _loading_splash_file()
+    if path:
+        with open(path, "rb") as f:
+            data = f.read()
+        return Response(content=data, media_type=mime,
+                        headers={"Cache-Control": "no-store"})
+    return Response(status_code=404)
+
+
 @app.get("/splash-image")
 async def splash_image():
-    """vnc-cover 중앙 splash 이미지 — Orange 마스코트 + 위젯 풍선.
-    파일 위치: html/orange-splash.png (우선), 없으면 orange-splash-02.png
-    fallback. 파일 모두 없으면 404 → 프론트엔드가 자동 숨김(img onerror).
-    Phase 5 (2026-05-24)."""
-    candidates = [
-        ("/app/html/orange-splash.png", "image/png"),
-        ("/app/html/orange-splash-02.png", "image/png"),
-        ("/app/html/orange-splash-01.png", "image/png"),
-        ("/app/html/orange-splash-03.png", "image/png"),
-    ]
-    for path, mime in candidates:
-        if os.path.isfile(path):
-            with open(path, "rb") as f:
-                data = f.read()
-            return Response(
-                content=data,
-                media_type=mime,
-                headers={"Cache-Control": "public, max-age=3600"},
-            )
-    return Response(status_code=404)
+    """vnc-cover 중앙 로딩 splash — admin 선택(기본/업로드)에 따라 서빙."""
+    return _serve_loading_splash()
 
 
 @app.get("/footer-logo")
@@ -12627,6 +12644,7 @@ def _admin_default_settings() -> dict:
         #   - enabled=True + 해당 언어 메시지 빈 문자열 → 그 언어 사용자에겐 비노출
         "splashes": {
             "loading": True,
+            "loading_source": "default",   # default=Orange 기본 이미지 / custom=업로드 이미지
             "ready": {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS},
         },
         "updated_at": "",
@@ -12673,6 +12691,8 @@ def _admin_load_settings() -> dict:
         if not isinstance(splashes, dict):
             splashes = {}
         splashes.setdefault("loading", True)
+        if splashes.get("loading_source") not in ("default", "custom"):
+            splashes["loading_source"] = "default"
         # ready 필드 마이그레이션 (2026-05-25):
         #   bool         → {enabled: bool, <기본 메시지 또는 빈 메시지>}
         #   dict (구버전, 메시지만)  → {enabled: True, <언어별 메시지>}
@@ -14145,6 +14165,17 @@ async def admin_splash_page():
 .splash-toggle{{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:13px}}
 .splash-toggle input[type=checkbox]{{width:18px;height:18px;cursor:pointer}}
 .splash-toggle label{{cursor:pointer;font-weight:500}}
+.splash-imgsel{{margin:10px 0;padding:12px;background:#fafafb;border:1px solid #eef0f2;border-radius:8px}}
+.splash-imgsel .imgsel-title{{font-weight:600;font-size:12.5px;color:#374151;margin-bottom:8px}}
+.splash-imgsel .imgsel-radio{{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;cursor:pointer}}
+.splash-imgsel .imgsel-radio input{{width:16px;height:16px;cursor:pointer}}
+.splash-imgsel .imgsel-radio span{{font-size:11.5px;color:#9ca3af}}
+.splash-imgsel .imgsel-upload{{display:flex;align-items:center;gap:8px;margin-top:8px}}
+.splash-imgsel .imgsel-upload input[type=file]{{font-size:12px;flex:1;min-width:0}}
+.splash-imgsel .imgsel-upload button{{padding:5px 14px;font-size:12.5px;background:#2563eb;color:#fff;
+  border:none;border-radius:6px;cursor:pointer;white-space:nowrap}}
+.splash-imgsel .imgsel-upload button:hover{{background:#1d4ed8}}
+.splash-imgsel .imgsel-hint{{font-size:11px;color:#9ca3af;margin-top:6px;line-height:1.4}}
 .ready-msgs{{display:flex;flex-direction:column;gap:10px;margin-top:8px}}
 .ready-msg-row{{display:flex;flex-direction:column;gap:4px}}
 .ready-msg-row label{{font-size:12.5px;color:#374151;font-weight:600}}
@@ -14168,11 +14199,21 @@ async def admin_splash_page():
 
     <div class="splash-card">
       <div class="splash-preview">
-        <img src="/splash-loading" alt="로딩 중" onerror="this.style.display='none';this.parentNode.textContent='(이미지 없음)';">
+        <img id="splash-loading-preview" src="/splash-loading" alt="로딩 중" onerror="this.style.display='none';this.parentNode.textContent='(이미지 없음)';">
       </div>
       <div class="splash-body">
         <h3>① 세션 로딩 중 (Loading splash)</h3>
-        <div class="desc">Orange3 컨테이너 부팅 중 표시되는 splash. Orange3 버전·addon 리스트 등이 보임.</div>
+        <div class="desc">세션 로딩 중 표시되는 splash 이미지입니다. <b>기본 이미지</b> 또는 <b>업로드한 이미지</b> 중 선택해 사용할 수 있습니다.</div>
+        <div class="splash-imgsel">
+          <div class="imgsel-title">로딩 이미지 선택</div>
+          <label class="imgsel-radio"><input type="radio" name="splash-src" value="default" onchange="setSplashSource('default')"> 기본 이미지 (Orange 마스코트)</label>
+          <label class="imgsel-radio"><input type="radio" name="splash-src" value="custom" onchange="setSplashSource('custom')"> 업로드 이미지 사용 <span id="src-custom-note"></span></label>
+          <div class="imgsel-upload">
+            <input type="file" id="splash-file" accept="image/png,image/jpeg">
+            <button onclick="uploadSplash()">업로드</button>
+          </div>
+          <div class="imgsel-hint">PNG/JPG · 최대 8MB. 업로드하면 자동으로 '업로드 이미지'로 전환됩니다.</div>
+        </div>
         <div class="splash-toggle">
           <input type="checkbox" id="splash-loading">
           <label for="splash-loading">노출 사용</label>
@@ -14237,6 +14278,72 @@ function toast(msg, ms){{
 function applyLoading(){{
   const sp = (_settings && _settings.splashes) || {{}};
   document.getElementById('splash-loading').checked = !!sp.loading;
+  const src = (sp.loading_source === 'custom') ? 'custom' : 'default';
+  const rb = document.querySelector('input[name="splash-src"][value="'+src+'"]');
+  if (rb) rb.checked = true;
+}}
+
+async function refreshSplashInfo(){{
+  try {{
+    const r = await fetch('/api/admin/splash/info', {{cache:'no-store'}});
+    const d = await r.json();
+    if (!d.ok) return;
+    const note = document.getElementById('src-custom-note');
+    const customRb = document.querySelector('input[name="splash-src"][value="custom"]');
+    if (d.has_custom) {{
+      if (note) note.textContent = '(업로드됨)';
+      if (customRb) customRb.disabled = false;
+    }} else {{
+      if (note) note.textContent = '(업로드된 이미지 없음)';
+      if (customRb) customRb.disabled = true;
+    }}
+  }} catch(e) {{}}
+}}
+
+function refreshSplashPreview(){{
+  const img = document.getElementById('splash-loading-preview');
+  if (img) {{ img.style.display=''; img.src = '/splash-loading?t=' + Date.now(); }}
+}}
+
+async function setSplashSource(src){{
+  try {{
+    const r = await fetch('/api/admin/splash/source', {{
+      method:'PUT', headers:{{'Content-Type':'application/json'}},
+      body: JSON.stringify({{source: src}}),
+    }});
+    const d = await r.json();
+    if (d.ok) {{
+      if (_settings && _settings.splashes) _settings.splashes.loading_source = d.loading_source;
+      refreshSplashPreview();
+      toast(src === 'custom' ? '업로드 이미지로 전환' : '기본 이미지로 전환');
+    }} else {{
+      toast('전환 실패: ' + (d.error || 'unknown'));
+      applyLoading();  // 라디오 원복
+    }}
+  }} catch(e) {{ toast('전환 오류: ' + e.message); applyLoading(); }}
+}}
+
+async function uploadSplash(){{
+  const inp = document.getElementById('splash-file');
+  const f = inp && inp.files && inp.files[0];
+  if (!f) {{ toast('이미지 파일을 선택하세요'); return; }}
+  const fd = new FormData();
+  fd.append('file', f);
+  toast('업로드 중...');
+  try {{
+    const r = await fetch('/api/admin/splash/upload', {{method:'POST', body: fd}});
+    const d = await r.json();
+    if (d.ok) {{
+      if (_settings && _settings.splashes) _settings.splashes.loading_source = 'custom';
+      inp.value = '';
+      applyLoading();
+      await refreshSplashInfo();
+      refreshSplashPreview();
+      toast('업로드 완료 — 업로드 이미지로 전환됨');
+    }} else {{
+      toast('업로드 실패: ' + (d.error || 'unknown'));
+    }}
+  }} catch(e) {{ toast('업로드 오류: ' + e.message); }}
 }}
 
 function applyReady(){{
@@ -14261,6 +14368,7 @@ async function initLoad(){{
     _settings = d.settings;
     applyLoading();
     applyReady();
+    refreshSplashInfo();
     updateMeta();
   }} catch(e) {{ toast('로드 오류: ' + e.message); }}
 }}
@@ -14316,22 +14424,76 @@ initLoad();
 
 @app.get("/splash-loading")
 async def splash_loading_image():
-    """로딩 중 splash 이미지 (Orange3 자체 시작 화면 캡처 등).
-    파일: html/splash-loading.png — 없으면 404."""
-    candidates = [
-        ("/app/html/splash-loading.png", "image/png"),
-        ("/app/html/splash-loading.jpg", "image/jpeg"),
-        ("/app/html/orange-splash-01.png", "image/png"),
-    ]
-    for path, mime in candidates:
-        if os.path.isfile(path):
-            with open(path, "rb") as f:
-                data = f.read()
-            return Response(
-                content=data, media_type=mime,
-                headers={"Cache-Control": "public, max-age=3600"},
-            )
-    return Response(status_code=404)
+    """로딩 중 splash 이미지 (admin 미리보기) — 기본/업로드 선택 반영."""
+    return _serve_loading_splash()
+
+
+def _splash_has_custom() -> bool:
+    return any(os.path.isfile(os.path.join(SPLASH_CUSTOM_DIR, f"loading.{e}"))
+               for e in ("png", "jpg"))
+
+
+@app.get("/api/admin/splash/info")
+async def api_admin_splash_info():
+    """로딩 스플래시 소스 상태 (admin) — 현재 source + 업로드본 존재 여부."""
+    try:
+        src = (_admin_load_settings().get("splashes", {}) or {}).get("loading_source", "default")
+    except Exception:
+        src = "default"
+    return JSONResponse({"ok": True, "loading_source": src, "has_custom": _splash_has_custom()})
+
+
+@app.post("/api/admin/splash/upload")
+async def api_admin_splash_upload(file: UploadFile = File(...)):  # type: ignore[name-defined]
+    """로딩 스플래시 커스텀 이미지 업로드 → /splash_custom/loading.* 저장 + source=custom."""
+    try:
+        ctype = (file.content_type or "").lower()
+        if ctype not in ("image/png", "image/jpeg", "image/jpg"):
+            return JSONResponse({"ok": False, "error": "PNG 또는 JPG 이미지만 가능합니다"}, status_code=400)
+        data = await file.read()
+        if len(data) < 100:
+            return JSONResponse({"ok": False, "error": "빈/손상 파일"}, status_code=400)
+        if len(data) > 8 * 1024 * 1024:
+            return JSONResponse({"ok": False, "error": "최대 8MB 까지 가능합니다"}, status_code=400)
+        os.makedirs(SPLASH_CUSTOM_DIR, exist_ok=True)
+        ext = "jpg" if ("jpeg" in ctype or "jpg" in ctype) else "png"
+        for old in ("loading.png", "loading.jpg"):   # 한 개만 유지
+            try:
+                os.remove(os.path.join(SPLASH_CUSTOM_DIR, old))
+            except Exception:
+                pass
+        with open(os.path.join(SPLASH_CUSTOM_DIR, f"loading.{ext}"), "wb") as f:
+            f.write(data)
+        s = _admin_load_settings()
+        sp = s.get("splashes") or {}
+        sp["loading_source"] = "custom"     # 업로드 시 자동으로 업로드본 사용
+        s["splashes"] = sp
+        _admin_save_settings(s)
+        log.info(f"[splash-upload] 커스텀 로딩 이미지 저장 ({len(data)} bytes, .{ext}) → source=custom")
+        return JSONResponse({"ok": True, "loading_source": "custom", "has_custom": True})
+    except Exception as e:
+        log.warning(f"[splash-upload] 실패: {e}")
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+@app.put("/api/admin/splash/source")
+async def api_admin_splash_source(request: Request):
+    """로딩 스플래시 소스 전환 — body {"source":"default"|"custom"}."""
+    try:
+        body = await request.json()
+        src = (body or {}).get("source")
+        if src not in ("default", "custom"):
+            return JSONResponse({"ok": False, "error": "source=default|custom"}, status_code=400)
+        if src == "custom" and not _splash_has_custom():
+            return JSONResponse({"ok": False, "error": "업로드된 이미지가 없습니다 — 먼저 업로드하세요"}, status_code=400)
+        s = _admin_load_settings()
+        sp = s.get("splashes") or {}
+        sp["loading_source"] = src
+        s["splashes"] = sp
+        _admin_save_settings(s)
+        return JSONResponse({"ok": True, "loading_source": src})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
 
 @app.get("/admin/language", response_class=HTMLResponse)
