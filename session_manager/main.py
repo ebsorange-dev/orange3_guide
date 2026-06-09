@@ -14215,7 +14215,7 @@ async def admin_splash_page():
             <div class="imgsel-drop-text">이미지를 드래그 하거나 <span class="imgsel-drop-link">여기를 클릭</span>해 선택하세요.</div>
             <div class="imgsel-fname" id="splash-fname"></div>
           </div>
-          <input type="file" id="splash-file" accept="image/png,image/jpeg" style="display:none">
+          <input type="file" id="splash-file" accept=".png,.jpg,.jpeg" style="display:none">
           <div class="imgsel-hint">PNG/JPG · 최대 8MB. 선택하면 자동으로 업로드되어 '업로드 이미지'로 전환됩니다.</div>
         </div>
         <div class="splash-toggle">
