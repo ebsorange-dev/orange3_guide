@@ -1568,6 +1568,18 @@ def main():
         _orig_activate = WidgetManager.activate_widget_for_node
 
         def _patched_activate(self, node, widget):
+            # 위젯 실행(열람/사용) 로깅 — 사용자가 위젯을 열어 사용 (이용 패턴: 추가 vs 실행)
+            try:
+                import json as _oj
+                _od = getattr(node, "description", None)
+                _owid = (getattr(_od, "id", None)
+                         or getattr(node, "qualified_name", None) or "?")
+                with open("/config/.usage_widgets.jsonl", "a", encoding="utf-8") as _of:
+                    _of.write(_oj.dumps(
+                        {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                         "widget": _owid, "ev": "open"}, ensure_ascii=False) + "\n")
+            except Exception:
+                pass
             try:
                 app_inst = QApplication.instance()
                 view = None
@@ -2641,7 +2653,7 @@ def main():
                 with open("/config/.usage_widgets.jsonl", "a", encoding="utf-8") as _wf:
                     _wf.write(_ujson.dumps(
                         {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                         "widget": _wid}, ensure_ascii=False) + "\n")
+                         "widget": _wid, "ev": "add"}, ensure_ascii=False) + "\n")
             except Exception:
                 pass
             return r

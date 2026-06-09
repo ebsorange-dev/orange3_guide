@@ -980,9 +980,11 @@ def remove_session(sid: str, reason: str = "?"):
                         try:
                             _wr = json.loads(_wl)
                             _seq += 1
-                            usage_event("widget.add", sid=s8(sid),
-                                        widget=_wr.get("widget", "?"),
-                                        seq=_seq, at=_wr.get("ts"))
+                            _ev = _wr.get("ev", "add")   # add=추가 / open=실행(열람)
+                            usage_event(
+                                "widget.run" if _ev == "open" else "widget.add",
+                                sid=s8(sid), widget=_wr.get("widget", "?"),
+                                seq=_seq, at=_wr.get("ts"))
                         except Exception:
                             pass
         except Exception:
@@ -10510,7 +10512,8 @@ def _usage_aggregate(day: str) -> dict:
     engines: dict = {}
     langs: dict = {}
     reasons: dict = {}
-    widgets: dict = {}        # 2단계: 위젯 사용 빈도
+    w_add: dict = {}          # 2단계: 위젯 추가 빈도
+    w_run: dict = {}          # 위젯 실행(열람) 빈도
     durations: list = []
     timeline: list = []       # (epoch, +1/-1) 최대 동시접속용
     if os.path.isfile(path):
@@ -10547,14 +10550,18 @@ def _usage_aggregate(day: str) -> dict:
                         timeline.append((ep, -1))
                 elif ev == "widget.add":
                     wn = r.get("widget", "?")
-                    widgets[wn] = widgets.get(wn, 0) + 1
+                    w_add[wn] = w_add.get(wn, 0) + 1
+                elif ev == "widget.run":
+                    wn = r.get("widget", "?")
+                    w_run[wn] = w_run.get(wn, 0) + 1
     timeline.sort()
     cur = mx = 0
     for _, delta in timeline:
         cur += delta; mx = max(mx, cur)
     durations.sort()
     n = len(durations)
-    top_widgets = sorted(widgets.items(), key=lambda kv: kv[1], reverse=True)[:20]
+    _allw = set(w_add) | set(w_run)
+    _topw = sorted(_allw, key=lambda w: w_add.get(w, 0) + w_run.get(w, 0), reverse=True)[:20]
     return {
         "ok": True, "date": day,
         "sessions": starts, "completed": ends, "max_concurrent": mx,
@@ -10562,14 +10569,16 @@ def _usage_aggregate(day: str) -> dict:
         "median_duration_sec": (durations[n // 2] if n else 0),
         "by_hour": by_hour, "by_engine": engines, "by_lang": langs,
         "by_end_reason": reasons,
-        "top_widgets": [{"widget": w, "count": c} for w, c in top_widgets],
+        "top_widgets": [{"widget": w, "add": w_add.get(w, 0), "run": w_run.get(w, 0)}
+                        for w in _topw],
     }
 
 
-def _live_session_widgets() -> tuple[dict, int]:
-    """진행 중(활성) 세션들의 .usage_widgets.jsonl 을 읽어 위젯 빈도 집계 (실시간).
-    아직 세션 종료 수확이 안 된 분 → '중간 사용 현황' 표시용. (counts, 활성세션수)."""
-    counts: dict = {}
+def _live_session_widgets() -> tuple[dict, dict, int]:
+    """진행 중(활성) 세션들의 .usage_widgets.jsonl 을 읽어 위젯 추가/실행 빈도 집계 (실시간).
+    아직 세션 종료 수확이 안 된 분 → '중간 사용 현황' 표시용. (add, run, 활성세션수)."""
+    w_add: dict = {}
+    w_run: dict = {}
     try:
         with _lock:
             sids = [s for s, v in sessions.items() if v.get("started_at")]
@@ -10584,15 +10593,19 @@ def _live_session_widgets() -> tuple[dict, int]:
                         if not line:
                             continue
                         try:
-                            w = json.loads(line).get("widget", "?")
-                            counts[w] = counts.get(w, 0) + 1
+                            _r = json.loads(line)
+                            w = _r.get("widget", "?")
+                            if _r.get("ev", "add") == "open":
+                                w_run[w] = w_run.get(w, 0) + 1
+                            else:
+                                w_add[w] = w_add.get(w, 0) + 1
                         except Exception:
                             pass
             except Exception:
                 pass
-        return counts, len(sids)
+        return w_add, w_run, len(sids)
     except Exception:
-        return counts, 0
+        return w_add, w_run, 0
 
 
 @app.get("/api/admin/usage/summary")
@@ -10605,16 +10618,21 @@ async def api_admin_usage_summary(date: str | None = None):
     try:
         res = _usage_aggregate(day)
         if res.get("ok") and day == time.strftime("%Y%m%d", time.gmtime()):
-            live, live_sess = _live_session_widgets()
-            # 로그(종료 세션) Top + 진행 중 세션 위젯 합산 → 중복 없음
-            # (진행 중 세션은 아직 widget.add 로그에 없음)
-            merged = {w["widget"]: w["count"] for w in res.get("top_widgets", [])}
-            for w, c in live.items():
-                merged[w] = merged.get(w, 0) + c
+            live_add, live_run, live_sess = _live_session_widgets()
+            # 로그(종료 세션) + 진행 중 세션 위젯 합산 → 중복 없음
+            # (진행 중 세션은 아직 widget.* 로그에 없음)
+            m_add = {w["widget"]: w["add"] for w in res.get("top_widgets", [])}
+            m_run = {w["widget"]: w["run"] for w in res.get("top_widgets", [])}
+            for w, c in live_add.items():
+                m_add[w] = m_add.get(w, 0) + c
+            for w, c in live_run.items():
+                m_run[w] = m_run.get(w, 0) + c
+            _allw = set(m_add) | set(m_run)
             res["top_widgets"] = [
-                {"widget": w, "count": c}
-                for w, c in sorted(merged.items(), key=lambda kv: kv[1], reverse=True)[:20]]
-            res["live_widget_total"] = sum(live.values())
+                {"widget": w, "add": m_add.get(w, 0), "run": m_run.get(w, 0)}
+                for w in sorted(_allw, key=lambda w: m_add.get(w, 0) + m_run.get(w, 0),
+                                reverse=True)[:20]]
+            res["live_widget_total"] = sum(live_add.values()) + sum(live_run.values())
             res["active_sessions"] = live_sess
         return JSONResponse(res)
     except Exception as e:
@@ -13637,9 +13655,11 @@ async function loadDay(day){{
     `<div class="b" style="height:${{Math.round(v/mx*100)}}%" title="${{h}}시: ${{v}}"><span>${{h}}</span></div>`).join('');
   pills('u-engine', d.by_engine); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
   const tw=document.getElementById('u-widgets');
-  tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ? d.top_widgets.map(w=>
-    `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span class="c">${{w.count}}</span></div>`).join('')
-    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (캔버스에 위젯을 추가하면 집계됨)</span>';
+  tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ?
+    '<div class="toprow" style="color:#9ca3af;font-size:11.5px"><span>위젯</span><span>추가 · <b style="color:#e8820c">실행</b></span></div>' +
+    d.top_widgets.map(w=>
+    `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span><span style="color:#6b7280">${{w.add||0}}</span> · <span class="c">${{w.run||0}}</span></span></div>`).join('')
+    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (캔버스에 위젯을 추가/실행하면 집계됨)</span>';
   const note=document.getElementById('u-widgets-note');
   if(note) note.textContent = (d.active_sessions ? `· 진행 중 세션 ${{d.active_sessions}}개 실시간 포함(위젯 ${{d.live_widget_total||0}})` : '');
 }}
