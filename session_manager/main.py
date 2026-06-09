@@ -14170,11 +14170,14 @@ async def admin_splash_page():
 .splash-imgsel .imgsel-radio{{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;cursor:pointer}}
 .splash-imgsel .imgsel-radio input{{width:16px;height:16px;cursor:pointer}}
 .splash-imgsel .imgsel-radio span{{font-size:11.5px;color:#9ca3af}}
-.splash-imgsel .imgsel-upload{{display:flex;align-items:center;gap:8px;margin-top:8px}}
-.splash-imgsel .imgsel-upload input[type=file]{{font-size:12px;flex:1;min-width:0}}
-.splash-imgsel .imgsel-upload button{{padding:5px 14px;font-size:12.5px;background:#2563eb;color:#fff;
-  border:none;border-radius:6px;cursor:pointer;white-space:nowrap}}
-.splash-imgsel .imgsel-upload button:hover{{background:#1d4ed8}}
+.splash-imgsel .imgsel-drop{{margin-top:8px;border:2px dashed #d0d0d4;border-radius:10px;
+  padding:22px 16px;text-align:center;cursor:pointer;user-select:none;background:#fff;
+  transition:border-color .15s,background .15s}}
+.splash-imgsel .imgsel-drop:hover{{border-color:#2563eb;background:#f8faff}}
+.splash-imgsel .imgsel-drop.over{{border-color:#1aaaa0;background:#f0f8f7}}
+.splash-imgsel .imgsel-drop-text{{font-size:13px;color:#6b7280}}
+.splash-imgsel .imgsel-drop-link{{color:#2563eb;text-decoration:underline;margin:0 2px}}
+.splash-imgsel .imgsel-fname{{font-size:12px;color:#16a34a;margin-top:8px;word-break:break-all}}
 .splash-imgsel .imgsel-hint{{font-size:11px;color:#9ca3af;margin-top:6px;line-height:1.4}}
 .ready-msgs{{display:flex;flex-direction:column;gap:10px;margin-top:8px}}
 .ready-msg-row{{display:flex;flex-direction:column;gap:4px}}
@@ -14208,11 +14211,12 @@ async def admin_splash_page():
           <div class="imgsel-title">로딩 이미지 선택</div>
           <label class="imgsel-radio"><input type="radio" name="splash-src" value="default" onchange="setSplashSource('default')"> 기본 이미지 (Orange 마스코트)</label>
           <label class="imgsel-radio"><input type="radio" name="splash-src" value="custom" onchange="setSplashSource('custom')"> 업로드 이미지 사용 <span id="src-custom-note"></span></label>
-          <div class="imgsel-upload">
-            <input type="file" id="splash-file" accept="image/png,image/jpeg">
-            <button onclick="uploadSplash()">업로드</button>
+          <div class="imgsel-drop" id="splash-drop">
+            <div class="imgsel-drop-text">이미지를 드래그 하거나 <span class="imgsel-drop-link">여기를 클릭</span>해 선택하세요.</div>
+            <div class="imgsel-fname" id="splash-fname"></div>
           </div>
-          <div class="imgsel-hint">PNG/JPG · 최대 8MB. 업로드하면 자동으로 '업로드 이미지'로 전환됩니다.</div>
+          <input type="file" id="splash-file" accept="image/png,image/jpeg" style="display:none">
+          <div class="imgsel-hint">PNG/JPG · 최대 8MB. 선택하면 자동으로 업로드되어 '업로드 이미지'로 전환됩니다.</div>
         </div>
         <div class="splash-toggle">
           <input type="checkbox" id="splash-loading">
@@ -14323,27 +14327,52 @@ async function setSplashSource(src){{
   }} catch(e) {{ toast('전환 오류: ' + e.message); applyLoading(); }}
 }}
 
-async function uploadSplash(){{
-  const inp = document.getElementById('splash-file');
-  const f = inp && inp.files && inp.files[0];
+async function uploadSplash(file){{
+  const f = file || (document.getElementById('splash-file').files || [])[0];
   if (!f) {{ toast('이미지 파일을 선택하세요'); return; }}
+  if (!/^image\/(png|jpe?g)$/i.test(f.type || '')) {{
+    toast('PNG 또는 JPG 이미지만 가능합니다'); return;
+  }}
+  if (f.size > 8 * 1024 * 1024) {{ toast('최대 8MB 까지 가능합니다'); return; }}
+  const fnEl = document.getElementById('splash-fname');
+  if (fnEl) fnEl.textContent = '⬆ ' + f.name + ' 업로드 중...';
   const fd = new FormData();
   fd.append('file', f);
-  toast('업로드 중...');
   try {{
     const r = await fetch('/api/admin/splash/upload', {{method:'POST', body: fd}});
     const d = await r.json();
     if (d.ok) {{
       if (_settings && _settings.splashes) _settings.splashes.loading_source = 'custom';
-      inp.value = '';
+      document.getElementById('splash-file').value = '';
+      if (fnEl) fnEl.textContent = '✓ ' + f.name;
       applyLoading();
       await refreshSplashInfo();
       refreshSplashPreview();
       toast('업로드 완료 — 업로드 이미지로 전환됨');
     }} else {{
+      if (fnEl) fnEl.textContent = '';
       toast('업로드 실패: ' + (d.error || 'unknown'));
     }}
-  }} catch(e) {{ toast('업로드 오류: ' + e.message); }}
+  }} catch(e) {{ if (fnEl) fnEl.textContent=''; toast('업로드 오류: ' + e.message); }}
+}}
+
+function _wireSplashDrop(){{
+  const zone = document.getElementById('splash-drop');
+  const inp = document.getElementById('splash-file');
+  if (!zone || !inp || zone._wired) return;
+  zone._wired = true;
+  zone.addEventListener('click', ()=> inp.click());
+  inp.addEventListener('change', ()=>{{
+    const f = (inp.files || [])[0];
+    if (f) uploadSplash(f);
+  }});
+  zone.addEventListener('dragover', (ev)=>{{ ev.preventDefault(); zone.classList.add('over'); }});
+  zone.addEventListener('dragleave', ()=> zone.classList.remove('over'));
+  zone.addEventListener('drop', (ev)=>{{
+    ev.preventDefault(); zone.classList.remove('over');
+    const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+    if (f) uploadSplash(f);
+  }});
 }}
 
 function applyReady(){{
@@ -14369,6 +14398,7 @@ async function initLoad(){{
     applyLoading();
     applyReady();
     refreshSplashInfo();
+    _wireSplashDrop();
     updateMeta();
   }} catch(e) {{ toast('로드 오류: ' + e.message); }}
 }}
