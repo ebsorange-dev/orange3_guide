@@ -14157,8 +14157,9 @@ async def admin_splash_page():
 .splash-card{{display:flex;gap:18px;align-items:flex-start;padding:14px;margin-bottom:14px;
   border:1px solid #e5e7eb;border-radius:9px;background:#fafafb}}
 .splash-preview{{flex-shrink:0;width:220px;background:#fff;border:1px solid #e5e7eb;
-  border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center}}
+  border-radius:8px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}}
 .splash-preview img{{max-width:100%;max-height:140px;display:block}}
+.splash-dim{{font-size:11.5px;color:#6b7280;font-family:Consolas,monospace}}
 .splash-body{{flex:1;min-width:0}}
 .splash-body h3{{font-size:14px;margin:0 0 4px;color:#1a1a1c}}
 .splash-body .desc{{font-size:12.5px;color:#6b7280;margin-bottom:10px;line-height:1.5}}
@@ -14202,7 +14203,8 @@ async def admin_splash_page():
 
     <div class="splash-card">
       <div class="splash-preview">
-        <img id="splash-loading-preview" src="/splash-loading" alt="로딩 중" onerror="this.style.display='none';this.parentNode.textContent='(이미지 없음)';">
+        <img id="splash-loading-preview" src="/splash-loading" alt="로딩 중" onload="updateSplashDim()" onerror="this.style.display='none';this.parentNode.textContent='(이미지 없음)';">
+        <div class="splash-dim" id="splash-dim"></div>
       </div>
       <div class="splash-body">
         <h3>① 세션 로딩 중 (Loading splash)</h3>
@@ -14302,6 +14304,14 @@ async function refreshSplashInfo(){{
       if (customRb) customRb.disabled = true;
     }}
   }} catch(e) {{}}
+}}
+
+function updateSplashDim(){{
+  const img = document.getElementById('splash-loading-preview');
+  const el = document.getElementById('splash-dim');
+  if (!img || !el) return;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  el.textContent = (w && h) ? ('이미지 사이즈 ' + w + 'x' + h) : '';
 }}
 
 function refreshSplashPreview(){{
