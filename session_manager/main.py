@@ -1063,10 +1063,36 @@ def _autosave_workflow(sid: str, info: dict) -> None:
 
 
 # ── 만료 세션 정리 + 워밍풀 자동 교체 스레드 ──
+_usage_last_retention_day = ""
+
+def _usage_retention():
+    """USAGE_RETENTION_DAYS 경과한 usage-*.jsonl 삭제 (하루 1회). 보존기간 정책(3단계)."""
+    global _usage_last_retention_day
+    today = time.strftime("%Y%m%d", time.gmtime())
+    if today == _usage_last_retention_day:
+        return
+    _usage_last_retention_day = today
+    try:
+        cutoff = time.time() - USAGE_RETENTION_DAYS * 86400
+        for fn in os.listdir(USAGE_LOG_DIR):
+            if not (fn.startswith("usage-") and fn.endswith(".jsonl")):
+                continue
+            fp = os.path.join(USAGE_LOG_DIR, fn)
+            try:
+                if os.path.getmtime(fp) < cutoff:
+                    os.remove(fp)
+                    log.info(f"[usage-retention] 보존기간({USAGE_RETENTION_DAYS}일) 경과 삭제: {fn}")
+            except Exception:
+                pass
+    except Exception as _re:
+        log.warning(f"[usage-retention] 정리 실패: {_re}")
+
+
 def cleanup_loop():
     while True:
         time.sleep(60)
         now = time.time()
+        _usage_retention()   # 이용 로그 보존기간 정리 (하루 1회 내부 가드)
         # 1) 활성/만료 세션 정리 (기존)
         with _lock:
             expired = [(s, dict(v)) for s, v in sessions.items()
@@ -13492,6 +13518,7 @@ def _admin_nav_html(active: str) -> str:
         f'<a href="/admin/language"{cls("language")}>언어 설정</a>'
         f'<a href="/admin/splash"{cls("splash")}>로딩 이미지 설정</a>'
         f'<a href="/admin/sessions"{cls("sessions")}>활성 세션</a>'
+        f'<a href="/admin/usage"{cls("usage")}>이용 현황</a>'
         '</nav>'
     ) + _admin_auth_html()
 
@@ -13500,6 +13527,88 @@ def _admin_nav_html(active: str) -> str:
 async def admin_settings_legacy():
     """기존 URL 호환 — 메뉴 설정 페이지로 리다이렉트."""
     return RedirectResponse("/admin/menu", status_code=302)
+
+
+@app.get("/admin/usage", response_class=HTMLResponse)
+async def admin_usage_page():
+    """이용 현황 — 일별 세션·위젯 패턴 대시보드 (3단계)."""
+    nav = _admin_nav_html("usage")
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>이용 현황 — 관리자</title>
+<style>{_ADMIN_BASE_CSS}
+  .u-cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}}
+  .u-card{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px}}
+  .u-card .v{{font-size:26px;font-weight:800;color:#1f2937}}
+  .u-card .l{{font-size:12.5px;color:#6b7280;margin-top:3px}}
+  .u-sec{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;margin:14px 0}}
+  .u-sec h2{{font-size:15px;margin:0 0 12px}}
+  .bars{{display:flex;align-items:flex-end;gap:3px;height:120px}}
+  .bars .b{{flex:1;background:#e8820c;border-radius:3px 3px 0 0;min-height:2px;position:relative}}
+  .bars .b span{{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;color:#9ca3af}}
+  .toprow{{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f3f5;font-size:13px}}
+  .toprow .c{{color:#e8820c;font-weight:700}}
+  .pills{{display:flex;gap:8px;flex-wrap:wrap}}
+  .pill{{background:#f3f4f6;border-radius:16px;padding:4px 12px;font-size:12.5px}}
+  .pill b{{color:#1f2937}}
+  select{{padding:6px 10px;border:1px solid #d5d9e0;border-radius:7px;font-size:13px}}
+</style></head><body>
+<div class="wrap">
+  <h1>이용 현황</h1>
+  <div class="sub">일별 세션·위젯 이용 패턴입니다. 데이터 내용은 기록하지 않으며 세션 메타·위젯 사용만 집계합니다.</div>
+  {nav}
+  <div class="u-sec" style="display:flex;align-items:center;gap:12px">
+    <label>날짜 <select id="u-date"></select></label>
+    <span id="u-empty" style="color:#9ca3af;font-size:13px"></span>
+  </div>
+  <div class="u-cards">
+    <div class="u-card"><div class="v" id="c-sessions">–</div><div class="l">세션 수</div></div>
+    <div class="u-card"><div class="v" id="c-concurrent">–</div><div class="l">최대 동시접속</div></div>
+    <div class="u-card"><div class="v" id="c-avg">–</div><div class="l">평균 사용시간(분)</div></div>
+    <div class="u-card"><div class="v" id="c-completed">–</div><div class="l">종료(완료) 세션</div></div>
+  </div>
+  <div class="u-sec"><h2>시간대별 세션 시작 (UTC)</h2><div class="bars" id="u-hours"></div><div style="height:18px"></div></div>
+  <div class="u-sec"><h2>엔진 · 언어 · 종료 사유</h2>
+    <div style="margin-bottom:8px"><b>엔진</b> <span class="pills" id="u-engine"></span></div>
+    <div style="margin-bottom:8px"><b>언어</b> <span class="pills" id="u-lang"></span></div>
+    <div><b>종료사유</b> <span class="pills" id="u-reason"></span></div>
+  </div>
+  <div class="u-sec"><h2>Top 위젯</h2><div id="u-widgets"></div></div>
+</div>
+<script>
+function pills(el, obj){{
+  const e=document.getElementById(el);
+  const items=Object.entries(obj||{{}}).sort((a,b)=>b[1]-a[1]);
+  e.innerHTML = items.length ? items.map(([k,v])=>`<span class="pill">${{k}} <b>${{v}}</b></span>`).join('') : '<span style="color:#9ca3af">–</span>';
+}}
+async function loadDay(day){{
+  const r = await fetch('/api/admin/usage/summary?date='+day, {{cache:'no-store'}});
+  const d = await r.json();
+  if(!d.ok){{ document.getElementById('u-empty').textContent='데이터 없음'; return; }}
+  document.getElementById('c-sessions').textContent = d.sessions;
+  document.getElementById('c-concurrent').textContent = d.max_concurrent;
+  document.getElementById('c-avg').textContent = (d.avg_duration_sec/60).toFixed(1);
+  document.getElementById('c-completed').textContent = d.completed;
+  const mx = Math.max(1, ...d.by_hour);
+  document.getElementById('u-hours').innerHTML = d.by_hour.map((v,h)=>
+    `<div class="b" style="height:${{Math.round(v/mx*100)}}%" title="${{h}}시: ${{v}}"><span>${{h}}</span></div>`).join('');
+  pills('u-engine', d.by_engine); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
+  const tw=document.getElementById('u-widgets');
+  tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ? d.top_widgets.map(w=>
+    `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span class="c">${{w.count}}</span></div>`).join('')
+    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (세션 종료 후 집계됨)</span>';
+}}
+(async function(){{
+  const sel=document.getElementById('u-date');
+  let days=[];
+  try{{ const r=await fetch('/api/admin/usage/days',{{cache:'no-store'}}); const d=await r.json(); days=d.days||[]; }}catch(e){{}}
+  const today=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  if(!days.includes(today)) days.unshift(today);
+  sel.innerHTML = days.map(d=>`<option value="${{d}}">${{d.slice(0,4)}}-${{d.slice(4,6)}}-${{d.slice(6,8)}}</option>`).join('');
+  sel.onchange=()=>loadDay(sel.value);
+  if(days.length) loadDay(days[0]);
+}})();
+</script></body></html>""")
 
 
 @app.get("/admin/menu", response_class=HTMLResponse)
