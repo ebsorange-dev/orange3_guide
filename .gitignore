@@ -82,3 +82,7 @@ cookies.txt
 .vscode/
 .DS_Store
 Thumbs.db
+
+# 이용 로그(런타임 JSONL) — 디렉터리만 유지
+logs/*
+!logs/.gitkeep

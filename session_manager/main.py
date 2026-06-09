@@ -17,6 +17,7 @@ import glob
 import shutil
 import uuid
 import time
+import json
 import tarfile
 import threading
 import logging
@@ -233,6 +234,34 @@ async def _add_cache_headers(request, call_next):
 # - 별도 핸들러로 분리하지 않고 stdout 동일 채널 사용 → docker logs 한 곳에서 추적
 audit_log = logging.getLogger("orange3.audit")
 
+# ── 이용 로그(usage): 세션·위젯 패턴 분석용 구조화 JSONL ──────────────────────
+# 1단계(2026-06-09): session.start/end 등 세션 단위 이벤트를 호스트 마운트 파일
+# (/logs/usage-YYYYMMDD.jsonl)에 append + stdout. audit_log(요청 단위)와 별개.
+# 프라이버시: 데이터셋·결과 등 내용은 절대 기록 안 함 — sid(짧은)·ip·engine·lang·
+# duration·위젯id 같은 메타만. 보존기간 경과분은 cleanup_loop 에서 정리.
+USAGE_LOG_DIR = os.environ.get("USAGE_LOG_DIR", "/logs")
+USAGE_RETENTION_DAYS = int(os.environ.get("USAGE_RETENTION_DAYS", "90"))
+_usage_lock = threading.Lock()
+
+def usage_event(event: str, **fields) -> None:
+    """이용 이벤트 1건을 /logs/usage-YYYYMMDD.jsonl 에 기록 (+ stdout [USAGE])."""
+    try:
+        rec = {"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "event": event}
+        for k, v in fields.items():
+            if v is not None:
+                rec[k] = v
+        line = json.dumps(rec, ensure_ascii=False)
+        path = os.path.join(
+            USAGE_LOG_DIR, "usage-" + time.strftime("%Y%m%d", time.gmtime()) + ".jsonl")
+        with _usage_lock:
+            os.makedirs(USAGE_LOG_DIR, exist_ok=True)
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        audit_log.info("[USAGE] " + line)
+    except Exception as _ue:
+        log.warning(f"[usage] 기록 실패: {_ue}")
+
+
 @app.middleware("http")
 async def _audit_log_middleware(request, call_next):
     if request.method in _MUTATING_METHODS:
@@ -308,7 +337,17 @@ async def _sid_ip_binding(request, call_next):
                     bound = sess.get("client_ip")
                     if bound is None:
                         sess["client_ip"] = client_ip
+                        sess["started_at"] = time.time()
                         log.info(f"[{s8(qs_sid)}] SID-IP 바인딩: {client_ip}")
+                        # 1단계: 첫 사용 = 세션 시작 → 이용 로그
+                        try:
+                            usage_event(
+                                "session.start", sid=s8(qs_sid), ip=client_ip,
+                                engine=sess.get("engine", "novnc"),
+                                lang=request.query_params.get("lang"),
+                                ua=(request.headers.get("user-agent") or "")[:120])
+                        except Exception:
+                            pass
                     elif bound != client_ip:
                         log.warning(
                             f"[{s8(qs_sid)}] SID 다른 IP에서 사용 "
@@ -916,9 +955,17 @@ def s8(sid: str | None) -> str:
     return result
 
 
-def remove_session(sid: str):
+def remove_session(sid: str, reason: str = "?"):
     with _lock:
         info = sessions.pop(sid, None)
+    # 1단계: 실 사용자 세션 종료 → 이용 로그 (started_at 있는 것만, warm 풀 제외)
+    if info and info.get("started_at"):
+        try:
+            usage_event(
+                "session.end", sid=s8(sid), engine=info.get("engine", "novnc"),
+                duration_sec=int(time.time() - info["started_at"]), reason=reason)
+        except Exception:
+            pass
     if not info or client is None:
         return
     try:
@@ -1008,7 +1055,7 @@ def cleanup_loop():
             # P3-O2: 만료 직전 워크플로우 자동 저장 (배정된 세션만 — warm 풀 제외)
             if not info.get("warm", False):
                 _autosave_workflow(sid, info)
-            remove_session(sid)
+            remove_session(sid, reason="timeout")
             with _warm_lock:
                 if sid in _warm_pool:
                     _warm_pool.remove(sid)
@@ -8356,7 +8403,7 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         return html_response(LOADING_PAGE.format(sid=sid, lang=lang))
     else:
         log.info(f"[{s8(sid)}] 컨테이너 없음 → 새 세션으로 dispatch")
-        remove_session(sid)
+        remove_session(sid, reason="container_gone")
         dispatch = (
             "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
             "<style>body{background:#fff;margin:0}</style></head><body>"
@@ -10397,6 +10444,105 @@ async def metrics_route():
         "default_engine": os.environ.get("DEFAULT_ENGINE", "novnc").lower(),
         "uptime_sec": int(time.time() - _START_TIME),
     })
+
+
+# ── 이용 패턴 집계 (1단계, 2026-06-09) — usage JSONL → 일별 요약 ──────────────
+def _usage_ts_epoch(ts: str):
+    import calendar as _cal
+    try:
+        return _cal.timegm(time.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"))
+    except Exception:
+        return None
+
+
+def _usage_aggregate(day: str) -> dict:
+    """usage-<day>.jsonl 1일치를 집계 (세션수·시간대·길이·engine/lang·종료사유·최대동시·Top위젯)."""
+    path = os.path.join(USAGE_LOG_DIR, f"usage-{day}.jsonl")
+    starts = ends = 0
+    by_hour = [0] * 24
+    engines: dict = {}
+    langs: dict = {}
+    reasons: dict = {}
+    widgets: dict = {}        # 2단계: 위젯 사용 빈도
+    durations: list = []
+    timeline: list = []       # (epoch, +1/-1) 최대 동시접속용
+    if os.path.isfile(path):
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                ev = r.get("event"); ts = r.get("ts", "")
+                if ev == "session.start":
+                    starts += 1
+                    try:
+                        by_hour[int(ts[11:13])] += 1
+                    except Exception:
+                        pass
+                    engines[r.get("engine", "?")] = engines.get(r.get("engine", "?"), 0) + 1
+                    lg = r.get("lang") or "?"
+                    langs[lg] = langs.get(lg, 0) + 1
+                    ep = _usage_ts_epoch(ts)
+                    if ep:
+                        timeline.append((ep, 1))
+                elif ev == "session.end":
+                    ends += 1
+                    d = r.get("duration_sec")
+                    if isinstance(d, (int, float)):
+                        durations.append(d)
+                    reasons[r.get("reason", "?")] = reasons.get(r.get("reason", "?"), 0) + 1
+                    ep = _usage_ts_epoch(ts)
+                    if ep:
+                        timeline.append((ep, -1))
+                elif ev == "widget.add":
+                    wn = r.get("widget", "?")
+                    widgets[wn] = widgets.get(wn, 0) + 1
+    timeline.sort()
+    cur = mx = 0
+    for _, delta in timeline:
+        cur += delta; mx = max(mx, cur)
+    durations.sort()
+    n = len(durations)
+    top_widgets = sorted(widgets.items(), key=lambda kv: kv[1], reverse=True)[:20]
+    return {
+        "ok": True, "date": day,
+        "sessions": starts, "completed": ends, "max_concurrent": mx,
+        "avg_duration_sec": (round(sum(durations) / n) if n else 0),
+        "median_duration_sec": (durations[n // 2] if n else 0),
+        "by_hour": by_hour, "by_engine": engines, "by_lang": langs,
+        "by_end_reason": reasons,
+        "top_widgets": [{"widget": w, "count": c} for w, c in top_widgets],
+    }
+
+
+@app.get("/api/admin/usage/summary")
+async def api_admin_usage_summary(date: str | None = None):
+    """일별 이용 패턴 요약 (admin). date=YYYYMMDD (기본 오늘 UTC)."""
+    day = date or time.strftime("%Y%m%d", time.gmtime())
+    if not (len(day) == 8 and day.isdigit()):
+        return JSONResponse({"ok": False, "error": "date=YYYYMMDD 형식"}, status_code=400)
+    try:
+        return JSONResponse(_usage_aggregate(day))
+    except Exception as e:
+        log.warning(f"[usage-summary] 집계 실패: {e}")
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+@app.get("/api/admin/usage/days")
+async def api_admin_usage_days():
+    """이용 로그가 있는 날짜 목록 (admin) — 대시보드 날짜 선택용."""
+    days = []
+    try:
+        for fn in os.listdir(USAGE_LOG_DIR):
+            if fn.startswith("usage-") and fn.endswith(".jsonl"):
+                days.append(fn[6:14])
+    except Exception:
+        pass
+    return JSONResponse({"ok": True, "days": sorted(days, reverse=True)})
 
 
 # ── Xpra 전환 실험 라우트 (Phase 2, 2026-05-23) ─────────────────────────────
@@ -13041,7 +13187,7 @@ async def api_admin_terminate_all(request: Request):
                 skipped.append(sid)
                 continue
             try:
-                remove_session(sid)
+                remove_session(sid, reason="admin")
                 killed.append(sid)
             except Exception as e:
                 errs.append(f"{s8(sid)}: {e}")
@@ -13051,7 +13197,7 @@ async def api_admin_terminate_all(request: Request):
             _warm_pool.clear()
         for sid in warm_sids:
             try:
-                remove_session(sid)
+                remove_session(sid, reason="admin")
                 killed.append(sid)
             except Exception as e:
                 errs.append(f"warm {s8(sid)}: {e}")
@@ -14550,6 +14696,6 @@ setInterval(loadAll, 5000);
 async def delete_session(sid: str):
     if sid not in sessions:
         return {"error": "세션 없음"}
-    remove_session(sid)
+    remove_session(sid, reason="admin_delete")
     return {"status": "삭제됨"}
 

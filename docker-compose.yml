@@ -38,6 +38,8 @@ services:
       # admin 기본 설정(위젯 가시성 등) — 런타임 파일(sessions/admin_settings.json) 없을 때
       # 1회 시드. 삭제한 위젯이 클론·신규 서버에도 유지되게 함 (A안).
       - ./admin_settings.default.json:/app/admin_settings.default.json:ro
+      # 이용 로그(usage JSONL) — 세션·위젯 패턴 분석용. 호스트 logs/ 에 영속.
+      - ./logs:/logs:rw
       # 사이드바 최상단 메뉴 버튼용 로고 이미지
       - ./session_manager/orange_logo.png:/app/orange_logo.png:ro
       # HTML 페이지들 — 폴더 단위로 마운트 (Dataset 버튼 / Analysis-Datasets 버튼 / 분류 모달)
