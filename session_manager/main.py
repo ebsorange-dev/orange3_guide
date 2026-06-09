@@ -13571,6 +13571,10 @@ _ADMIN_AUTH_TEMPLATE = """
   setWrap(false); whenReady(function(){ setWrap(false); }); // 인증 확인 전 내용 가림(플래시 방지)
   firebase.initializeApp(cfg);
   var auth = firebase.auth();
+  // 세션 지속성(SESSION): 브라우저/탭을 모두 닫으면 로그아웃 → 재접속 시 재로그인 필요.
+  // 공용 PC(교육 환경) 보안용. 현재 로그인 중인 사용자도 SESSION 으로 마이그레이션되어
+  // 다음 브라우저 종료 시 로그아웃됨. (기본값 LOCAL=IndexedDB 영속 → 브라우저 닫아도 유지였음)
+  try { auth.setPersistence(firebase.auth.Auth.Persistence.SESSION); } catch(e){}
   var _of = window.fetch.bind(window);
   // 인증 상태가 처음 확정될 때까지 기다리는 게이트 — reload 직후 세션 복원 전에
   // /api/admin 요청이 토큰 없이 나가 401 나는 레이스 방지.
