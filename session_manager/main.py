@@ -13070,6 +13070,16 @@ async def session_meta(engine: str = "basic"):
     engine: "basic" (noVNC) | "pilot" (Xpra). 기타 값은 basic 으로 정규화."""
     eng = "Pilot" if engine.lower() in ("pilot", "xpra") else "Basic"
     version = await _get_orange_version()
+    # 위젯 카탈로그 캐시(sessions/admin_widget_catalog.json)는 gitignore 라 GitHub
+    # 클론엔 없음 → admin/widgets 페이지를 한 번도 안 열면 캐시 미생성 → count=0.
+    # meta 호출 시 캐시가 없으면 워밍풀 컨테이너에서 1회 빌드해 자가 복구. (2026-06-10)
+    if _load_admin_widget_catalog() is None:
+        try:
+            cat = await _fetch_widget_catalog_via_warm()
+            if cat:
+                _save_admin_widget_catalog(cat)
+        except Exception as e:
+            log.warning(f"[meta] widget catalog build failed: {e}")
     count = _count_active_widgets()
     return JSONResponse({
         "ok": True,
