@@ -2111,6 +2111,32 @@ WRAPPER_PAGE = """<!DOCTYPE html>
          상단 2px 여백 (2026-05-25) — 햄버거 메뉴 버튼 위 공간 */
       align-items:center; padding:2px 0 0 0; gap:0;
     }}
+    /* ── n8n 스타일 좌측 네비게이션 (2026-06-10) — 위젯 카테고리 레일 대체 ──
+       접힘 43px(캔버스 left:43px 정렬 유지) / 펼침 214px 오버레이. */
+    #html-widget-dock {{ display:none !important; }}
+    #app-nav {{
+      position:fixed; top:83px; left:0; bottom:0; width:43px;
+      background:#ffffff; border-right:1px solid #e8e8ec; z-index:8600;
+      display:flex; flex-direction:column; padding:6px 0; gap:1px;
+      overflow:hidden; transition:width .16s ease, box-shadow .16s ease;
+    }}
+    #app-nav.expanded {{ width:214px; box-shadow:4px 0 20px rgba(0,0,0,0.10); }}
+    .an-top {{ display:flex; align-items:center; height:38px; padding:0 7px; margin-bottom:4px; flex-shrink:0; }}
+    .an-brand {{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; color:#1a1a1c; white-space:nowrap; overflow:hidden; opacity:0; transition:opacity .12s; }}
+    #app-nav.expanded .an-brand {{ opacity:1; }}
+    .an-brand img {{ width:24px; height:24px; border-radius:5px; flex-shrink:0; }}
+    .an-toggle {{ margin-left:auto; width:29px; height:29px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:7px; cursor:pointer; color:#666; }}
+    .an-toggle:hover {{ background:#f1f1f3; }}
+    .an-item {{ display:flex; align-items:center; gap:13px; height:38px; margin:1px 6px; padding:0 8px; border-radius:8px; color:#3a3a40; cursor:pointer; white-space:nowrap; transition:background .1s; flex-shrink:0; }}
+    .an-item:hover {{ background:#f1f1f3; }}
+    .an-item.active {{ background:#fdeee2; color:#d2691e; }}
+    .an-item > svg {{ width:21px; height:21px; flex-shrink:0; }}
+    .an-label {{ font-size:13.5px; font-weight:500; opacity:0; transition:opacity .1s; }}
+    #app-nav.expanded .an-label {{ opacity:1; }}
+    .an-badge {{ font-size:9px; font-weight:700; color:#7c3aed; background:#f3e8ff; padding:1px 6px; border-radius:6px; margin-left:auto; opacity:0; transition:opacity .1s; }}
+    #app-nav.expanded .an-badge {{ opacity:1; }}
+    .an-spacer {{ flex:1; min-height:8px; }}
+    .an-sep {{ height:1px; background:#ececed; margin:5px 14px; flex-shrink:0; }}
     .hwd-cat {{
       width:28px; height:33px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
@@ -3113,6 +3139,46 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div class="hwd-divider hwd-menu-sep" aria-hidden="true"></div>
     <!-- 카테고리 항목들은 페이지 로드 시 _loadWidgetCatalog()가 .hwd-cat 으로 채워 넣음 -->
   </div>
+
+  <!-- ── n8n 스타일 좌측 네비게이션 (위젯 카테고리 레일 대체, 2026-06-10) ── -->
+  <nav id="app-nav">
+    <div class="an-top">
+      <span class="an-brand"><img src="/logo" alt=""/>Orange 3</span>
+      <div class="an-toggle" title="펼치기 / 접기" onclick="toggleAppNav()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </div>
+    </div>
+    <div class="an-item" title="새 문서" onclick="wfAddTab()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="an-label">New</span>
+    </div>
+    <div class="an-item active" title="Overview" onclick="appNavSelect(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+      <span class="an-label">Overview</span>
+    </div>
+    <div class="an-item" title="Chat (Preview)" onclick="appNavSelect(this); showToast('Chat — 준비 중 (Preview)', 2500)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.6A8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"/></svg>
+      <span class="an-label">Chat</span><span class="an-badge">Preview</span>
+    </div>
+    <div class="an-spacer"></div>
+    <div class="an-sep"></div>
+    <div class="an-item" title="Templates" onclick="openLessonTemplates()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="an-label">Templates</span>
+    </div>
+    <div class="an-item" title="Insights" onclick="showToast('Insights — 준비 중', 2500)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="13"/><line x1="10" y1="20" x2="10" y2="8"/><line x1="16" y1="20" x2="16" y2="4"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+      <span class="an-label">Insights</span>
+    </div>
+    <div class="an-item" title="Help" onclick="showToast('Help — 준비 중', 2500)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="16.6" r="0.6" fill="currentColor" stroke="none"/></svg>
+      <span class="an-label">Help</span>
+    </div>
+    <div class="an-item" title="Settings" onclick="toggleLang()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="an-label">Settings</span>
+    </div>
+  </nav>
 
   <!-- ── 단계 2B: 카테고리 클릭 시 표시되는 위젯 목록 패널 ── -->
   <div id="hwd-panel" aria-hidden="true">
@@ -4697,6 +4763,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
 
     /* ── 토스트 ── */
+    /* ── n8n 스타일 좌측 네비게이션 토글/선택 (2026-06-10) ── */
+    function toggleAppNav() {{
+      var n = document.getElementById('app-nav');
+      if (n) n.classList.toggle('expanded');
+    }}
+    function appNavSelect(el) {{
+      document.querySelectorAll('#app-nav .an-item.active').forEach(function(x) {{ x.classList.remove('active'); }});
+      if (el) el.classList.add('active');
+    }}
+
     function showToast(msg, duration) {{
       const t = document.getElementById('toast');
       t.textContent = msg;
