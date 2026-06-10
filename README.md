@@ -42,8 +42,9 @@ GitHub 클론만으로는 **소스 코드는 모두 받아지지만, 일부 런�
    해당 카테고리 폴더에 `.tab` 파일을 두고 `git add -f data/<카테고리>/<파일>.tab` 로 추적에
    추가한다(`.gitignore` 가 `data/` 를 기본 제외하므로 `-f` 필요). `.tab` 은
    `.gitattributes` 가 LF 로 고정한다(CRLF 시 컨테이너 파싱 깨짐).
-3. **교재 워크플로우(`_upload_ows_/`)** — 대용량(>100MB)이라 리포 제외. 필요 시 별도 배포본을
-   해당 경로에 푼다(없어도 핵심 기능은 동작).
+3. **교재 워크플로우(`_upload_ows_/`)** — 기본 제외하되 `orange3_book/`(교재 BOOK 워크플로우,
+   ~154MB)은 리포에 **포함**되어 클론하면 바로 사용 가능. 그 외 `_upload_ows_/` 대용량 콘텐츠를
+   추가하려면 별도 배포본을 해당 경로에 푼다.
 4. **이미지 빌드** — `owfile.py` 등 커스텀이 GUI 이미지에 반영되려면 클론 후 반드시 재빌드:
    `docker compose --profile build-only build orange3-gui`.
 

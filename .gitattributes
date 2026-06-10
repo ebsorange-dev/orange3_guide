@@ -38,3 +38,7 @@ Dockerfile.*      text eol=lf
 *.ows   binary
 *.woff  binary
 *.woff2 binary
+*.xlsx  binary
+*.xls   binary
+*.pptx  binary
+*.docx  binary
