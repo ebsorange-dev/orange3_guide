@@ -28,6 +28,28 @@ EBS Orange3 웹 배포 — Docker 기반 한국어 Orange3 GUI를 브라우저�
 cp .env.example .env   # HOST_BASE, Google OAuth 값 입력 (.env 는 커밋 금지)
 ```
 
+## 클론 후 셋업 체크리스트 (필수)
+
+GitHub 클론만으로는 **소스 코드는 모두 받아지지만, 일부 런타임 콘텐츠·환경설정은
+`.gitignore` 로 제외**되어 있어 그대로 실행하면 File 위젯의 데이터셋 연결 등이 동작하지
+않는다(데이터셋 카탈로그가 비고, 파일 탐색기가 `/data` 를 찾지 못함). 아래를 반드시 수행한다.
+
+1. **`.env` 생성** — `cp .env.example .env` 후 `HOST_BASE` 를 이 머신의 실제 경로로 수정
+   (드라이브 문자 소문자 + 앞에 `/`. 예: `e:\proj` → `/e/proj`). 이 값이 `data/` 등의
+   bind-mount 경로(`HOST_DATA_PATH`)를 결정한다. 비면 `/data` 가 마운트되지 않는다.
+2. **데이터셋(`data/`)** — 기본 예제 데이터셋(Classification·Clustering·Regression·Text,
+   약 52MB)은 리포에 **포함되어 있다**(클론하면 바로 사용 가능). 추가 데이터셋을 넣으려면
+   해당 카테고리 폴더에 `.tab` 파일을 두고 `git add -f data/<카테고리>/<파일>.tab` 로 추적에
+   추가한다(`.gitignore` 가 `data/` 를 기본 제외하므로 `-f` 필요). `.tab` 은
+   `.gitattributes` 가 LF 로 고정한다(CRLF 시 컨테이너 파싱 깨짐).
+3. **교재 워크플로우(`_upload_ows_/`)** — 대용량(>100MB)이라 리포 제외. 필요 시 별도 배포본을
+   해당 경로에 푼다(없어도 핵심 기능은 동작).
+4. **이미지 빌드** — `owfile.py` 등 커스텀이 GUI 이미지에 반영되려면 클론 후 반드시 재빌드:
+   `docker compose --profile build-only build orange3-gui`.
+
+> 요약: **빠지는 건 소스가 아니라 `data/` 외 런타임 콘텐츠와 `.env`(경로/시크릿 환경변수).**
+> 위 4단계를 마치면 File 위젯 데이터셋 연결·파일 탐색이 로컬과 동일하게 동작한다.
+
 ## 배포 / 실행 (Docker)
 
 이 프로젝트는 **Docker 기반 배포만** 사용한다(서버리스/Vercel 미사용 — `vercel.json` 에서
@@ -52,4 +74,5 @@ GCE 리눅스 VM 으로 외부 공개하려면 [`deploy/gce/README.md`](deploy/g
 ## 참고
 
 - 화면 전송은 noVNC WebSocket RFB (스크린샷 폴링 아님)
-- 런타임 데이터(`sessions/`, `config/`, `data/`)·대용량 교재 콘텐츠(`_upload_ows_/`)는 리포에서 제외
+- 런타임 데이터(`sessions/`, `config/`)·대용량 교재 콘텐츠(`_upload_ows_/`)는 리포에서 제외
+- 기본 예제 데이터셋(`data/`, ~52MB)은 `git add -f` 로 추적에 포함 — 클론 즉시 사용 가능

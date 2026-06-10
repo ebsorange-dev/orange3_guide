@@ -10,6 +10,10 @@
 # 기본: Git 이 텍스트를 자동 감지하고 저장소에는 LF 로 정규화
 * text=auto
 
+# ── 데이터셋(.tab 탭구분) — 리눅스 컨테이너에서 읽으므로 항상 LF (CRLF 시 파싱 깨짐) ──
+*.tab             text eol=lf
+data/**           text eol=lf
+
 # ── 컨테이너 실행 스크립트 / 엔트리포인트 — 반드시 LF ──
 *.sh              text eol=lf
 *.bash            text eol=lf
