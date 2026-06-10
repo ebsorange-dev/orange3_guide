@@ -108,6 +108,17 @@
   .dot-timeseries     { background: #10b981; }
   .dot-bio            { background: #ec4899; }
   .dot-misc           { background: #9ca3af; }
+  /* 카테고리 아이콘(리스트 행) — 점 대신 인라인 SVG. 색은 dot 팔레트 재사용 */
+  .list-ico { width: 20px; height: 20px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+  .list-ico svg { width: 18px; height: 18px; }
+  .ico-classification { color:#3b82f6; }
+  .ico-regression     { color:#ef4444; }
+  .ico-clustering     { color:#f59e0b; }
+  .ico-text           { color:#8b5cf6; }
+  .ico-image          { color:#06b6d4; }
+  .ico-timeseries     { color:#10b981; }
+  .ico-bio            { color:#ec4899; }
+  .ico-misc           { color:#9ca3af; }
 
   .main {
     flex: 1; height: 100%; overflow-y: auto;
@@ -128,7 +139,7 @@
   }
   .list-header, .list-row {
     display: grid;
-    grid-template-columns: 50px 22px 1fr 1.8fr 100px;
+    grid-template-columns: 50px 26px 1fr 1.8fr 100px;
     gap: 8px; align-items: center;
   }
   .list-header {
@@ -501,6 +512,19 @@ function buildTabs() {
   });
 }
 
+// 카테고리별 인라인 SVG 아이콘 — 네트워크 0, 즉시 로드·고정 사이즈.
+const CAT_ICON = {
+  classification: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.6"/></svg>',
+  regression: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>',
+  clustering: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="7" cy="8" r="1.7"/><circle cx="10" cy="5.5" r="1.7"/><circle cx="5.5" cy="11" r="1.7"/><circle cx="16.5" cy="15" r="1.7"/><circle cx="19" cy="18" r="1.7"/><circle cx="14.5" cy="18.5" r="1.7"/></svg>',
+  text: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16.5" x2="15" y2="16.5"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg>',
+  bio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 12 7 12 10 4 14 20 17 12 21 12"/></svg>',
+  timeseries: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>',
+  misc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'
+};
+function catIcon(k){ return CAT_ICON[k] || CAT_ICON.misc; }
+
 function rowHTML(d) {
   const id = `${d.cat}_${d.file}`;
   const checked = selectedId === id ? "checked" : "";
@@ -514,7 +538,7 @@ function rowHTML(d) {
       <div class="col-select">
         <input type="radio" name="dataset-select" class="radio" value="${id}" ${checked}>
       </div>
-      <div><span class="list-dot dot-${d.cat}"></span></div>
+      <div><span class="list-ico ico-${d.cat}">${catIcon(d.cat)}</span></div>
       <div class="col-title">${d.title} ${locIcon}<span class="file">${d.file}</span></div>
       <div class="col-desc">${_dsc(d)}</div>
       <div class="col-meta">
