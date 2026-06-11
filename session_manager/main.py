@@ -367,6 +367,10 @@ except Exception as e:
 
 # ── 환경 변수 ──
 ORANGE3_IMAGE      = os.environ.get("ORANGE3_IMAGE", "orange3-gui")
+# ── 웹앱(orange3web) 버전 — About 모달에 표시되는 단일 출처(single source of truth).
+#    릴리스/소스 변경 시 여기 한 곳만 수정한다(또는 배포 시 WEB_APP_VERSION 환경변수로 오버라이드).
+#    (Orange3 본체 버전은 컨테이너에서 자동 조회하므로 여기서 관리하지 않음.)
+WEB_APP_VERSION    = os.environ.get("WEB_APP_VERSION", "1.6.12")
 PORT_START         = int(os.environ.get("PORT_START", "8090"))
 PORT_END           = int(os.environ.get("PORT_END", "8199"))
 SESSION_TIMEOUT    = int(os.environ.get("SESSION_TIMEOUT", "1800"))
@@ -1570,11 +1574,14 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* ── 헤더 바 ── */
     #header-bar {{
-      position:fixed; top:0; left:0; right:0; height:52px;
+      position:fixed; top:0; left:43px; right:0; height:42px;
       background:#fff; border-bottom:none;
       display:flex; align-items:center; padding:0 12px; gap:8px;
       z-index:9500; box-shadow:none;
     }}
+    /* Orange 3 로고는 좌측 사이드바(#app-nav .an-brand)로 이동 — 헤더 중복 로고 숨김.
+       헤더 우측 기능 버튼(Open/Analysis-Datasets/Templates/Option)도 좌측 메뉴로 이동했으므로 숨김. */
+    #logo, .hdr-sep, #header-right {{ display:none !important; }}
     #logo {{
       display:flex; align-items:center; gap:7px;
       font-size:17px; font-weight:700; color:#222; white-space:nowrap;
@@ -1609,7 +1616,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       display:none; position:absolute; top:calc(100% + 6px); left:0;
       background:#fff; border:1px solid #e5e5ea; border-radius:10px;
       box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:160px;
-      padding:4px 0; z-index:9200;
+      padding:4px 0; z-index:9700;
     }}
     #menu-dropdown.open {{ display:block; }}
     .mi {{
@@ -1621,7 +1628,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* 헤더 가운데 안내 문구 (Phase 5, 2026-05-24) */
     #header-caption {{
-      margin-left:14px;
+      margin-left:5px;
       color:#888; font-size:12px; font-weight:500;
       font-family:-apple-system,"Malgun Gothic",sans-serif;
       letter-spacing:0.1px; white-space:nowrap;
@@ -1660,17 +1667,56 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #lang-btn:hover {{ background:#f5f5f7; }}
     .lang-chevron {{ font-size:10px; color:#888; }}
     #lang-dropdown {{
-      display:none; position:fixed; top:52px; right:12px;
+      display:none; position:fixed; top:42px; right:12px;
       background:#fff; border:1px solid #e5e5ea; border-radius:10px;
       box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:148px;
       padding:4px 0; z-index:99999;
     }}
     #lang-dropdown.open {{ display:block; }}
+    /* Settings 서브메뉴 (Option 등) */
+    #settings-menu {{
+      display:none; position:fixed; background:#fff; border:1px solid #e5e5ea; border-radius:10px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:150px; padding:4px 0; z-index:9700;
+    }}
+    #settings-menu.open {{ display:block; }}
+    /* Help 드롭다운 — settings-menu 와 동일 스타일 (2026-06-12) */
+    #help-menu {{
+      display:none; position:fixed; background:#fff; border:1px solid #e5e5ea; border-radius:10px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:170px; padding:4px 0; z-index:9700;
+    }}
+    #help-menu.open {{ display:block; }}
+    /* About 모달 (2026-06-12) */
+    #about-modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
+      z-index:9800; align-items:center; justify-content:center; }}
+    #about-modal-overlay.open {{ display:flex; }}
+    #about-modal {{ background:#fff; border-radius:12px; width:min(440px,92vw);
+      box-shadow:0 25px 60px rgba(0,0,0,0.35); overflow:hidden; }}
+    .about-head {{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px 6px; }}
+    .about-title {{ font-size:18px; font-weight:700; color:#1a1a2e; }}
+    .about-close {{ background:none; border:none; color:#9ca3af; font-size:18px; line-height:1; cursor:pointer; }}
+    .about-close:hover {{ color:#4b5563; }}
+    .about-body {{ padding:10px 22px 18px; }}
+    .about-divider {{ height:1px; background:#e5e7eb; margin:11px 0; }}
+    .about-row {{ display:flex; gap:16px; padding:9px 0; font-size:13.5px; }}
+    .about-lbl {{ width:130px; flex-shrink:0; color:#6b7280; }}
+    .about-val {{ color:#1a1a2e; word-break:break-all; }}
+    .about-val a {{ color:#F47B20; text-decoration:none; }}
+    .about-val a:hover {{ text-decoration:underline; }}
+    .about-license {{ color:#F47B20; }}
+    .about-foot {{ padding:0 22px 20px; text-align:right; }}
+    .about-ok {{ background:#fff; color:#374151; border:1px solid #d1d5db; border-radius:8px; padding:9px 22px;
+      font-size:13px; font-weight:600; cursor:pointer; transition:background .12s, border-color .12s; }}
+    .about-ok:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
+    .set-mi {{ display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:13px; color:#222; cursor:pointer; }}
+    .set-mi:hover {{ background:#f3f4f6; }}
+    .set-mi-ic {{ font-size:14px; display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; }}
+    .set-mi-ic svg {{ display:block; }}
+    .set-mi-chev {{ margin-left:auto; color:#9ca3af; font-size:15px; line-height:1; padding-left:14px; }}
     /* 언어 드롭다운 바깥(캔버스) 클릭 감지용 투명 백드롭. top 은 toggleLang 에서
        헤더 바로 아래로 동적 설정 → 헤더 버튼 영역은 덮지 않음. z-index 는 드롭다운
        (99999)보다 아래라 항목 선택은 그대로 가능. */
     #lang-backdrop {{
-      display:none; position:fixed; top:52px; left:0; right:0; bottom:0;
+      display:none; position:fixed; top:42px; left:0; right:0; bottom:0;
       z-index:99990; background:transparent;
     }}
     #lang-backdrop.open {{ display:block; }}
@@ -1683,10 +1729,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* ── VNC iframe ── */
     #vnc-frame {{
-      position:fixed; top:83px; left:0; right:0; border:none;
-      width:100vw; height:calc(100vh - 83px);
+      position:fixed; top:73px; left:43px; right:0; border:none;
+      width:calc(100vw - 43px); height:calc(100vh - 73px);
+      transition:left .16s ease, width .16s ease;
       border:none; display:block;
+      /* 리프래쉬 시 iframe 재로드 중 + translateZ(0) GPU 레이어 가장자리 seam 에서
+         어두운 기본 배경이 검은 라인으로 비치는 문제 → iframe 자체를 흰색으로 칠해
+         재로드 중에도, seam 가장자리에서도 흰색만 노출되게 함 (2026-06-12). */
+      background:#ffffff;
       will-change:transform; transform:translateZ(0);
+      backface-visibility:hidden;
     }}
     /* ── 위젯 패널 하단 footer (Phase 5, 2026-05-24) ──
        기존 canvas 좌하단 footer-info 를 위젯 패널 하단으로 이동.
@@ -1707,7 +1759,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 워크플로우 탭 바 ── */
     /* ── 워크플로우 탭 바 ── */
     #wf-tabbar {{
-      position:fixed; top:52px; left:0; right:0; height:31px;
+      position:fixed; top:42px; left:43px; right:0; height:31px;
       display:flex; align-items:flex-end; justify-content:flex-start; padding:0 11px 0 0; gap:0;
       z-index:9001; pointer-events:none;
       background:transparent;
@@ -1850,12 +1902,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       font-size:14px; color:#222;
     }}
     #lesson-close {{
-      width:34px; height:34px; border:1px solid #e5e5ea; background:#f4f4f6;
-      border-radius:8px; cursor:pointer; font-size:14px; color:#555;
+      width:34px; height:34px; border:none; background:transparent;
+      border-radius:8px; cursor:pointer; font-size:16px; color:#9ca3af;
       display:flex; align-items:center; justify-content:center;
       margin-left:auto;
     }}
-    #lesson-close:hover {{ background:#ececef; color:#000; }}
+    #lesson-close:hover {{ background:transparent; color:#4b5563; }}
     #lesson-body {{ flex:1; display:flex; min-height:0; }}
     #lesson-sidebar {{
       width:230px; flex-shrink:0; padding:14px 12px; overflow-y:auto;
@@ -2100,7 +2152,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 임시 HTML 위젯 사이드바 (이미지 참조 — 컴팩트 + 충분한 여백) ──
        너비 43px, 흰 배경 + 작은 컬러 SVG 아이콘. 아이콘 간격 4px로 시각적 호흡 확보. */
     #html-widget-dock {{
-      position:fixed; top:83px; left:0; bottom:0; width:43px;
+      position:fixed; top:73px; left:0; bottom:0; width:43px;
       background:#ffffff; border-right:1px solid #e0e0e0;
       z-index:8500;
       /* overflow:visible — ::after 풍선 툴팁이 dock 우측 밖으로 확장되도록.
@@ -2114,29 +2166,174 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── n8n 스타일 좌측 네비게이션 (2026-06-10) — 위젯 카테고리 레일 대체 ──
        접힘 43px(캔버스 left:43px 정렬 유지) / 펼침 214px 오버레이. */
     #html-widget-dock {{ display:none !important; }}
+    /* 'Widgets' 메뉴 토글(body.show-widgets) 시: 위젯 독을 n8n 레일 오른쪽(left:43)에
+       플라이아웃으로 표시, 카테고리 클릭 시 패널은 그 오른쪽(left:86). */
+    body.show-widgets #html-widget-dock {{ display:flex !important; left:43px; z-index:9540; }}
+    body.show-widgets #hwd-panel {{ left:86px; z-index:9530; }}
     #app-nav {{
-      position:fixed; top:83px; left:0; bottom:0; width:43px;
-      background:#ffffff; border-right:1px solid #e8e8ec; z-index:8600;
+      position:fixed; top:0; left:0; bottom:0; width:43px;
+      background:#ffffff; border-right:1px solid #e8e8ec; z-index:9600;
       display:flex; flex-direction:column; padding:6px 0; gap:1px;
       overflow:hidden; transition:width .16s ease, box-shadow .16s ease;
     }}
-    #app-nav.expanded {{ width:214px; box-shadow:4px 0 20px rgba(0,0,0,0.10); }}
-    .an-top {{ display:flex; align-items:center; height:38px; padding:0 7px; margin-bottom:4px; flex-shrink:0; }}
-    .an-brand {{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; color:#1a1a1c; white-space:nowrap; overflow:hidden; opacity:0; transition:opacity .12s; }}
-    #app-nav.expanded .an-brand {{ opacity:1; }}
-    .an-brand img {{ width:24px; height:24px; border-radius:5px; flex-shrink:0; }}
-    .an-toggle {{ margin-left:auto; width:29px; height:29px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:7px; cursor:pointer; color:#666; }}
+    #app-nav.expanded {{ width:196px; box-shadow:2px 0 10px rgba(0,0,0,0.07); }}
+    /* 펼침(절충안): 헤더·탭바만 밀어내 상단을 가리지 않음. 캔버스(VNC iframe)는 고정 →
+       iframe 리사이즈/원격 재렌더 없음. 펼친 패널이 캔버스 좌측 일부를 덮지만 보이는
+       콘텐츠는 214px 에서 시작해 push 처럼 보임. (n8n 은 HTML 캔버스라 완전 push 가능) */
+    #header-bar, #wf-tabbar {{ transition:left .16s ease; }}
+    body.nav-expanded #header-bar {{ left:196px; }}
+    body.nav-expanded #wf-tabbar {{ left:196px; }}
+    /* 사이드바 펼침 시 위젯 패널도 함께 오른쪽으로 이동(덮지 않음) */
+    body.nav-expanded #hwd-panel {{ left:196px; }}
+    /* 3컬럼 프레임: [사이드바][위젯패널 300][캔버스]. 패널은 상시 열림이라 캔버스는
+       항상 패널 오른쪽(사이드바폭+300)에서 시작 → 겹침 없음. 사이드바 펼침 시 496. */
+    body.nav-expanded #vnc-frame {{ left:196px; width:calc(100vw - 196px); }}
+    /* 위젯 패널이 열려 있으면 캔버스를 패널 오른쪽으로(닫으면 전체폭 복귀). Chrome :has() */
+    body:has(#hwd-panel.open) #vnc-frame {{ left:343px; width:calc(100vw - 343px); }}
+    body.nav-expanded:has(#hwd-panel.open) #vnc-frame {{ left:496px; width:calc(100vw - 496px); }}
+    .an-top {{ display:flex; align-items:center; justify-content:center; height:46px; padding:0 9px 0 12px; margin-bottom:4px; flex-shrink:0; cursor:pointer; }}
+    #app-nav.expanded .an-top {{ justify-content:flex-start; padding:0 9px 0 14px; }}
+    .an-brand {{ display:flex; align-items:center; gap:8px; min-width:0; }}
+    .an-brand img {{ width:26px; height:26px; border-radius:5px; flex-shrink:0; }}
+    /* 로고 마크 — 굵은 검은색. 접힘=E / 펼침=EBS */
+    /* EBS = EBS English 로고 네이비(인라인 텍스트로 Orange3 와 베이스라인 정렬). Orange3 만 오렌지(em). */
+    .an-logo-e {{ flex-shrink:0; font-family:Arial,"Helvetica Neue",sans-serif; font-weight:900;
+      font-size:17px; letter-spacing:-0.3px; color:#F47B20; line-height:1; }}
+    .an-logo-bs {{ display:none; }}
+    #app-nav.expanded .an-logo-bs {{ display:inline; }}
+    /* Orange 3 글자 — 기존 헤더 로고와 동일하게 오렌지(em) 유지 */
+    .an-brand-txt {{ font-weight:700; font-size:17px; line-height:1; color:#222; white-space:nowrap; display:none; }}
+    .an-brand-txt em {{ color:#F47B20; font-style:normal; }}
+    #app-nav.expanded .an-brand-txt {{ display:inline; }}
+    .an-toggle {{ margin-left:auto; width:28px; height:28px; flex-shrink:0; display:none; align-items:center; justify-content:center; border-radius:7px; color:#666; }}
+    #app-nav.expanded .an-toggle {{ display:flex; }}
     .an-toggle:hover {{ background:#f1f1f3; }}
-    .an-item {{ display:flex; align-items:center; gap:13px; height:38px; margin:1px 6px; padding:0 8px; border-radius:8px; color:#3a3a40; cursor:pointer; white-space:nowrap; transition:background .1s; flex-shrink:0; }}
+    /* 접힘 전용 펼침 아이콘(□) — 펼치면 상단 토글이 대신 보이므로 숨김 */
+    #app-nav.expanded .an-x-toggle {{ display:none !important; }}
+    .an-item {{ display:flex; align-items:center; gap:13px; height:33px; margin:0 6px; padding:0 8px; border-radius:8px; color:#3a3a40; cursor:pointer; white-space:nowrap; transition:background .1s; flex-shrink:0; }}
     .an-item:hover {{ background:#f1f1f3; }}
-    .an-item.active {{ background:#fdeee2; color:#d2691e; }}
-    .an-item > svg {{ width:21px; height:21px; flex-shrink:0; }}
+    .an-item.active {{ background:#ececef; color:#1a1a2e; }}
+    .an-item > svg {{ width:18px; height:18px; flex-shrink:0; stroke-width:1.6; }}
     .an-label {{ font-size:13.5px; font-weight:500; opacity:0; transition:opacity .1s; }}
     #app-nav.expanded .an-label {{ opacity:1; }}
     .an-badge {{ font-size:9px; font-weight:700; color:#7c3aed; background:#f3e8ff; padding:1px 6px; border-radius:6px; margin-left:auto; opacity:0; transition:opacity .1s; }}
+    .an-chev {{ margin-left:auto; color:#9ca3af; font-size:16px; line-height:1; opacity:0; transition:opacity .1s; }}
+    #app-nav.expanded .an-chev {{ opacity:1; }}
     #app-nav.expanded .an-badge {{ opacity:1; }}
     .an-spacer {{ flex:1; min-height:8px; }}
     .an-sep {{ height:1px; background:#ececed; margin:5px 14px; flex-shrink:0; }}
+    /* 위젯 카테고리를 사이드바 안에 직접 통합 (별도 레일 없음) */
+    .an-wcats-head {{ display:none; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase;
+      letter-spacing:.4px; padding:4px 16px 4px; flex-shrink:0; }}
+    #app-nav.expanded .an-wcats-head {{ display:block; }}
+    .an-wcats {{ flex:1; min-height:40px; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; gap:1px; }}
+    .an-wcats::-webkit-scrollbar {{ width:5px; }}
+    .an-wcats::-webkit-scrollbar-thumb {{ background:rgba(0,0,0,0.16); border-radius:3px; }}
+    .an-wcat > .an-wcat-ic {{ width:20px; height:20px; flex-shrink:0; object-fit:contain; }}
+    .an-wcat-ini {{ display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; color:#555; border-radius:4px; background:#eef0f2; }}
+    /* ── Overview 임시 페이지 (n8n home/workflows 참조) ── */
+    /* n8n home/workflows 처럼 캔버스/탭과 분리된 독립 페이지 — 사이드바 오른쪽 전체를
+       덮음(헤더 캡션·탭바 포함). top:0 + z-index 헤더(9500) 위, 사이드바(9600) 아래. */
+    #overview-page {{ display:none; position:fixed; top:0; left:43px; right:0; bottom:0;
+      background:#f7f8fa; z-index:9550; overflow:auto; }}
+    body.nav-expanded #overview-page {{ left:196px; }}
+    #overview-page.show {{ display:block; }}
+    .ovp-inner {{ max-width:1080px; margin:0 auto; padding:34px 40px; }}
+    .ovp-top {{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }}
+    .ovp-title {{ font-size:25px; font-weight:800; color:#1a1a2e; }}
+    .ovp-new {{ background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:7px; padding:8px 16px;
+      font-size:13px; font-weight:400; cursor:pointer; transition:background .12s, border-color .12s; }}
+    .ovp-new:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
+    .ovp-sub {{ color:#6b7280; font-size:13.5px; margin-bottom:18px; }}
+    .ovp-tabs {{ display:flex; gap:18px; border-bottom:1px solid #e5e7eb; margin-bottom:20px; }}
+    .ovp-tab {{ padding:8px 2px; font-size:13.5px; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; }}
+    .ovp-tab.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#F47B20; }}
+    .ovp-grid {{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:16px; }}
+    .ovp-card {{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; min-height:116px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+      color:#4b5563; font-size:13.5px; font-weight:600; cursor:pointer; transition:border-color .12s, box-shadow .12s; }}
+    .ovp-card:hover {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.06); }}
+    .ovp-plus {{ font-size:30px; color:#F47B20; font-weight:300; line-height:1; }}
+    .ovp-note {{ color:#9ca3af; font-size:13px; margin-top:18px; }}
+    /* 하단 '열린 워크플로우' 리스트 (n8n home/workflows 행 구조) */
+    .ovp-list-head {{ font-size:15px; font-weight:700; color:#1a1a2e; margin:28px 0 10px; }}
+    .ovp-list {{ display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; }}
+    /* 페이지네이션 (n8n home/workflows 참조) */
+    #ovp-pager {{ display:none; align-items:center; gap:6px; justify-content:flex-end; margin-top:12px; }}
+    .ovp-pg-info {{ font-size:12px; color:#9ca3af; margin-right:8px; }}
+    .ovp-pg-btn {{ min-width:30px; height:30px; padding:0 8px; border:1px solid #e5e7eb; background:#fff; border-radius:7px;
+      font-size:13px; color:#4b5563; cursor:pointer; transition:background .1s, border-color .1s; }}
+    .ovp-pg-btn:hover:not(:disabled) {{ background:#f3f4f6; border-color:#d1d5db; }}
+    .ovp-pg-btn.active {{ background:#1a1a2e; color:#fff; border-color:#1a1a2e; }}
+    .ovp-pg-btn:disabled {{ opacity:.4; cursor:default; }}
+    .ovp-row {{ display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid #f1f3f5; cursor:pointer; transition:background .1s; }}
+    .ovp-row:last-child {{ border-bottom:none; }}
+    .ovp-row:hover {{ background:#f7f8fa; }}
+    .ovp-row-icon {{ width:18px; height:18px; color:#9ca3af; flex-shrink:0; }}
+    .ovp-row-dot {{ width:18px; flex-shrink:0; text-align:center; color:#9ca3af; font-size:22px; line-height:1; }}
+    .ovp-row-title {{ font-size:13.5px; color:#1a1a2e; font-weight:500; flex:0 0 auto; min-width:150px; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+    /* 워크플로우 설명(.ows description / 활성 워크플로우 정보) — 우측에 한 줄 말줄임 (2026-06-11) */
+    .ovp-row-desc {{ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px; color:#9ca3af; }}
+    .ovp-row-badge {{ font-size:10.5px; font-weight:700; color:#16a34a; background:#dcfce7; padding:2px 9px; border-radius:999px; flex-shrink:0; }}
+    /* ── Templates 인라인 페이지 (2026-06-11) — Templates 탭 선택 시 표시 ── */
+    /* 메인 카테고리 버튼 — Workflows 카드(.ovp-card) 스타일 참조: 아이콘 위·라벨 아래
+       큰 타일, 5개 한 줄(nowrap) 균등 분할 (2026-06-11) */
+    .ovt-cats {{ display:flex; flex-wrap:nowrap; gap:14px; margin-bottom:16px; }}
+    .ovt-cat-btn {{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap:9px; min-height:104px; padding:16px 10px; text-align:center;
+      background:#fff; border:1px solid #e5e7eb; border-radius:12px; cursor:pointer;
+      color:#4b5563; font-size:13.5px; font-weight:600;
+      transition:border-color .12s, box-shadow .12s, background .12s, color .12s; }}
+    .ovt-cat-btn:hover {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.06); color:#1a1a2e; }}
+    /* 선택 상태 — 검은 배경 대신 주황 테두리 하이라이트 (2026-06-11) */
+    .ovt-cat-btn.active {{ background:#fff7f1; color:#1a1a2e; border-color:#F47B20; box-shadow:0 0 0 1px #F47B20 inset; }}
+    .ovt-cat-ic {{ display:flex; color:#F47B20; }}
+    .ovt-cat-ic svg {{ display:block; }}
+    .ovt-cat-btn.active .ovt-cat-ic {{ color:#F47B20; }}
+    .ovt-cat-lbl {{ line-height:1.25; }}
+    .ovt-cat-count {{ font-size:0.82em; font-weight:400; color:#9ca3af; }}
+    /* Example/TextBook 하위 항목 — Workflows/Templates 탭과 동일한 밑줄 탭 방식 (2026-06-11) */
+    .ovt-subs {{ display:flex; flex-wrap:wrap; gap:18px; margin-bottom:18px; border-bottom:1px solid #e5e7eb; }}
+    .ovt-sub-btn {{ padding:8px 2px; font-size:13px; color:#6b7280; background:none; border:none;
+      border-bottom:2px solid transparent; border-radius:0; cursor:pointer; white-space:nowrap;
+      transition:color .12s, border-color .12s; }}
+    .ovt-sub-btn:hover {{ color:#1a1a2e; }}
+    .ovt-sub-btn.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#F47B20; }}
+    /* Example/TextBook 선택 시 위젯 버전 충돌 안내 (2026-06-11) */
+    .ovt-notice {{ font-size:12px; line-height:1.5; color:#b45309; text-align:right; margin:-4px 0 14px; }}
+    /* Example 출처 줄 / TextBook 책 정보 카드 (2026-06-11) */
+    .ovt-info {{ margin-bottom:16px; }}
+    .ovt-source {{ font-size:12.5px; color:#6b7280; }}
+    .ovt-source a {{ color:#2563eb; text-decoration:none; }}
+    .ovt-source a:hover {{ text-decoration:underline; }}
+    .ovt-bi {{ display:flex; gap:16px; align-items:flex-start; padding:14px 16px; background:#fff;
+      border:1px solid #e5e7eb; border-radius:12px; }}
+    .ovt-bi-cover {{ flex-shrink:0; width:64px; }}
+    .ovt-bi-cover img {{ width:64px; height:auto; border-radius:6px; display:block; border:1px solid #eee; }}
+    .ovt-bi-detail {{ flex:1; min-width:0; }}
+    .ovt-bi-title {{ font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:8px; }}
+    .ovt-bi-row {{ display:flex; gap:10px; font-size:12.5px; margin-bottom:3px; }}
+    .ovt-bi-row b {{ width:52px; flex-shrink:0; color:#9ca3af; font-weight:600; }}
+    .ovt-bi-row span {{ color:#4b5563; }}
+    .ovt-bi-actions {{ margin-top:10px; display:flex; align-items:center; gap:10px; }}
+    .ovt-bi-url {{ font-size:12px; color:#2563eb; text-decoration:none; }}
+    .ovt-bi-url:hover {{ text-decoration:underline; }}
+    .ovt-bi-dl {{ font-size:12px; color:#4b5563; background:#fff; border:1px solid #d1d5db; border-radius:7px;
+      padding:5px 12px; cursor:pointer; transition:border-color .12s, background .12s; }}
+    .ovt-bi-dl:hover {{ border-color:#F47B20; background:#fff7f1; }}
+    .ovt-list {{ display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; }}
+    .ovt-row {{ display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid #f1f3f5; cursor:pointer; transition:background .1s; }}
+    .ovt-row:last-child {{ border-bottom:none; }}
+    .ovt-row:hover {{ background:#f7f8fa; }}
+    .ovt-thumb {{ width:84px; height:56px; flex-shrink:0; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;
+      background:#fff; display:flex; align-items:center; justify-content:center; }}
+    .ovt-thumb-img {{ width:100%; height:100%; object-fit:contain; }}
+    .ovt-thumb-ph {{ width:100%; height:100%; display:block; }}
+    .ovt-row-body {{ flex:1 1 auto; min-width:0; }}
+    .ovt-row-title {{ font-size:13.5px; font-weight:600; color:#1a1a2e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+    .ovt-row-desc {{ font-size:12.5px; color:#9ca3af; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+    .ovt-loading, .ovt-empty {{ padding:34px; text-align:center; color:#9ca3af; font-size:13px; }}
+    .ovp-list-empty {{ padding:18px 16px; color:#9ca3af; font-size:13px; text-align:center; }}
     .hwd-cat {{
       width:28px; height:33px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
@@ -2260,10 +2457,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 단계 2B: 카테고리 선택 시 표시되는 위젯 목록 패널 ── */
     .hwd-cat.active {{ background:rgba(0,0,0,0.10); }}
     #hwd-panel {{
-      position:fixed; top:83px; left:43px; bottom:0; width:300px;
+      position:fixed; top:73px; left:43px; bottom:0; width:300px;
       background:#ffffff; border-right:1px solid #e0e0e0;
-      box-shadow:2px 0 8px rgba(0,0,0,0.08);
-      z-index:8499;
+      z-index:9560; transition:left .16s ease;
       display:none; flex-direction:column;
       font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
     }}
@@ -2304,10 +2500,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #hwd-panel-search-clear.show {{ display:flex; }}
     #hwd-panel-search-clear:hover {{ background:#9a9aa1; }}
     #hwd-panel-close {{
-      width:28px; height:28px; flex-shrink:0;
+      width:28px; height:28px; flex-shrink:0; display:flex;
       border:none; background:transparent; cursor:pointer;
       color:#888; border-radius:5px;
-      display:flex; align-items:center; justify-content:center;
+      align-items:center; justify-content:center;
       transition:background .12s, color .12s;
     }}
     #hwd-panel-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
@@ -2524,7 +2720,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 평소엔 pointer-events:none + 투명 → 캔버스 클릭 통과
        드래그 시작 시 .active 클래스 부여 → pointer-events:auto + iframe 위에 떠서 drop 캡처 */
     #hwd-drop-zone {{
-      position:fixed; top:83px; left:43px; right:0; bottom:0;
+      position:fixed; top:73px; left:43px; right:0; bottom:0;
       pointer-events:none; z-index:8600;
       background:transparent;
     }}
@@ -2546,7 +2742,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        맞춰(60px) 마스크 vs 진짜 위젯 독의 시각 차이 최소화. */
     #resize-mask-left {{
       position:fixed;
-      top:83px; left:0; bottom:0; width:43px;  /* HTML 사이드바 너비와 일치 */
+      top:73px; left:0; bottom:0; width:43px;  /* HTML 사이드바 너비와 일치 */
       background:#ffffff;
       border-right:1px solid #e0e0e0;
       z-index:8200;
@@ -2557,7 +2753,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 상단 그라데이션 마스크 — HTML 사이드바(43px)부터 우측 끝까지 */
     #resize-mask-top {{
       position:fixed;
-      top:83px; left:43px; right:0; height:30px;
+      top:73px; left:43px; right:0; height:30px;
       background:linear-gradient(to bottom, #f7f8fa 0%, rgba(247,248,250,0) 100%);
       z-index:8200;
       opacity:0; pointer-events:none;
@@ -2717,7 +2913,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       display:flex; align-items:center; justify-content:center;
       transition:background .1s, color .1s;
     }}
-    .sc-close-btn:hover {{ background:#f3f4f6; color:#1f1f23; }}
+    .sc-close-btn:hover {{ background:transparent; color:#4b5563; }}
     .sc-body {{
       padding:6px 22px 4px;
       font-size:14px; color:#1f1f23; line-height:1.55;
@@ -2787,8 +2983,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:border-color .1s, box-shadow .1s;
     }}
     .wf-input:focus {{
-      border-color:#2563eb;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.12);
+      border-color:#F47B20;
+      box-shadow:0 0 0 3px rgba(244,123,32,0.15);
     }}
     .wf-textarea {{
       width:100%; padding:9px 11px;
@@ -2799,8 +2995,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:border-color .1s, box-shadow .1s;
     }}
     .wf-textarea:focus {{
-      border-color:#2563eb;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.12);
+      border-color:#F47B20;
+      box-shadow:0 0 0 3px rgba(244,123,32,0.15);
     }}
     .wf-check-row {{
       display:flex; align-items:center; gap:8px;
@@ -2826,8 +3022,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     .wf-btn-cancel {{ background:#ffffff; border-color:#d1d5db; color:#4b5563; }}
     .wf-btn-cancel:hover {{ background:#f3f4f6; }}
-    .wf-btn-ok {{ background:#2563eb; color:#ffffff; }}
-    .wf-btn-ok:hover {{ background:#1d4ed8; }}
+    .wf-btn-ok {{ background:#ffffff; border-color:#d1d5db; color:#4b5563; }}
+    .wf-btn-ok:hover {{ background:#f3f4f6; }}
 
     /* ── T 버튼 롱프레스 폰트 크기 드롭다운 (아래쪽) ── */
     #canvas-toolbar .ct-grp {{ position:relative; }}
@@ -2974,7 +3170,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     /* 패닝 오버레이 */
     #pan-overlay {{
-      display:none; position:fixed; top:83px; left:0; right:0; bottom:0;
+      display:none; position:fixed; top:73px; left:0; right:0; bottom:0;
       z-index:151; cursor:grab;
     }}
     #pan-overlay.panning {{ cursor:grabbing; }}
@@ -3142,43 +3338,96 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
   <!-- ── n8n 스타일 좌측 네비게이션 (위젯 카테고리 레일 대체, 2026-06-10) ── -->
   <nav id="app-nav">
-    <div class="an-top">
-      <span class="an-brand"><img src="/logo" alt=""/>Orange 3</span>
-      <div class="an-toggle" title="펼치기 / 접기" onclick="toggleAppNav()">
+    <div class="an-top" title="펼치기 / 접기" onclick="toggleAppNav()">
+      <span class="an-brand"><span class="an-logo-e">O<span class="an-logo-bs">range3</span></span></span>
+      <span class="an-toggle">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
-      </div>
+      </span>
     </div>
-    <div class="an-item" title="새 문서" onclick="wfAddTab()">
+    <div class="an-item" title="새 문서" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); wfAddTab()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span class="an-label">New</span>
     </div>
-    <div class="an-item active" title="Overview" onclick="appNavSelect(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
-      <span class="an-label">Overview</span>
+    <div class="an-item" title="Open" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openOwsDialog()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/></svg>
+      <span class="an-label">Open</span>
     </div>
-    <div class="an-item" title="Chat (Preview)" onclick="appNavSelect(this); showToast('Chat — 준비 중 (Preview)', 2500)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.9-.9L3 21l1.9-5.6A8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5z"/></svg>
-      <span class="an-label">Chat</span><span class="an-badge">Preview</span>
+    <div class="an-item" title="메뉴 (파일)" onclick="event.stopPropagation(); hideOverview(); _hwdToggleSidebarMenu(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12.5" x2="17" y2="12.5"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+      <span class="an-label">Menu</span>
+      <span class="an-chev">›</span>
     </div>
-    <div class="an-spacer"></div>
+    <div class="an-item an-x-toggle" title="펼치기 / 접기" onclick="toggleAppNav()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      <span class="an-label">펼치기</span>
+    </div>
+    <div class="an-item" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); showOverview()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span class="an-label">WorkSpaces</span>
+    </div>
     <div class="an-sep"></div>
-    <div class="an-item" title="Templates" onclick="openLessonTemplates()">
+    <div class="an-item" title="Analysis-Datasets" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openAnalysisDatasets()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
+      <span class="an-label">Analysis-Datasets</span>
+    </div>
+    <div class="an-item" title="Templates" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openLessonTemplates()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span class="an-label">Templates</span>
     </div>
-    <div class="an-item" title="Insights" onclick="showToast('Insights — 준비 중', 2500)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="13"/><line x1="10" y1="20" x2="10" y2="8"/><line x1="16" y1="20" x2="16" y2="4"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
-      <span class="an-label">Insights</span>
-    </div>
-    <div class="an-item" title="Help" onclick="showToast('Help — 준비 중', 2500)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="16.6" r="0.6" fill="currentColor" stroke="none"/></svg>
+    <div class="an-spacer"></div>
+    <div class="an-sep"></div>
+    <div class="an-item" title="Help" onclick="toggleHelpMenu(this, event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.5-2.6 2.5"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       <span class="an-label">Help</span>
+      <span class="an-chev">›</span>
     </div>
-    <div class="an-item" title="Settings" onclick="toggleLang()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <div class="an-item" title="Settings" onclick="toggleSettingsMenu(this, event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span class="an-label">Settings</span>
+      <span class="an-chev">›</span>
     </div>
   </nav>
+
+  <!-- ── Overview 임시 페이지 (n8n home/workflows 참조) ── -->
+  <div id="overview-page" aria-hidden="true">
+    <div class="ovp-inner">
+      <div class="ovp-top">
+        <h1 class="ovp-title">작업 공간</h1>
+        <button class="ovp-new" onclick="hideOverview(); wfAddTab();">+ New Workflow</button>
+      </div>
+      <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다. <b>(임시 페이지)</b></div>
+      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span></div>
+      <!-- Workflows 패널 -->
+      <div id="ovp-pane-wf">
+        <div class="ovp-grid">
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); wfAddTab();">
+            <div class="ovp-plus">+</div>
+            <div>새 워크플로우</div>
+          </div>
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); openOwsDialog();">
+            <div class="ovp-plus" style="font-size:22px;">↥</div>
+            <div>워크플로우 열기</div>
+          </div>
+          <!-- Browse Templates (파란 영역) — 기존 모달 그대로 유지 -->
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); _ensureWidgetPanel(); openLessonTemplates();">
+            <div class="ovp-plus" style="font-size:20px;">▦</div>
+            <div>템플릿 둘러보기</div>
+          </div>
+        </div>
+        <div class="ovp-list-head">열린 워크플로우</div>
+        <div class="ovp-list" id="ovp-wf-list"></div>
+        <div id="ovp-pager"></div>
+      </div>
+      <!-- Templates 인라인 패널 (Templates 탭 선택 시) -->
+      <div id="ovp-pane-tpl" style="display:none;">
+        <div id="ovt-cats" class="ovt-cats"></div>
+        <div id="ovt-subs" class="ovt-subs" style="display:none;"></div>
+        <div id="ovt-notice" class="ovt-notice" style="display:none;"></div>
+        <div id="ovt-info" class="ovt-info" style="display:none;"></div>
+        <div id="ovt-list" class="ovt-list"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- ── 단계 2B: 카테고리 클릭 시 표시되는 위젯 목록 패널 ── -->
   <div id="hwd-panel" aria-hidden="true">
@@ -3326,19 +3575,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <div id="save-confirm-overlay" onclick="if(event.target.id==='save-confirm-overlay')closeSaveConfirm()">
     <div id="save-confirm-modal">
       <div class="sc-header">
-        <div class="sc-title-text">변경 내용을 저장하시겠습니까?</div>
+        <div class="sc-title-text" id="sc-title">변경 내용을 저장하시겠습니까?</div>
         <button class="sc-close-btn" onclick="closeSaveConfirm()" title="닫기">✕</button>
       </div>
       <div class="sc-body">
-        <div><span class="sc-wf-quote">"<span id="sc-wf-name">untitled</span>"</span>의 변경 내용을 저장하시겠습니까?</div>
-        <div class="sc-warn">저장하지 않으면 변경 내용이 손실됩니다.</div>
+        <div id="sc-body-text"><span class="sc-wf-quote">"<span id="sc-wf-name">untitled</span>"</span>의 변경 내용을 저장하시겠습니까?</div>
+        <div class="sc-warn" id="sc-warn">저장하지 않으면 변경 내용이 손실됩니다.</div>
       </div>
       <div class="sc-footer">
-        <button class="sc-btn" onclick="closeSaveConfirm()">취소</button>
-        <button class="sc-btn" onclick="closeSaveConfirm()">저장 안 함</button>
+        <button class="sc-btn" id="sc-btn-cancel" onclick="closeSaveConfirm()">취소</button>
+        <button class="sc-btn" id="sc-btn-dontsave" onclick="closeSaveConfirm()">저장 안 함</button>
         <!-- 주의: 저장 버튼은 closeSaveConfirm() 후 _doSaveWorkflow()를 동기 호출.
              showSaveFilePicker는 사용자 제스처 컨텍스트 필요 — await 사이 끼면 활성화 만료. -->
-        <button class="sc-btn sc-btn-primary"
+        <button class="sc-btn sc-btn-primary" id="sc-btn-save"
                 onclick="closeSaveConfirm(); _doSaveWorkflow();">저장</button>
       </div>
     </div>
@@ -3405,8 +3654,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           </svg>
           Open
         </div>
-        <div style="flex:1;font-size:12.5px;color:#6b7280;line-height:1.45;padding:0 16px;">왼쪽 탭에서 소스를 선택하고, .ows 워크플로우 파일을 불러옵니다.</div>
-        <div onclick="closeOpenOwsModal()" style="width:34px;height:34px;border:1px solid #e5e5ea;background:#f4f4f6;border-radius:8px;cursor:pointer;font-size:14px;color:#555;display:flex;align-items:center;justify-content:center;">✕</div>
+        <div id="open-subtitle" style="flex:1;font-size:12.5px;color:#6b7280;line-height:1.45;padding:0 16px;">왼쪽 탭에서 소스를 선택하고, .ows 워크플로우 파일을 불러옵니다.</div>
+        <div onclick="closeOpenOwsModal()" style="width:34px;height:34px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:16px;color:#9ca3af;display:flex;align-items:center;justify-content:center;">✕</div>
       </div>
       <!-- 본문 -->
       <div style="flex:1;display:flex;min-height:0;">
@@ -3440,7 +3689,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           <!-- Example Workflow 패널 -->
           <div id="openpanel-examples" class="openpanel" style="flex:1;display:none;flex-direction:column;min-height:0;">
             <div style="font-size:20px;font-weight:700;color:#1a1a1c;margin-bottom:6px;">Example Workflow</div>
-            <div style="font-size:12.5px;color:#6b7280;margin-bottom:14px;">Orange3 내장 예제 워크플로우 목록</div>
+            <div id="open-ex-subtitle" style="font-size:12.5px;color:#6b7280;margin-bottom:14px;">Orange3 내장 예제 워크플로우 목록</div>
             <div style="flex:1;min-height:0;overflow:auto;">
               <div id="open-examples-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
                 <div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">로딩 중...</div>
@@ -3478,7 +3727,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             </div>
           </div>
           <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-            <button onclick="closeOpenOwsModal()" style="background:#f4f4f6;color:#444;border:1px solid #e5e5ea;padding:8px 18px;border-radius:8px;font-weight:500;cursor:pointer;font-size:13px;">취소</button>
+            <button id="open-cancel-btn" onclick="closeOpenOwsModal()" style="background:#f4f4f6;color:#444;border:1px solid #e5e5ea;padding:8px 18px;border-radius:8px;font-weight:500;cursor:pointer;font-size:13px;">취소</button>
           </div>
         </div>
       </div>
@@ -4766,11 +5015,380 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── n8n 스타일 좌측 네비게이션 토글/선택 (2026-06-10) ── */
     function toggleAppNav() {{
       var n = document.getElementById('app-nav');
-      if (n) n.classList.toggle('expanded');
+      if (!n) return;
+      n.classList.toggle('expanded');
+      document.body.classList.toggle('nav-expanded', n.classList.contains('expanded'));
+    }}
+    /* 위젯 카테고리를 좌측 사이드바 안에 직접 렌더 (별도 레일 없음).
+       window._hwdCats(카탈로그 로드 후 세팅)를 읽어 항목 생성 → 클릭 시 _toggleWidgetPanel. */
+    function _buildSidebarWidgets() {{
+      var box=document.getElementById('an-wcats');
+      if (!box || !window._hwdCats) return;
+      box.innerHTML='';
+      window._hwdCats.forEach(function(cat) {{
+        if (!cat || !cat.name) return;
+        var name=cat.name;
+        var item=document.createElement('div');
+        item.className='an-item an-wcat';
+        item.title=name;
+        var key=(typeof _hwdIconKey==='function')?_hwdIconKey(name):'';
+        var ic;
+        if (key) {{
+          ic='<img class="an-wcat-ic" src="/category-icon/'+encodeURIComponent(key)+'" width="20" height="20" decoding="async" alt="">';
+        }} else {{
+          ic='<span class="an-wcat-ic an-wcat-ini">'+_ovEsc(name.substring(0,1))+'</span>';
+        }}
+        item.innerHTML=ic+'<span class="an-label">'+_ovEsc(name)+'</span>';
+        item.addEventListener('click', function() {{
+          if (typeof hideOverview==='function') hideOverview();
+          if (typeof _toggleWidgetPanel==='function') _toggleWidgetPanel(name);
+        }});
+        box.appendChild(item);
+      }});
     }}
     function appNavSelect(el) {{
       document.querySelectorAll('#app-nav .an-item.active').forEach(function(x) {{ x.classList.remove('active'); }});
       if (el) el.classList.add('active');
+    }}
+    function _ovEsc(s) {{ var d=document.createElement('div'); d.textContent=String(s==null?'':s); return d.innerHTML; }}
+    /* n8n home/workflows 참조 — 열린 워크플로우 목록 페이지네이션 */
+    var _ovWfPage = 0, _OV_PER = 8;
+    function _ovRenderWfList() {{
+      var list=document.getElementById('ovp-wf-list'); if(!list) return;
+      var _ovL = (INIT_LANG==='ko') ? {{cur:'현재', empty:'열린 워크플로우가 없습니다.'}}
+               : (INIT_LANG==='sl') ? {{cur:'trenutno', empty:'Ni odprtih delotokov.'}}
+               : {{cur:'Current', empty:'No open workflows.'}};
+      var els=document.querySelectorAll('#wf-tabbar-inner .wf-tab');
+      var total=els.length;
+      if (!total) {{ list.innerHTML='<div class="ovp-list-empty">'+_ovL.empty+'</div>'; _ovRenderPager(0,0); return; }}
+      var pages=Math.ceil(total/_OV_PER);
+      if (_ovWfPage>=pages) _ovWfPage=pages-1;
+      if (_ovWfPage<0) _ovWfPage=0;
+      var start=_ovWfPage*_OV_PER, end=Math.min(start+_OV_PER, total), html='';
+      for (var i=start;i<end;i++) {{
+        var t=els[i], te=t.querySelector('.wf-tab-title');
+        var title=te?te.textContent:('Workflow '+(i+1));
+        var act=t.classList.contains('wf-active');
+        var desc=(t.getAttribute('data-desc')||'').trim();
+        html+='<div class="ovp-row" data-idx="'+i+'">'
+            + '<span class="ovp-row-dot">·</span>'
+            + '<span class="ovp-row-title">'+_ovEsc(title)+'</span>'
+            + (desc?('<span class="ovp-row-desc" title="'+_ovEsc(desc).replace(/"/g,'&quot;')+'">'+_ovEsc(desc)+'</span>'):'<span class="ovp-row-desc"></span>')
+            + (act?'<span class="ovp-row-badge">'+_ovL.cur+'</span>':'')
+            + '</div>';
+      }}
+      list.innerHTML=html;
+      list.querySelectorAll('.ovp-row').forEach(function(row) {{
+        row.addEventListener('click', function() {{
+          var idx=+row.getAttribute('data-idx');
+          var t2=document.querySelectorAll('#wf-tabbar-inner .wf-tab');
+          if (t2[idx]) t2[idx].click();   // 기존 wfSwitch 핸들러 재사용
+          hideOverview();
+        }});
+      }});
+      _ovRenderPager(total, pages);
+    }}
+    function _ovRenderPager(total, pages) {{
+      var pg=document.getElementById('ovp-pager'); if(!pg) return;
+      if (!total || pages<=1) {{ pg.innerHTML=''; pg.style.display='none'; return; }}
+      pg.style.display='flex';
+      var st=_ovWfPage*_OV_PER+1, en=Math.min((_ovWfPage+1)*_OV_PER, total);
+      var info=(INIT_LANG==='ko') ? (total+'개 중 '+st+'–'+en)
+             : (INIT_LANG==='sl') ? (st+'–'+en+' od '+total)
+             : (st+'–'+en+' of '+total);
+      var h='<span class="ovp-pg-info">'+info+'</span>';
+      h+='<button class="ovp-pg-btn" data-go="prev"'+(_ovWfPage<=0?' disabled':'')+'>‹</button>';
+      for (var p2=0;p2<pages;p2++) h+='<button class="ovp-pg-btn'+(p2===_ovWfPage?' active':'')+'" data-go="'+p2+'">'+(p2+1)+'</button>';
+      h+='<button class="ovp-pg-btn" data-go="next"'+(_ovWfPage>=pages-1?' disabled':'')+'>›</button>';
+      pg.innerHTML=h;
+      pg.querySelectorAll('.ovp-pg-btn').forEach(function(b) {{
+        if (b.disabled) return;
+        b.addEventListener('click', function() {{
+          var g=b.getAttribute('data-go');
+          if (g==='prev') _ovWfPage--; else if (g==='next') _ovWfPage++; else _ovWfPage=+g;
+          _ovRenderWfList();
+        }});
+      }});
+    }}
+    function showOverview() {{
+      var p=document.getElementById('overview-page'); if(!p) return;
+      _ovWfPage = 0;
+      try {{ ovpSwitchTab('wf'); }} catch(_e) {{}}   // 항상 Workflows 탭으로 초기화
+      try {{ _ovRenderWfList(); }} catch(_e) {{}}
+      try {{ _ovSyncActiveDesc(); }} catch(_e) {{}}
+      p.classList.add('show');
+    }}
+    /* ── Workflows ↔ Templates 탭 전환 (2026-06-11) ── */
+    function ovpSwitchTab(which) {{
+      var tabs=document.querySelectorAll('#overview-page .ovp-tab');
+      tabs.forEach(function(t){{ t.classList.remove('active'); }});
+      var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl');
+      if (which==='tpl') {{
+        if (tabs[1]) tabs[1].classList.add('active');
+        if (wf) wf.style.display='none';
+        if (tpl) tpl.style.display='';
+        try {{ _ovtInit(); }} catch(_e) {{}}
+      }} else {{
+        if (tabs[0]) tabs[0].classList.add('active');
+        if (tpl) tpl.style.display='none';
+        if (wf) wf.style.display='';
+      }}
+    }}
+    /* Templates 인라인 페이지 — Templates 모달(_lcTemplates)의 데이터를 재사용.
+       상단 카테고리 버튼(개수 배지) + Example/TextBook 하위 버튼 + 썸네일/제목/설명 리스트.
+       기본 = 첫 버튼(Elementary). 전체 통합 보기는 표시하지 않음. (2026-06-11) */
+    var _OVT_CATS = ['초등 Workflow','중등 Workflow','공통 Workflow','Example Workflow','교재 BOOK'];
+    var _ovtInited=false, _ovtActiveCat=null, _ovtActiveSub=null;
+    function _ovtTxt(k) {{
+      var T={{ ko:{{loading:'로딩 중...', empty:'템플릿이 없습니다.'}},
+               en:{{loading:'Loading...', empty:'No templates.'}},
+               sl:{{loading:'Nalaganje...', empty:'Ni predlog.'}} }};
+      return (T[INIT_LANG]||T.en)[k];
+    }}
+    function _ovtHasSubs(key) {{ return (key==='Example Workflow' || key==='교재 BOOK'); }}
+    function _ovtInit() {{
+      if (!_ovtInited) {{ _ovtRenderCats(); _ovtInited=true; }}
+      if (!_ovtActiveCat) _ovtSelectCat('초등 Workflow');   // 첫 버튼(Elementary) 기본 표시
+      // 배경에서 나머지 카테고리도 로드 → 버튼 개수 배지 갱신
+      ['초등 Workflow','Example Workflow','교재 BOOK'].forEach(function(k) {{
+        Promise.resolve(_ovtLoadCat(k)).then(function() {{ _ovtUpdateCounts(); }}).catch(function(){{}});
+      }});
+      _ovtUpdateCounts();
+    }}
+    function _ovtCatLabel(key) {{
+      // 한국어 표시 라벨 오버라이드 (키는 식별자라 유지) — '교재 BOOK' → '교재 Workflow'
+      var _KO_LBL = {{ '교재 BOOK':'교재 Workflow' }};
+      if (INIT_LANG==='ko') return _KO_LBL[key] || key;
+      if (typeof LC_CAT_I18N!=='undefined' && LC_CAT_I18N[key])
+        return LC_CAT_I18N[key][INIT_LANG] || key;
+      return key;
+    }}
+    /* 카테고리 아이콘 (Templates 모달 사이드바와 동일 SVG) */
+    var _OVT_ICONS = {{
+      '초등 Workflow': '<path d="M3 13l5-9 5 9H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="8" cy="10" r="0.8" fill="currentColor"/>',
+      '중등 Workflow': '<rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 7h4M6 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>',
+      '공통 Workflow': '<circle cx="6" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/>',
+      'Example Workflow': '<rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><line x1="6" y1="6" x2="10" y2="10" stroke="currentColor" stroke-width="1.4"/>',
+      '교재 BOOK': '<path d="M3 2.5C3 2.2 3.2 2 3.5 2H12c.3 0 .5.2.5.5v11c0 .3-.2.5-.5.5H4.5C3.7 14 3 13.3 3 12.5v-10z" stroke="currentColor" stroke-width="1.3"/><path d="M3 12.5c0-.8.7-1.5 1.5-1.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5.5" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.1"/><line x1="5.5" y1="7.5" x2="10" y2="7.5" stroke="currentColor" stroke-width="1.1"/>'
+    }};
+    function _ovtRenderCats() {{
+      var host=document.getElementById('ovt-cats'); if(!host) return;
+      var html='';
+      _OVT_CATS.forEach(function(key) {{
+        var ic=_OVT_ICONS[key]||'';
+        html+='<button class="ovt-cat-btn" data-cat="'+_ovEsc(key).replace(/"/g,'&quot;')+'">'
+            + '<span class="ovt-cat-ic"><svg width="24" height="24" viewBox="0 0 16 16" fill="none">'+ic+'</svg></span>'
+            + '<span class="ovt-cat-lbl">'+_ovEsc(_ovtCatLabel(key))+'</span></button>';
+      }});
+      host.innerHTML=html;
+      host.querySelectorAll('.ovt-cat-btn').forEach(function(b) {{
+        b.addEventListener('click', function() {{ _ovtSelectCat(b.getAttribute('data-cat')); }});
+      }});
+    }}
+    /* 메인 버튼별 워크플로우 개수 배지 갱신 (조회 수) */
+    function _ovtUpdateCounts() {{
+      document.querySelectorAll('#ovt-cats .ovt-cat-btn').forEach(function(b) {{
+        var key=b.getAttribute('data-cat');
+        var n=(_lcTemplates||[]).filter(function(t) {{ return _ovtMatch(key,t); }}).length;
+        var badge=b.querySelector('.ovt-cat-count');
+        if (n>0) {{
+          if (!badge) {{ badge=document.createElement('span'); badge.className='ovt-cat-count'; b.appendChild(badge); }}
+          badge.textContent='('+n+')';
+        }} else if (badge) {{ badge.remove(); }}
+      }});
+    }}
+    function _ovtLoadCat(key) {{
+      try {{
+        if (key==='초등 Workflow') return _ensureElementaryLoaded();
+        if (key==='Example Workflow') return Promise.all([_ensureBasicLoaded(), _ensureAllOrange3Loaded()]);
+        if (key==='교재 BOOK') return _ensureBooksListLoaded().then(function() {{
+          return Promise.all((_lcBooks||[]).map(function(b) {{ return _ensureBookWorkflowsLoaded(b.id); }}));
+        }});
+      }} catch(_e) {{}}
+      return Promise.resolve();   // 중등/공통 = HTML 하드코딩, 로드 불필요
+    }}
+    function _ovtMatch(key, t) {{
+      if (key==='Example Workflow') return (t.category==='베이직' || _ORANGE3_CATS.indexOf(t.category)>=0);
+      if (key==='교재 BOOK') return (typeof t.category==='string' && t.category.indexOf('교재:')===0);
+      return t.category===key;
+    }}
+    /* Example/TextBook 의 하위 항목 목록 [{{k:카테고리키, l:라벨}}] */
+    function _ovtSubsFor(key) {{
+      if (key==='Example Workflow')
+        return [{{k:'베이직', l:'Basic'}}].concat(_ORANGE3_CATS.map(function(c) {{ return {{k:c, l:c}}; }}));
+      if (key==='교재 BOOK')
+        return (_lcBooks||[]).map(function(b) {{ return {{k:'교재:'+b.id, l:(b.title||b.id)}}; }});
+      return [];
+    }}
+    function _ovtRenderSubs(subs) {{
+      var host=document.getElementById('ovt-subs'); if(!host) return;
+      var html='';
+      subs.forEach(function(s) {{
+        var n=(_lcTemplates||[]).filter(function(t) {{ return t.category===s.k; }}).length;
+        html+='<button class="ovt-sub-btn" data-sub="'+_ovEsc(s.k).replace(/"/g,'&quot;')+'">'
+            + '<span class="ovt-sub-lbl">'+_ovEsc(s.l)+'</span>'
+            + (n>0?('<span class="ovt-cat-count">('+n+')</span>'):'') + '</button>';
+      }});
+      host.innerHTML=html;
+      host.querySelectorAll('.ovt-sub-btn').forEach(function(b) {{
+        b.addEventListener('click', function() {{ _ovtSelectSub(b.getAttribute('data-sub')); }});
+      }});
+    }}
+    function _ovtSelectSub(subKey) {{
+      _ovtActiveSub=subKey;
+      document.querySelectorAll('#ovt-subs .ovt-sub-btn').forEach(function(b) {{
+        b.classList.toggle('active', b.getAttribute('data-sub')===subKey);
+      }});
+      _ovtRenderRows(function(t) {{ return t.category===subKey; }});
+      try {{ _ovtRenderInfo(); }} catch(_e) {{}}   // TextBook=책 정보 / Example=출처 갱신
+    }}
+    function _ovtNoticeText() {{
+      var T={{
+        ko:'⚠ 워크플로우 안의 위젯 버전 충돌이 발생할 수 있습니다. 오류가 발생하는 경우 새로운 워크플로우 구성해 보세요.',
+        en:'⚠ Widget version conflicts may occur within the workflow. If an error occurs, try building a new workflow.',
+        sl:'⚠ V poteku lahko pride do nasprotij med različicami gradnikov. Če pride do napake, sestavite nov potek.'
+      }};
+      return T[INIT_LANG]||T.en;
+    }}
+    function _ovtBookLbl(k) {{
+      var T={{ ko:{{publisher:'출판사', author:'저자', download:'다운로드'}},
+               en:{{publisher:'Publisher', author:'Author', download:'Download'}},
+               sl:{{publisher:'Založnik', author:'Avtor', download:'Prenesi'}} }};
+      return (T[INIT_LANG]||T.en)[k];
+    }}
+    function _ovtBookCardHtml(meta) {{
+      var cover = meta.cover_url ? '<div class="ovt-bi-cover"><img src="'+meta.cover_url+'" alt="" loading="lazy"></div>' : '';
+      var rows='';
+      if (meta.publisher) rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('publisher')+'</b><span>'+_ovEsc(meta.publisher)+'</span></div>';
+      if (meta.author)    rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('author')+'</b><span>'+_ovEsc(meta.author)+'</span></div>';
+      var acts='';
+      if (meta.url) {{
+        var short=String(meta.url).replace(/^https?:\/\//,'').slice(0,50);
+        acts += '<a class="ovt-bi-url" href="'+_ovEsc(meta.url).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener noreferrer">'+_ovEsc(short)+'</a>';
+      }}
+      if (meta.download_url || meta.url)
+        acts += '<button class="ovt-bi-dl" onclick="downloadBookZip()">'+_ovtBookLbl('download')+'</button>';
+      return '<div class="ovt-bi">'+cover+'<div class="ovt-bi-detail">'
+           + '<div class="ovt-bi-title">'+_ovEsc(meta.title||'')+'</div>'
+           + rows + (acts?('<div class="ovt-bi-actions">'+acts+'</div>'):'')
+           + '</div></div>';
+    }}
+    /* Example=출처 줄 / TextBook=활성 책 정보 카드. 그 외 카테고리는 숨김. */
+    function _ovtRenderInfo() {{
+      var el=document.getElementById('ovt-info'); if(!el) return;
+      if (_ovtActiveCat==='Example Workflow') {{
+        el.innerHTML='<div class="ovt-source">[출처] <a href="https://orangedatamining.com/examples/" target="_blank" rel="noopener noreferrer">https://orangedatamining.com/examples/</a></div>';
+        el.style.display='';
+      }} else if (_ovtActiveCat==='교재 BOOK') {{
+        var bookId=(_ovtActiveSub && _ovtActiveSub.indexOf('교재:')===0) ? _ovtActiveSub.slice('교재:'.length) : null;
+        var meta=bookId ? (_lcBooks||[]).find(function(b) {{ return b.id===bookId; }}) : null;
+        if (meta) {{ _lcCurrentBookId=bookId; el.innerHTML=_ovtBookCardHtml(meta); el.style.display=''; }}
+        else {{ el.innerHTML=''; el.style.display='none'; }}
+      }} else {{
+        el.innerHTML=''; el.style.display='none';
+      }}
+    }}
+    function _ovtSelectCat(key) {{
+      _ovtActiveCat=key; _ovtActiveSub=null;
+      document.querySelectorAll('#ovt-cats .ovt-cat-btn').forEach(function(b) {{
+        b.classList.toggle('active', b.getAttribute('data-cat')===key);
+      }});
+      // Example/TextBook 선택 시에만 위젯 버전 충돌 안내 노출
+      var notice=document.getElementById('ovt-notice');
+      if (notice) {{
+        if (_ovtHasSubs(key)) {{ notice.textContent=_ovtNoticeText(); notice.style.display=''; }}
+        else {{ notice.style.display='none'; }}
+      }}
+      var subsHost=document.getElementById('ovt-subs');
+      var list=document.getElementById('ovt-list'); if(!list) return;
+      list.innerHTML='<div class="ovt-loading">'+_ovtTxt('loading')+'</div>';
+      Promise.resolve(_ovtLoadCat(key)).then(function() {{
+        if (_ovtActiveCat!==key) return;   // 그새 다른 카테고리 선택 시 무시
+        _ovtUpdateCounts();
+        if (_ovtHasSubs(key)) {{
+          var subs=_ovtSubsFor(key);
+          if (subsHost) {{ subsHost.style.display=''; _ovtRenderSubs(subs); }}
+          if (subs.length) {{ _ovtSelectSub(subs[0].k); }}   // 첫 하위 선택 (전체 미표시)
+          else {{ list.innerHTML='<div class="ovt-empty">'+_ovtTxt('empty')+'</div>'; }}
+          try {{ _ovtRenderInfo(); }} catch(_e) {{}}   // Example=출처 / TextBook=책 정보
+        }} else {{
+          if (subsHost) {{ subsHost.style.display='none'; subsHost.innerHTML=''; }}
+          _ovtRenderRows(function(t) {{ return _ovtMatch(key,t); }});
+          try {{ _ovtRenderInfo(); }} catch(_e) {{}}   // 비대상 카테고리 → 숨김
+        }}
+      }}).catch(function() {{ if (_ovtActiveCat===key) _ovtRenderRows(function(t) {{ return _ovtMatch(key,t); }}); }});
+    }}
+    function _ovtRenderRows(pred) {{
+      var list=document.getElementById('ovt-list'); if(!list) return;
+      var rows=(_lcTemplates||[]).filter(pred);
+      if (!rows.length) {{ list.innerHTML='<div class="ovt-empty">'+_ovtTxt('empty')+'</div>'; return; }}
+      var html='';
+      rows.forEach(function(t, idx) {{
+        var _Li=(t.i18n && INIT_LANG!=='ko') ? (t.i18n[INIT_LANG]||t.i18n.en) : null;
+        var title=((_Li&&_Li.title)||t.title||'');
+        var desc=((_Li&&_Li.desc)||t.desc||'');
+        var thumb = t.thumbnail
+          ? '<img class="ovt-thumb-img" src="'+t.thumbnail+'" alt="" loading="lazy" decoding="async">'
+          : '<span class="ovt-thumb-ph" style="background:'+(t.color||'#e5e7eb')+'"></span>';
+        html+='<div class="ovt-row" data-idx="'+idx+'">'
+            + '<div class="ovt-thumb">'+thumb+'</div>'
+            + '<div class="ovt-row-body"><div class="ovt-row-title">'+_ovEsc(title)+'</div>'
+            + '<div class="ovt-row-desc">'+_ovEsc(desc)+'</div></div>'
+            + '</div>';
+      }});
+      list.innerHTML=html;
+      list.querySelectorAll('.ovt-row').forEach(function(el) {{
+        el.addEventListener('click', function() {{
+          var t=rows[+el.getAttribute('data-idx')]; if(!t) return;
+          if (t.path && typeof window.wfAddTemplateTab==='function') {{
+            hideOverview();
+            window.wfAddTemplateTab(t.path, t.title, t.filename);
+          }} else {{
+            try {{ showToast('템플릿 선택: '+(t.title||'')+' (준비 중)', 2500); }} catch(_e) {{}}
+          }}
+        }});
+      }});
+    }}
+    /* 활성 워크플로우의 저장된 설명(서버 /workflow-info)을 가져와 해당 행에 표기.
+       업로드한 .ows 탭 설명은 탭 생성 시 data-desc 로 이미 채워짐. (2026-06-11) */
+    function _ovSyncActiveDesc() {{
+      fetch('/workflow-info?sid=' + SID).then(function(r){{ return r.json(); }}).then(function(j){{
+        if (!j || !j.ok) return;
+        var d = (j.description || '').trim(); if (!d) return;
+        var a = document.querySelector('#wf-tabbar-inner .wf-tab.wf-active');
+        if (a) a.setAttribute('data-desc', d);
+        try {{ _ovRenderWfList(); }} catch(_e) {{}}
+      }}).catch(function(){{}});
+    }}
+    /* .ows(blob/File) 의 &lt;scheme description="..."&gt; 추출 → 워크플로우 설명 */
+    window._wfExtractOwsDesc = async function(blob) {{
+      if (!blob || typeof blob.text !== 'function') return '';
+      var text = '';
+      try {{ text = await blob.text(); }} catch(_e) {{ return ''; }}
+      if (!text) return '';
+      try {{
+        var doc = new DOMParser().parseFromString(text, 'application/xml');
+        var sc = doc.querySelector('scheme');
+        if (sc) {{ var d = sc.getAttribute('description'); if (d && d.trim()) return d.trim(); }}
+      }} catch(_e) {{}}
+      var m = /<scheme[^>]*\sdescription="([^"]*)"/i.exec(text);
+      if (m && m[1]) {{
+        var s = m[1].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&').trim();
+        if (s) return s;
+      }}
+      return '';
+    }};
+    /* Overview 를 떠나면(워크플로우 선택·카드·다른 메뉴 등 어떤 경로든) 위젯 메뉴 재노출 */
+    function hideOverview() {{
+      var p=document.getElementById('overview-page'); if(p) p.classList.remove('show');
+      _ensureWidgetPanel();
+    }}
+    /* 위젯 메뉴 항상 노출 — 닫혀 있으면 다시 연다 */
+    function _ensureWidgetPanel() {{
+      var panel = document.getElementById('hwd-panel');
+      if (panel && panel.classList.contains('open')) return;
+      var cat = (window._hwdCats && window._hwdCats[0] && window._hwdCats[0].name) || 'Data';
+      try {{ _toggleWidgetPanel(cat); }} catch(_e) {{}}
     }}
 
     function showToast(msg, duration) {{
@@ -4825,16 +5443,22 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (!dd || !btn) return;
       // 이미 열려있으면 닫기 (재클릭 토글)
       if (dd.classList.contains('open')) {{ closeMenu(); return; }}
-      // 사이드바 버튼 아래쪽에 fixed 위치 — getBoundingClientRect 로 좌표 산출
+      // n8n Help 처럼 항목 '오른쪽'으로 플라이아웃 (아래 드롭다운 아님) — 좌표 산출.
+      // #menu-dropdown 은 헤더(#header-bar z:9500) 안에 있어 z 가 그 스택에 갇힘 →
+      // body 직속으로 옮겨 루트 컨텍스트에서 위젯 패널(9560) 위로 표시되게 함.
+      if (dd.parentNode !== document.body) document.body.appendChild(dd);
       var rect = btn.getBoundingClientRect();
       dd.style.position = 'fixed';
-      dd.style.left = rect.left + 'px';
-      dd.style.top  = (rect.bottom + 6) + 'px';
+      dd.style.left = (rect.right + 8) + 'px';
+      dd.style.top  = rect.top + 'px';
+      dd.style.bottom = 'auto';
       dd.style.right = 'auto';
       dd.classList.add('open');
-      // 다른 드롭다운 닫기
+      // 다른 드롭다운/메뉴 닫기 (중복 노출 방지)
       var lang = document.getElementById('lang-dropdown');
       if (lang) lang.classList.remove('open');
+      try {{ closeSettingsMenu(); }} catch(_e) {{}}
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
     }}
 
 
@@ -5072,8 +5696,47 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       openSaveConfirm(wfTitle || 'untitled');
     }}
 
+    /* Open 모달 + 저장 확인 모달 한/영(+sl) 번역 (2026-06-12) */
+    var _OS_I18N = {{
+      ko: {{ openSub:'왼쪽 탭에서 소스를 선택하고, .ows 워크플로우 파일을 불러옵니다.',
+             dropPre:'.ows 파일을 드래그 하거나 ', dropLink:'여기를 클릭', dropPost:'해 선택하세요.',
+             exSub:'Orange3 내장 예제 워크플로우 목록',
+             gdriveNote:'도메인 확정 및 정식 서비스 오픈 후 구글 드라이브 연결 설정을 제공 예정입니다.',
+             cancel:'취소', scTitle:'변경 내용을 저장하시겠습니까?',
+             scPre:'', scPost:'의 변경 내용을 저장하시겠습니까?',
+             scWarn:'저장하지 않으면 변경 내용이 손실됩니다.', dontSave:'저장 안 함', save:'저장' }},
+      en: {{ openSub:'Select a source on the left, then open a .ows workflow file.',
+             dropPre:'Drag a .ows file or ', dropLink:'click here', dropPost:' to select.',
+             exSub:'Built-in Orange3 example workflows',
+             gdriveNote:'Google Drive connection will be available after the domain is finalized and the service launches.',
+             cancel:'Cancel', scTitle:'Save changes?',
+             scPre:'Do you want to save changes to ', scPost:'?',
+             scWarn:"Your changes will be lost if you don't save them.", dontSave:"Don't Save", save:'Save' }},
+      sl: {{ openSub:'Izberite vir na levi in odprite datoteko poteka .ows.',
+             dropPre:'Povlecite datoteko .ows ali ', dropLink:'kliknite tukaj', dropPost:' za izbiro.',
+             exSub:'Vgrajeni primeri potekov Orange3',
+             gdriveNote:'Povezava z Google Drive bo na voljo po dokončni določitvi domene in zagonu storitve.',
+             cancel:'Prekliči', scTitle:'Shrani spremembe?',
+             scPre:'Ali želite shraniti spremembe v ', scPost:'?',
+             scWarn:'Če ne shranite, bodo spremembe izgubljene.', dontSave:'Ne shrani', save:'Shrani' }}
+    }};
+    function _osLang() {{ return _OS_I18N[(typeof INIT_LANG!=='undefined'?INIT_LANG:'en')] || _OS_I18N.en; }}
+    function _applyOpenSaveI18n(code) {{
+      var d = _OS_I18N[code] || _osLang();
+      var set = function(id, t) {{ var el=document.getElementById(id); if (el) el.textContent=t; }};
+      set('open-subtitle', d.openSub); set('open-ex-subtitle', d.exSub);
+      set('open-gdrive-note', d.gdriveNote); set('open-cancel-btn', d.cancel);
+      var dz = document.getElementById('open-drop-zone');
+      if (dz) dz.innerHTML = d.dropPre + '<span style="color:#2563eb;text-decoration:underline;margin:0 4px;">' + d.dropLink + '</span>' + d.dropPost;
+      set('sc-title', d.scTitle); set('sc-warn', d.scWarn);
+      set('sc-btn-cancel', d.cancel); set('sc-btn-dontsave', d.dontSave); set('sc-btn-save', d.save);
+    }}
     function openSaveConfirm(wfTitle) {{
-      document.getElementById('sc-wf-name').textContent = wfTitle || 'untitled';
+      var name = wfTitle || 'untitled';
+      var d = _osLang();
+      var body = document.getElementById('sc-body-text');
+      if (body) body.innerHTML = d.scPre + '<span class="sc-wf-quote">"<span id="sc-wf-name"></span>"</span>' + d.scPost;
+      var nm = document.getElementById('sc-wf-name'); if (nm) nm.textContent = name;
       document.getElementById('save-confirm-overlay').classList.add('open');
     }}
 
@@ -5216,6 +5879,78 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var bd = document.getElementById('lang-backdrop');
       if (bd) bd.classList.remove('open');
     }}
+    /* 좌측 메뉴 Option → 언어 드롭다운을 항목 오른쪽에 띄움 (헤더 lang-btn 숨김 대응) */
+    function toggleLangNav(el, ev) {{
+      if (ev) ev.stopPropagation();   // document 클릭 핸들러의 즉시 closeLang 방지
+      var drop = document.getElementById('lang-dropdown');
+      var bd   = document.getElementById('lang-backdrop');
+      if (!drop) return;
+      var rect = el.getBoundingClientRect();
+      drop.style.top = 'auto';
+      drop.style.right = 'auto';
+      drop.style.left = (rect.right + 8) + 'px';
+      drop.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+      var opening = !drop.classList.contains('open');
+      drop.classList.toggle('open');
+      if (bd) {{ bd.style.top = '0px'; bd.classList.toggle('open', opening); }}
+      var md = document.getElementById('menu-dropdown'); if (md) md.classList.remove('open');
+    }}
+    /* Settings 항목 → 하위 서브메뉴(Option) 플라이아웃 */
+    function toggleSettingsMenu(el, ev) {{
+      if (ev) ev.stopPropagation();
+      var m = document.getElementById('settings-menu');
+      if (!m || !el) return;
+      if (m.classList.contains('open')) {{ m.classList.remove('open'); return; }}
+      var rect = el.getBoundingClientRect();
+      m.style.position = 'fixed';
+      m.style.left = (rect.right + 8) + 'px';
+      m.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+      m.style.top = 'auto'; m.style.right = 'auto';
+      m.classList.add('open');
+      var lang = document.getElementById('lang-dropdown'); if (lang) lang.classList.remove('open');
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
+      try {{ closeMenu(); }} catch(_e) {{}}
+    }}
+    function closeSettingsMenu() {{
+      var m = document.getElementById('settings-menu'); if (m) m.classList.remove('open');
+    }}
+    /* Help 항목 → 도움말 드롭다운(Documentation/About) 플라이아웃 */
+    function toggleHelpMenu(el, ev) {{
+      if (ev) ev.stopPropagation();
+      var m = document.getElementById('help-menu');
+      if (!m || !el) return;
+      if (m.classList.contains('open')) {{ m.classList.remove('open'); return; }}
+      var rect = el.getBoundingClientRect();
+      m.style.position = 'fixed';
+      m.style.left = (rect.right + 8) + 'px';
+      m.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+      m.style.top = 'auto'; m.style.right = 'auto';
+      m.classList.add('open');
+      closeSettingsMenu();
+      try {{ closeMenu(); }} catch(_e) {{}}
+      try {{ closeLang(); }} catch(_e) {{}}
+    }}
+    function closeHelpMenu() {{
+      var m = document.getElementById('help-menu'); if (m) m.classList.remove('open');
+    }}
+    /* About 모달 — 버전은 좌하단 메타(#x-mi-ver)에서 가져옴 */
+    function openAboutModal() {{
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
+      var v='';
+      var ve=document.getElementById('x-mi-ver');
+      if (ve) {{ var t=(ve.textContent||'').trim(); if (t && t!=='—') v=t; }}
+      var av=document.getElementById('about-version'); if (av) av.textContent = v || '—';
+      var L=({{ ko:{{title:'About Orange3 (WEB)', version:'버전', source:'소스 코드', websource:'웹 소스 코드', license:'라이선스', close:'닫기'}},
+               en:{{title:'About Orange3 (WEB)', version:'Version', source:'Source Code', websource:'Web Source Code', license:'License', close:'Close'}},
+               sl:{{title:'About Orange3 (WEB)', version:'Različica', source:'Izvorna koda', websource:'Spletna izvorna koda', license:'Licenca', close:'Zapri'}} }})[(typeof INIT_LANG!=='undefined'?INIT_LANG:'en')] || null;
+      if (L) document.querySelectorAll('#about-modal-overlay [data-ab]').forEach(function(el) {{
+        var k=el.getAttribute('data-ab'); if (L[k]) el.textContent=L[k];
+      }});
+      var o=document.getElementById('about-modal-overlay'); if (o) o.classList.add('open');
+    }}
+    function closeAboutModal() {{
+      var o=document.getElementById('about-modal-overlay'); if (o) o.classList.remove('open');
+    }}
 
     /* Templates 버튼 SVG 아이콘 (모든 언어 공통) */
     const _TPL_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/></svg>';
@@ -5257,6 +5992,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         btnNewOpen: '워크플로우 파일 열기',
         btnDatasets: '분석 데이터셋 카탈로그',
         hwdSearchClear: '검색어 지우기',
+        hwdViewGrid: '아이콘 격자 보기',
+        hwdViewList: '목록 보기',
         hwdPanelClose: '패널 닫기',
         modalClose: '닫기',
         sbText: '텍스트 (T) — 길게 누르면 폰트 크기 선택',
@@ -5276,6 +6013,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         btnNewOpen: 'Open workflow file',
         btnDatasets: 'Analysis dataset catalog',
         hwdSearchClear: 'Clear search',
+        hwdViewGrid: 'View as icon grid',
+        hwdViewList: 'View as list',
         hwdPanelClose: 'Close panel',
         modalClose: 'Close',
         sbText: 'Text (T) — long-press for font size',
@@ -5295,6 +6034,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         btnNewOpen: 'Odpri datoteko poteka',
         btnDatasets: 'Katalog analitičnih zbirk',
         hwdSearchClear: 'Počisti iskanje',
+        hwdViewGrid: 'Pogled mreže ikon',
+        hwdViewList: 'Pogled seznama',
         hwdPanelClose: 'Zapri ploščo',
         modalClose: 'Zapri',
         sbText: 'Besedilo (T) — pridržite za velikost pisave',
@@ -5372,6 +6113,39 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       document.querySelectorAll('.li').forEach(el => el.classList.remove('active'));
       const active = document.querySelector(`.li[onclick="setLang('${{code}}')"]`);
       if (active) active.classList.add('active');
+      try {{ applyNewUILang(code); }} catch(_e) {{}}
+      try {{ _applyOpenSaveI18n(code); }} catch(_e) {{}}
+    }}
+    /* 새 사이드바·Overview 라벨 i18n (2026-06-11) — 언어 전환 시 함께 갱신 */
+    function applyNewUILang(code) {{
+      var NAV = {{
+        ko: ['새 문서','열기','메뉴','펼치기','작업 공간','분석 데이터셋','템플릿','도움말','설정'],
+        en: ['New','Open','Menu','Expand','WorkSpaces','Analysis-Datasets','Templates','Help','Settings'],
+        sl: ['Nova','Odpri','Meni','Razširi','Delovni prostori','Zbirke podatkov','Predloge','Pomoč','Nastavitve']
+      }};
+      var arr = NAV[code] || NAV.en;
+      document.querySelectorAll('#app-nav .an-item .an-label').forEach(function(el, i) {{
+        if (arr[i] === undefined) return;
+        el.textContent = arr[i];
+        var item = el.closest('.an-item');     // 툴팁(title)도 언어별로
+        if (item) item.setAttribute('title', arr[i]);
+      }});
+      var topT = ({{ko:'펼치기 / 접기', en:'Expand / Collapse', sl:'Razširi / Skrči'}})[code] || 'Expand / Collapse';
+      var top=document.querySelector('#app-nav .an-top'); if(top) top.setAttribute('title', topT);
+      var OV = {{
+        ko: {{ title:'작업 공간', sub:'워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다. <b>(임시 페이지)</b>', tabs:['워크플로우','템플릿'], newBtn:'+ 새 워크플로우', cards:['새 워크플로우','워크플로우 열기','템플릿 둘러보기'], listHead:'열린 워크플로우' }},
+        en: {{ title:'WorkSpaces', sub:'Workflow home — recent work and templates at a glance. <b>(preview)</b>', tabs:['Workflows','Templates'], newBtn:'+ New Workflow', cards:['New Workflow','Open Workflow','Browse Templates'], listHead:'Open Workflows' }},
+        sl: {{ title:'Delovni prostori', sub:'Domov delotokov — nedavno delo in predloge na enem mestu. <b>(predogled)</b>', tabs:['Delotoki','Predloge'], newBtn:'+ Nov delotok', cards:['Nov delotok','Odpri delotok','Prebrskaj predloge'], listHead:'Odprti delotoki' }}
+      }};
+      var o = OV[code] || OV.en;
+      var t=document.querySelector('.ovp-title'); if(t) t.textContent=o.title;
+      var s=document.querySelector('.ovp-sub'); if(s) s.innerHTML=o.sub;
+      document.querySelectorAll('.ovp-tab').forEach(function(el,i){{ if(o.tabs[i]!==undefined) el.textContent=o.tabs[i]; }});
+      var nb=document.querySelector('.ovp-new'); if(nb) nb.textContent=o.newBtn;
+      document.querySelectorAll('.ovp-grid .ovp-card').forEach(function(el,i){{ var dv=el.querySelector('div:last-child'); if(dv && o.cards[i]!==undefined) dv.textContent=o.cards[i]; }});
+      var lh=document.querySelector('.ovp-list-head'); if(lh) lh.textContent=o.listHead;
+      var opt = ({{ko:'옵션', en:'Option', sl:'Možnosti'}})[code] || 'Option';
+      var om=document.querySelector('.set-mi-tx[data-set="option"]'); if(om) om.textContent=opt;
     }}
     async function setLang(code) {{
       closeLang();
@@ -5396,6 +6170,25 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 서버가 HTML 생성 시 언어 코드를 직접 삽입 — dropdown 은 스크립트 블록 이후에 위치하므로 DOM 완성 후 호출 */
     const INIT_LANG = '{init_lang}';
     document.addEventListener('DOMContentLoaded', function() {{ applyLangUI(INIT_LANG); try {{ applyLcLang(); }} catch(e) {{}} }});
+    /* 방안 C(2026-06-12): 언어 재시작 완료(.app_ready 재생성)를 폴링해 즉시 reload.
+       기존 9초 고정 대기 대체 — 재시작이 빨리 끝나면 그만큼 빨리 reload. 60s 안전
+       타임아웃 후엔 1회 강제 reload. xpra 는 /ready 가 컨테이너 생존만 보므로(=즉시 true)
+       폴링이 너무 일찍 reload → 기존 고정 대기를 유지한다. */
+    function _pollReadyThenReload() {{
+      var IS_XPRA = location.pathname.indexOf('/xpra-wrapped') === 0;
+      if (IS_XPRA) {{ setTimeout(function(){{ window.location.reload(); }}, 9000); return; }}
+      var t0 = Date.now();
+      (function poll() {{
+        fetch('/ready?sid=' + SID, {{cache:'no-store'}})
+          .then(function(r){{ return r.json(); }})
+          .then(function(d){{
+            if (d && d.ready) {{ window.location.reload(); return; }}
+            if (Date.now() - t0 > 60000) {{ window.location.reload(); return; }}
+            setTimeout(poll, 600);
+          }})
+          .catch(function(){{ setTimeout(poll, 800); }});
+      }})();
+    }}
     /* admin default 와 컨테이너 실제 언어가 다르면 자동 정렬 (워밍풀은 영어로 부팅됨).
        setLang() 의 reload 경로는 noVNC 전용이라 xpra 에서 못 쓰므로 직접 호출 +
        현재 URL reload. 1회만 시도 — reload 후엔 컨테이너 lang == INIT_LANG 라 재발화 안 됨.
@@ -5410,7 +6203,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         try {{
           const r = await fetch('/language?sid=' + SID, {{cache:'no-store'}});
           const j = await r.json().catch(function(){{return {{lang:null}};}});
-          if (!j || !j.lang || j.lang === INIT_LANG) return;
+          if (!j || !j.lang) return;
+          /* 방안 C: 서버가 이미 언어 변경 재시작을 진행 중(pending)이면 — warm-pop/
+             set-language 가 이미 INIT_LANG 으로 적용 중이라 2차 set-language 는 중복
+             재시작이다. 쏘지 말고 준비될 때까지만 대기한다. (언어가 이미 일치하면
+             대기조차 불필요.) */
+          if (j.pending) {{
+            if (j.lang !== INIT_LANG) {{
+              try {{ if (typeof showToast === 'function') showToast('언어 적용 중...', 0); }} catch(_) {{}}
+              _pollReadyThenReload();
+            }}
+            return;
+          }}
+          if (j.lang === INIT_LANG) return;
           console.log('[lang-sync] container=' + j.lang + ' → admin default=' + INIT_LANG);
           try {{ if (typeof showToast === 'function') showToast('언어 적용 중...', 0); }} catch(_) {{}}
           sessionStorage.setItem(FLAG, '1');
@@ -5420,8 +6225,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             console.warn('[lang-sync] /set-language 실패:', sd.error);
             sessionStorage.removeItem(FLAG); return;
           }}
-          // 컨테이너 재시작 (~10s 내외) 후 현재 페이지 reload — xpra/noVNC 모두 동작.
-          setTimeout(function() {{ window.location.reload(); }}, 9000);
+          // 방안 C: 9초 고정 대기 대신 .app_ready 폴링 → 재시작 끝나는 즉시 reload.
+          _pollReadyThenReload();
         }} catch(e) {{
           console.warn('[lang-sync] 확인 실패:', e);
           sessionStorage.removeItem(FLAG);
@@ -5429,7 +6234,25 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }}, 500);
     }});
     // 단계 2A: 페이지 로드 시 위젯 카탈로그 가져와 사이드바 카테고리 동적 채움
-    document.addEventListener('DOMContentLoaded', function() {{ _loadWidgetCatalog(); }});
+    document.addEventListener('DOMContentLoaded', function() {{
+      _loadWidgetCatalog();
+      // 사이드바 위젯 카테고리 — 카탈로그(window._hwdCats) 준비되면 채우고, 첫 카테고리 패널을 자동 노출
+      var _wtries = 0, _wAutoOpened = false;
+      var _wiv = setInterval(function() {{
+        _wtries++;
+        var box = document.getElementById('an-wcats');
+        if (window._hwdCats && window._hwdCats.length) {{
+          try {{ _buildSidebarWidgets(); }} catch(_e) {{}}
+          if (!_wAutoOpened) {{
+            _wAutoOpened = true;
+            // 위젯 메뉴(패널)를 바로 노출 — 첫 카테고리 자동 열기
+            try {{ _toggleWidgetPanel((window._hwdCats[0] && window._hwdCats[0].name) || 'Data'); }} catch(_e) {{}}
+          }}
+          if (box && box.children.length) {{ clearInterval(_wiv); }}
+        }}
+        if (_wtries > 90) clearInterval(_wiv);
+      }}, 1000);
+    }});
 
 
     let zoomLevel = 100;
@@ -5460,7 +6283,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       '초등 Workflow': {{en:'Elementary Workflow', sl:'Osnovnošolski potek'}},
       '중등 Workflow': {{en:'Secondary Workflow', sl:'Srednješolski potek'}},
       '공통 Workflow': {{en:'Common Workflow', sl:'Skupni potek'}},
-      '교재 BOOK': {{en:'Textbook', sl:'Učbenik'}}
+      '교재 BOOK': {{en:'TextBook Workflow', sl:'Učbenik'}}
     }};
     var LC_NOTE_I18N = {{
       en:'Select a category and click a card to instantly run an Orange3 workflow.',
@@ -6171,6 +6994,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }}
       if (!document.getElementById('lang-wrap').contains(e.target) &&
           !document.getElementById('lang-dropdown').contains(e.target))  closeLang();
+      var _sm = document.getElementById('settings-menu');
+      if (_sm && _sm.classList.contains('open') && !_sm.contains(e.target) &&
+          !document.getElementById('lang-dropdown').contains(e.target)) closeSettingsMenu();
+      var _hm = document.getElementById('help-menu');
+      if (_hm && _hm.classList.contains('open') && !_hm.contains(e.target)) closeHelpMenu();
       if (!document.getElementById('sb-wrap').contains(e.target)) {{
         document.querySelectorAll('.sb-drop').forEach(function(d) {{ d.classList.remove('sb-open'); }});
       }}
@@ -6658,6 +7486,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         window._hwdLang = j.language || 'en';
         window._hwdWidgetByQname = {{}};
         window._hwdCats = (j.categories || []).slice();
+        try {{ _buildSidebarWidgets(); }} catch(_e) {{ console.warn('[hwd] sidebar widgets build failed', _e); }}
         _renderHtmlDock(window._hwdCats);
       }} catch(e) {{
         console.warn('[hwd] catalog load failed:', e);
@@ -6818,7 +7647,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           + '<rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>'
           + '<rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/></svg>';
         var toggleIconHtml = (savedMode === 'list') ? gridIcon : hamburgerIcon;
-        var toggleTitle    = (savedMode === 'list') ? '아이콘 격자 보기' : '목록 보기';
+        // 토글(격자)·리스트 보기 툴팁 — 현재 페이지 언어(INIT_LANG)로 번역 (2026-06-11)
+        var _ttL = (typeof TT_LANGS !== 'undefined' && TT_LANGS[INIT_LANG]) ? TT_LANGS[INIT_LANG] : null;
+        var toggleTitle    = (savedMode === 'list')
+          ? (_ttL && _ttL.hwdViewGrid ? _ttL.hwdViewGrid : '아이콘 격자 보기')
+          : (_ttL && _ttL.hwdViewList ? _ttL.hwdViewList : '목록 보기');
 
         var html = '';
         cats.forEach(function(cat) {{
@@ -6966,7 +7799,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             else body.classList.remove('view-list');
             // 모든 토글 버튼의 아이콘/title 즉시 갱신 (전역 동기화)
             var nextIcon  = (next === 'list') ? gridIcon : hamburgerIcon;
-            var nextTitle = (next === 'list') ? '아이콘 격자 보기' : '목록 보기';
+            var _ttL2 = (typeof TT_LANGS !== 'undefined' && TT_LANGS[INIT_LANG]) ? TT_LANGS[INIT_LANG] : null;
+            var nextTitle = (next === 'list')
+              ? (_ttL2 && _ttL2.hwdViewGrid ? _ttL2.hwdViewGrid : '아이콘 격자 보기')
+              : (_ttL2 && _ttL2.hwdViewList ? _ttL2.hwdViewList : '목록 보기');
             body.querySelectorAll('.hwd-section-view-toggle').forEach(function(b) {{
               b.innerHTML = nextIcon;
               b.title = nextTitle;
@@ -7039,8 +7875,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var body = document.getElementById('hwd-panel-body');
       if (!body) return;
       var mode = (localStorage.getItem('hwd-view-mode') === 'grid') ? 'grid' : 'list';
-      if (mode === 'grid') body.classList.add('view-grid');
-      else body.classList.remove('view-grid');
+      // 누적(아코디언) 섹션 모드: panel-body 자체에는 grid 미적용 — 섹션별 grid 가 담당.
+      // view-grid 를 붙이면 grid-auto-rows:62px 가 접힌 33px 카테고리 헤더에 적용돼
+      // 행 사이 흰 간격이 생긴다 (2026-06-12 수정).
+      body.classList.remove('view-grid');
+      if (mode === 'list') body.classList.add('view-list');
+      else body.classList.remove('view-list');
     }}
 
     function _closeWidgetPanel() {{
@@ -7219,9 +8059,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var dock = document.getElementById('html-widget-dock');
       if (panel.contains(e.target)) return;
       if (dock && dock.contains(e.target)) return;
+      // 좌측 사이드바(위젯 카테고리 포함) 클릭 시엔 패널 유지 — 다른 메뉴 눌러도 안 사라지게
+      var nav = document.getElementById('app-nav');
+      if (nav && nav.contains(e.target)) return;
       var ctxMenu = document.getElementById('hwd-cat-ctx-menu');
       if (ctxMenu && ctxMenu.contains(e.target)) return;
-      _closeWidgetPanel();
+      // 위젯 패널 상시 노출 — 탭·새탭·캔버스 등 바깥 클릭으로 닫지 않음.
+      // (패널을 닫는 건 Overview 선택 시 명시적 _closeWidgetPanel 호출뿐)
     }});
 
     /* info 버튼 — Workflow Info HTML 모달 열기 (Datasets 스타일) */
@@ -7839,6 +8683,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         tabs.forEach(function(tab, i) {{
           var el = document.createElement('div');
           el.className = 'wf-tab' + (i === active ? ' wf-active' : '');
+          if (tab.description) el.setAttribute('data-desc', tab.description);
           if (busy && i === active) el.style.opacity = '0.6';
 
           var titleEl = document.createElement('span');
@@ -8089,6 +8934,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           tabs.push({{ title: tabTitle, blob: blob }});
           active = tabs.length - 1; render();
           await loadTab(tabs[active]);
+          try {{ tabs[active].description = await window._wfExtractOwsDesc(blob); }} catch(_e) {{}}
         }} catch(e) {{
           showToast('템플릿 열기 실패: ' + (e.message || e), 3000);
         }} finally {{
@@ -8108,6 +8954,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           tabs.push({{ title: tabTitle, blob: file }});
           active = tabs.length - 1; render();
           await loadTab(tabs[active]);
+          try {{ tabs[active].description = await window._wfExtractOwsDesc(file); }} catch(_e) {{}}
           showToast('✓ ' + file.name + ' 새 탭에서 열림', 2500);
         }} catch(e) {{
           showToast('파일 열기 실패: ' + (e.message || e), 3000);
@@ -8147,6 +8994,35 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div class="li" onclick="setLang('en')">English</div>
     <div class="li" onclick="setLang('sl')">Slovenčina</div>
   </div>
+  <!-- Settings 하위 서브메뉴 (Option → 언어 선택) -->
+  <div id="settings-menu">
+    <div class="set-mi" onclick="toggleLangNav(this, event)"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="2" y1="8" x2="14" y2="8"/><path d="M8 2c2.2 2 2.2 10 0 12M8 2c-2.2 2-2.2 10 0 12"/></svg></span><span class="set-mi-tx" data-set="option">Option</span><span class="set-mi-chev">›</span></div>
+  </div>
+  <!-- Help 드롭다운 (n8n 참조) — 항목은 아직 동작 미연결 (2026-06-12) -->
+  <div id="help-menu">
+    <div class="set-mi"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="1"/><line x1="4.5" y1="6" x2="11.5" y2="6"/><line x1="4.5" y1="8.5" x2="9.5" y2="8.5"/></svg></span><span class="set-mi-tx">Documentation</span></div>
+    <div class="set-mi" onclick="openAboutModal()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="8" y1="7.3" x2="8" y2="11" stroke-linecap="round"/><circle cx="8" cy="5" r="0.6" fill="currentColor" stroke="none"/></svg></span><span class="set-mi-tx">About</span></div>
+  </div>
+  <!-- About 모달 (n8n About 참조; 빨간 영역=브랜드/Third-Party/InstanceID/Debug 제거) (2026-06-12) -->
+  <div id="about-modal-overlay" onclick="if(event.target===this) closeAboutModal()">
+    <div id="about-modal">
+      <div class="about-head">
+        <span class="about-title" data-ab="title">About Orange3 (WEB)</span>
+        <button class="about-close" onclick="closeAboutModal()" title="Close" aria-label="Close">✕</button>
+      </div>
+      <div class="about-body">
+        <div class="about-row"><span class="about-lbl" data-ab="version">Version</span><span class="about-val" id="about-version">—</span></div>
+        <div class="about-row"><span class="about-lbl" data-ab="source">Source Code</span><span class="about-val"><a href="https://github.com/biolab/orange3" target="_blank" rel="noopener noreferrer">https://github.com/biolab/orange3</a></span></div>
+        <div class="about-row"><span class="about-lbl" data-ab="license">License</span><span class="about-val about-license">GPL-3.0</span></div>
+        <div class="about-divider"></div>
+        <div class="about-row"><span class="about-lbl" data-ab="version">Version</span><span class="about-val">{web_version}</span></div>
+        <div class="about-row"><span class="about-lbl" data-ab="websource">Web Source Code</span><span class="about-val"><a href="https://github.com/ebsorange-dev/orange3web1.git" target="_blank" rel="noopener noreferrer">https://github.com/ebsorange-dev/orange3web1.git</a></span></div>
+      </div>
+      <div class="about-foot">
+        <button class="about-ok" onclick="closeAboutModal()" data-ab="close">Close</button>
+      </div>
+    </div>
+  </div>
   <!-- 언어 드롭다운 바깥(캔버스) 클릭 감지용 투명 백드롭: iframe 내부 클릭은 부모
        document 의 click 으로 버블되지 않으므로, 드롭다운이 열린 동안 캔버스 위를 덮어
        클릭을 잡아 닫는다. 헤더 영역은 덮지 않음(top 동적 = 헤더 아래). -->
@@ -8155,16 +9031,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
     #x-meta-info {{
-      position: fixed; left: 47px; bottom: 22px; z-index: 50;
+      /* 캔버스 좌하단(위젯 패널 우측)으로 재배치 (2026-06-11) */
+      position: fixed; left: 357px; bottom: 22px; z-index: 50;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       font-size: 10pt; color: #9ca3af; line-height: 1.55;
-      /* 불투명 흰 박스가 좌하단 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
+      /* 불투명 흰 박스가 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
          그림자로 캔버스 위 가독성 유지(위젯이 그대로 보임). 클릭은 pointer-events:none */
       background: transparent;
       padding: 0; border-radius: 0;
       text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
       pointer-events: none;
       display: grid; grid-template-columns: auto auto; column-gap: 22px; row-gap: 2px;
+      justify-items: start;
     }}
     #x-meta-info > div {{ white-space: nowrap; }}
   </style>
@@ -8500,7 +9378,7 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         novnc_url = f"{_base}/?resize=remote&scaling=local&quality=6&compression=6&logging=warn&reconnect=true&reconnect_delay=2000"
         log.info(f"[{s8(sid)}] 래퍼 페이지(fast) → 포트 {info['port']} lang={lang}")
         try:
-            _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang)
+            _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang, web_version=WEB_APP_VERSION)
             # ready splash(로딩 완료 후 환영 카드) + loading splash 숨김 주입 —
             # xpra 와 동일하게 noVNC 에도 적용 (2026-05-31 버그 수정: 기존엔 xpra 만
             # 적용돼 Basic 모드에서 노출 토글이 안 먹던 문제)
@@ -10963,8 +11841,16 @@ async def xpra_http_proxy(sid: str, path: str, request: Request):
                 # .spinneroverlay (재로딩 시 검은 반투명 오버레이) 도 차단.
                 inject = (b'<style id="x-hide-xpra-progress">'
                           b'#progress{display:none !important}'
-                          b'html,body,body.desktop{background:#ffffff !important;'
+                          # #screen(데스크톱 컨테이너) 도 흰색 + overflow 차단 추가
+                          # (2026-06-12): 리프레시 시 원격 데스크톱 해상도가 iframe 보다
+                          # 작아 #screen 다크 배경이 가장자리에 검은 영역/라인으로 비치고,
+                          # #screen 오버플로로 스크롤이 생기던 문제. 해상도 정합 전까지
+                          # 흰 여백으로 표시하고 스크롤은 원천 차단.
+                          b'html,body,body.desktop,#screen{background:#ffffff !important;'
                           b'background-image:none !important}'
+                          b'#screen{overflow:hidden !important}'
+                          b'.window,.windowinside{box-shadow:none !important;'
+                          b'border:0 !important}'
                           # Xpra 알림(Network Performance Issue 등) UI 차단 —
                           # 서버측 bandwidth_warnings=False 패치의 클라이언트
                           # safety net. 모든 notify 토스트 비노출.
@@ -11303,7 +12189,7 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
         _init_lang = _default
     else:
         _init_lang = _avail[0] if _avail else "en"
-    html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=xpra_sid, init_lang=_init_lang)
+    html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=xpra_sid, init_lang=_init_lang, web_version=WEB_APP_VERSION)
     # admin available 언어 외 드롭다운 항목 제거 (단순 문자열 치환 — 라인 단위)
     _ALL_LANG_LINES = {
         "ko": "    <div class=\"li\" onclick=\"setLang('ko')\">한국어</div>",
@@ -12593,17 +13479,30 @@ async def get_language(sid: str | None = None):
         info = sessions.get(sid)
     if not info:
         return JSONResponse({"lang": "en"})
-    ini_path = os.path.join(CONTAINER_SESSIONS_PATH, sid,
-                            "xdg", "config", "biolab.si", "Orange.ini")
+    sess_dir = os.path.join(CONTAINER_SESSIONS_PATH, sid)
+    # 방안 C(2026-06-12): 언어 변경 재시작이 큐잉/진행 중인지 알리는 pending 플래그.
+    # 래퍼 auto lang-sync 가 pending=true 면 2차 set-language(중복 재시작)를 쏘지 않고
+    # /ready 만 폴링해 재시작 완료 후 reload 한다. (.lang_override·.restart_language
+    # 신호 파일이 남아있거나 .app_ready 가 없으면 재시작이 아직 안 끝난 것.)
+    try:
+        _pending = (
+            os.path.exists(os.path.join(sess_dir, ".lang_override")) or
+            os.path.exists(os.path.join(sess_dir, ".restart_language")) or
+            not os.path.exists(os.path.join(sess_dir, ".app_ready"))
+        )
+    except OSError:
+        _pending = False
+    ini_path = os.path.join(sess_dir, "xdg", "config", "biolab.si", "Orange.ini")
     try:
         with open(ini_path, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
                 if line.startswith("language="):
                     lang_name = line.split("=", 1)[1].strip()
-                    return JSONResponse({"lang": INI_TO_CODE.get(lang_name, "en")})
+                    return JSONResponse({"lang": INI_TO_CODE.get(lang_name, "en"),
+                                         "pending": _pending})
     except OSError:
         pass
-    return JSONResponse({"lang": "en"})
+    return JSONResponse({"lang": "en", "pending": _pending})
 
 
 # ── 관리자 설정 (Phase 5, 2026-05-24) ────────────────────────────────────────
@@ -13838,7 +14737,8 @@ async function loadDay(day){{
   const mx = Math.max(1, ...d.by_hour);
   document.getElementById('u-hours').innerHTML = d.by_hour.map((v,h)=>
     `<div class="b" style="height:${{Math.round(v/mx*100)}}%" title="${{h}}시: ${{v}}"><span>${{h}}</span></div>`).join('');
-  pills('u-engine', d.by_engine); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
+  var _eng={{}}; for(var _k in (d.by_engine||{{}})){{ _eng[_k==='noVNC'?'기본엔진':_k]=d.by_engine[_k]; }}
+  pills('u-engine', _eng); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
   const tw=document.getElementById('u-widgets');
   tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ?
     '<div class="toprow" style="color:#9ca3af;font-size:11.5px"><span>위젯</span><span>추가 · <b style="color:#e8820c">실행</b></span></div>' +
@@ -14829,7 +15729,7 @@ async def admin_sessions():
 <title>활성 세션 — 관리자</title>
 <style>
 body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;background:#fafafa;color:#1a1a1c}
-.wrap{max-width:1100px;margin:30px auto;padding:0 20px 40px}
+.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px}
 h1{font-size:22px;margin:0 0 6px;color:#1a1a1c}
 .sub{font-size:13px;color:#6b7280;margin-bottom:24px}
 .sub-bullets{margin:0 0 24px 0;padding-left:20px;line-height:1.65}
@@ -14951,7 +15851,7 @@ tbody tr.admin-row:hover{background:#fef3c7}
         <button class="killall-btn" id="kill-all-main" onclick="terminateAll('main')">운영 세션 일괄 종료</button>
       </div>
     </div>
-    <div class="section-desc">사용자가 접속 중인 noVNC Orange3 세션. 강제 종료 시 사용자의 워크플로우가 자동 저장되며 즉시 끊깁니다. 일괄 종료는 워밍풀까지 비웁니다(자동 재보충).</div>
+    <div class="section-desc">사용자가 접속 중인 기본엔진 Orange3 세션. 강제 종료 시 사용자의 워크플로우가 자동 저장되며 즉시 끊깁니다. 일괄 종료는 워밍풀까지 비웁니다(자동 재보충).</div>
     <div id="tbl-main"></div>
   </div>
 
@@ -15014,7 +15914,7 @@ function fmtIp(ip, isAdminViewer){
 function renderMain(rows){
   document.getElementById('cnt-main').textContent = rows.length + '개';
   const c = document.getElementById('tbl-main');
-  if (!rows.length) { c.innerHTML = '<div class="empty">현재 활성 noVNC 세션이 없습니다.</div>'; return; }
+  if (!rows.length) { c.innerHTML = '<div class="empty">현재 활성 기본엔진 세션이 없습니다.</div>'; return; }
   let html = '<table><thead><tr>'
     + '<th>세션 ID</th><th>컨테이너</th><th>접근 IP</th><th>포트</th><th>상태</th>'
     + '<th>마지막 접속</th><th>남은 시간</th><th>액션</th>'

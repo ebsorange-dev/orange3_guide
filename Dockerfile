@@ -172,6 +172,10 @@ RUN printf '%s\n' \
     '#noVNC_status { display: none !important; }' \
     '#noVNC_transition { opacity: 0 !important; pointer-events: none !important; }' \
     '#noVNC_screen, #noVNC_screen *, #noVNC_canvas, #noVNC_container canvas { cursor: default !important; }' \
+    'html, body, #noVNC_screen { overflow: hidden !important; }' \
+    '*::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }' \
+    '* { scrollbar-width: none !important; -ms-overflow-style: none !important; }' \
+    '#noVNC_screen, #noVNC_container, #noVNC_canvas, #noVNC_container canvas { border: 0 !important; outline: 0 !important; box-shadow: none !important; }' \
     >> /opt/noVNC/app/styles/base.css
 
 

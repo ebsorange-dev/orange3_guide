@@ -215,13 +215,40 @@ if [ -n "$_LANG_CHANGED" ]; then
     _SRC="/opt/orange3-regcache-$_NEW_LANG"
     _INI="/config/xdg/config/biolab.si/Orange.ini"
     if [ -n "$_NEW_LANG" ] && [ -d "$_SRC" ]; then
+        # 방안 D (2026-06-12): cp -r 크로스마운트(E:) 복사 제거 — 사전 빌드된 무거운
+        # registry-cache.pck 를 읽기전용 이미지 캐시로 '심링크'(무복사) 적용한다.
+        # 캐시 디렉터리는 쓰기 가능하게 두어 런타임 생성 파일(widget-registry.pck 등)은
+        # 정상 기록된다. last-used-language==language 이므로 재탐색·registry-cache 재기록이
+        # 없어 읽기전용 심링크로 안전하다. (구조가 예상과 다르면 cp -r 로 폴백)
         mkdir -p /config/xdg/cache
         rm -rf /config/xdg/cache/Orange
-        cp -r "$_SRC/Orange" /config/xdg/cache/Orange 2>/dev/null || true
+        _linked=""
+        _symfail=""
+        for _vd in "$_SRC/Orange"/*/; do
+            [ -d "$_vd" ] || continue
+            _vn=$(basename "$_vd")
+            mkdir -p "/config/xdg/cache/Orange/$_vn"
+            if [ -f "${_vd}registry-cache.pck" ]; then
+                # 심링크 생성 후 실제 resolve(읽기) 가능 여부까지 확인 → 미지원 FS·권한 제약 감지
+                if ln -sf "${_vd}registry-cache.pck" "/config/xdg/cache/Orange/$_vn/registry-cache.pck" 2>/dev/null \
+                   && [ -r "/config/xdg/cache/Orange/$_vn/registry-cache.pck" ]; then
+                    _linked=1
+                else
+                    _symfail=1
+                fi
+            fi
+        done
+        # 심링크 미지원/실패(일부 호스트·마운트) 또는 한 건도 못 걸면 cp -r 폴백 — 리눅스/윈도우 공통 보장
+        if [ -n "$_symfail" ] || [ -z "$_linked" ]; then
+            rm -rf /config/xdg/cache/Orange
+            cp -r "$_SRC/Orange" /config/xdg/cache/Orange 2>/dev/null || true
+            echo "[startapp] 심링크 불가 → cp -r 폴백 적용: $_NEW_LANG (재탐색 생략)"
+        else
+            echo "[startapp] 언어별 레지스트리 캐시 심링크 적용(무복사): $_NEW_LANG (재탐색 생략)"
+        fi
         if [ -f "$_INI" ] && grep -q '^last-used-language=' "$_INI"; then
             sed -i 's/^last-used-language=.*/last-used-language='"$_NEW_LANG"'/' "$_INI"
         fi
-        echo "[startapp] 언어별 레지스트리 캐시 적용: $_NEW_LANG (재탐색 생략)"
     else
         # 사전 빌드 캐시 없는 언어 → 기존 동작(캐시 삭제 후 Orange3 가 재탐색)
         rm -f /config/xdg/cache/Orange/3.*/registry-cache.pck \
@@ -229,10 +256,31 @@ if [ -n "$_LANG_CHANGED" ]; then
         echo "[startapp] 사전 빌드 캐시 없음: $_NEW_LANG → 재탐색"
     fi
 elif [ -d /opt/orange3-regcache ] && [ ! -d /config/xdg/cache/Orange ]; then
-    # 최초 기동: 사전 빌드된 캐시(영어) 복사 → Orange3 시작 시간 60-90s → 15-20s
+    # 최초 기동: 방안 D — 사전 빌드 registry-cache.pck 를 심링크(무복사). cp -r 제거.
+    # Orange3 시작 시간 60-90s → 15-20s (캐시 신뢰) + 바인드마운트 복사 비용 제거.
     mkdir -p /config/xdg/cache
-    cp -r /opt/orange3-regcache/Orange /config/xdg/cache/Orange 2>/dev/null || true
-    echo "[startapp] 레지스트리 캐시 복사 완료"
+    _linked=""
+    _symfail=""
+    for _vd in /opt/orange3-regcache/Orange/*/; do
+        [ -d "$_vd" ] || continue
+        _vn=$(basename "$_vd")
+        mkdir -p "/config/xdg/cache/Orange/$_vn"
+        if [ -f "${_vd}registry-cache.pck" ]; then
+            if ln -sf "${_vd}registry-cache.pck" "/config/xdg/cache/Orange/$_vn/registry-cache.pck" 2>/dev/null \
+               && [ -r "/config/xdg/cache/Orange/$_vn/registry-cache.pck" ]; then
+                _linked=1
+            else
+                _symfail=1
+            fi
+        fi
+    done
+    if [ -n "$_symfail" ] || [ -z "$_linked" ]; then
+        rm -rf /config/xdg/cache/Orange
+        cp -r /opt/orange3-regcache/Orange /config/xdg/cache/Orange 2>/dev/null || true
+        echo "[startapp] 심링크 불가 → cp -r 폴백(최초 기동)"
+    else
+        echo "[startapp] 레지스트리 캐시 심링크 완료(무복사)"
+    fi
 fi
 
 # ── 커스텀 런처로 Orange3 시작 ────────────────────────────────────────────────
