@@ -109,14 +109,16 @@ services:
       # Xpra 유휴 시간대 축소: WARM_PEAK_HOURS 밖에서 이 크기로 축소 (2→4, 2배).
       - XPRA_WARM_POOL_SIZE_IDLE=4
       # ── Google Drive OAuth (OPEN 모달의 LOGIN TO GOOGLE 버튼) ──
-      # 사용하려면 Google Cloud Console 에서 OAuth 2.0 클라이언트 ID 생성 후 값 입력.
-      # · 승인된 리다이렉션 URI 에 GOOGLE_OAUTH_REDIRECT_URI 와 동일한 값 등록 필요.
-      # · 비워두면 LOGIN 버튼 클릭 시 "연동 미설정" 안내 표시.
+      # ★ 실운영 시 변경 필요 — 값은 .env 에서 관리 (이 파일에 직접 입력 금지)
+      # · Google Cloud Console → OAuth 2.0 클라이언트 ID 발급 후 .env 에 입력
+      # · 승인된 리다이렉션 URI 에 GOOGLE_OAUTH_REDIRECT_URI 와 동일한 값 등록 필요
+      # · 비워두면 LOGIN 버튼 클릭 시 "연동 미설정" 안내 표시
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID:-}
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET:-}
       - GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8888/api/gdrive/callback}
-      # ── 관리자 페이지 Firebase 로그인 (2026-05-30) ──
-      # 미설정 시 인증 비활성(개발 모드). 활성화하려면 .env 에 값 채우기.
+      # ── 관리자 페이지 Firebase 로그인 (/admin/*) ──
+      # ★ 실운영 시 반드시 변경 필요 — 값은 .env 에서 관리 (이 파일에 직접 입력 금지)
+      # · 미설정 시 인증 비활성(개발 모드) → 누구나 /admin 접근 가능하므로 운영 전 반드시 설정
       # · FIREBASE_PROJECT_ID: 서버 ID 토큰 검증용 (서비스 계정 키 불필요)
       # · FIREBASE_WEB_CONFIG: 페이지 주입용 웹 config JSON (공개 가능)
       # · ADMIN_EMAILS: 허용 관리자 이메일(쉼표구분). 비우면 프로젝트 모든 계정 허용
