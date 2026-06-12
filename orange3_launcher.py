@@ -994,6 +994,28 @@ def main():
     except Exception as _e:
         print(f"[launcher] readwrite 패치 실패: {_e}", flush=True)
 
+    # ── 1.4-e. 캔버스 뷰 스크롤바 숨김 (2026-06-13) ──────────────────────────
+    #  워크플로우 캔버스(CanvasView=QGraphicsView)의 가로/세로 스크롤바를 숨김.
+    #  ScrollBarAlwaysOff 는 막대 UI 만 감추고 scene 스크롤/팬 기능은 유지된다
+    #  (wheel·드래그·네비게이션·programmatic scroll 모두 정상 동작).
+    try:
+        from orangecanvas.canvas.view import CanvasView as _CV
+        from PyQt5.QtCore import Qt as _QtSB
+        _orig_cv_init = _CV.__init__
+
+        def _patched_cv_init(self, *args, **kwargs):
+            _orig_cv_init(self, *args, **kwargs)
+            try:
+                self.setHorizontalScrollBarPolicy(_QtSB.ScrollBarAlwaysOff)
+                self.setVerticalScrollBarPolicy(_QtSB.ScrollBarAlwaysOff)
+            except Exception:
+                pass
+
+        _CV.__init__ = _patched_cv_init
+        print("[launcher] CanvasView 스크롤바 숨김 패치 적용", flush=True)
+    except Exception as _e:
+        print(f"[launcher] CanvasView 스크롤바 패치 실패: {_e}", flush=True)
+
     # ── 1.5. WidgetManager 패치 ────────────────────────────────────────────────
     #  ① 위젯 다이얼로그를 캔버스 노드 좌하단 +20px 위치에 배치
     #  ② 카드 chrome (이미지 1→2 변환, 이미지 3 하단 라인) — windowwk.md 준수

@@ -1576,7 +1576,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #header-bar {{
       position:fixed; top:0; left:43px; right:0; height:42px;
       background:#fff; border-bottom:none;
-      display:flex; align-items:center; padding:0 12px; gap:8px;
+      display:flex; align-items:center; padding:0 5px; gap:0;
       z-index:9500; box-shadow:none;
     }}
     /* Orange 3 로고는 좌측 사이드바(#app-nav .an-brand)로 이동 — 헤더 중복 로고 숨김.
@@ -1628,9 +1628,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* 헤더 가운데 안내 문구 (Phase 5, 2026-05-24) */
     #header-caption {{
-      margin-left:5px;
-      color:#888; font-size:12px; font-weight:500;
-      font-family:-apple-system,"Malgun Gothic",sans-serif;
+      margin-left:0;
+      color:#1a1a2e; font-size:16px; font-weight:700;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       letter-spacing:0.1px; white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
       user-select:none; pointer-events:none;
@@ -1746,8 +1746,15 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #hwd-panel-footer {{
       flex-shrink:0; padding:10px 12px;
       border-top:1px solid #ececef; background:#fafafa;
-      display:flex; align-items:center; justify-content:flex-start;
+      display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+      justify-content:flex-start;
       user-select:none;
+    }}
+    /* 헤더에서 이동해 온 안내 문구 (2026-06-13) */
+    #hwd-footer-caption {{
+      font-size:11px; color:#888; font-weight:500; line-height:1.45;
+      letter-spacing:0.1px;
+      font-family:-apple-system,"Malgun Gothic",sans-serif;
     }}
     #hwd-panel-footer img {{
       max-height:28px; width:auto; height:28px;
@@ -2173,7 +2180,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #app-nav {{
       position:fixed; top:0; left:0; bottom:0; width:43px;
       background:#ffffff; border-right:1px solid #e8e8ec; z-index:9600;
-      display:flex; flex-direction:column; padding:6px 0; gap:1px;
+      display:flex; flex-direction:column; padding:6px 0 17px; gap:1px;
       overflow:hidden; transition:width .16s ease, box-shadow .16s ease;
     }}
     #app-nav.expanded {{ width:196px; box-shadow:2px 0 10px rgba(0,0,0,0.07); }}
@@ -2188,9 +2195,74 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 3컬럼 프레임: [사이드바][위젯패널 300][캔버스]. 패널은 상시 열림이라 캔버스는
        항상 패널 오른쪽(사이드바폭+300)에서 시작 → 겹침 없음. 사이드바 펼침 시 496. */
     body.nav-expanded #vnc-frame {{ left:196px; width:calc(100vw - 196px); }}
-    /* 위젯 패널이 열려 있으면 캔버스를 패널 오른쪽으로(닫으면 전체폭 복귀). Chrome :has() */
-    body:has(#hwd-panel.open) #vnc-frame {{ left:343px; width:calc(100vw - 343px); }}
-    body.nav-expanded:has(#hwd-panel.open) #vnc-frame {{ left:496px; width:calc(100vw - 496px); }}
+    /* 위젯 패널이 열려 있으면 캔버스를 패널 오른쪽으로 푸시(닫으면 전체폭 복귀).
+       좌측 메뉴 펼침(nav-expanded)과 동일한 body 클래스 방식 — :has() 미지원/타이밍 대비 (2026-06-13) */
+    body.widgets-open #vnc-frame {{ left:343px; width:calc(100vw - 343px); }}
+    body.nav-expanded.widgets-open #vnc-frame {{ left:496px; width:calc(100vw - 496px); }}
+    /* ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ──
+       레이어: 사이드바(9600) > Example(9555) · 위젯 패널(9560)은 별도 컬럼이라 비겹침. */
+    #example-panel {{
+      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
+      transition:left .16s ease; display:none; flex-direction:column;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+    }}
+    #example-panel.open {{ display:flex; }}
+    body.nav-expanded #example-panel {{ left:196px; }}
+    /* Example 열림 → 위젯 패널을 Example 오른쪽으로 (사이드바+360) */
+    body.example-open #hwd-panel {{ left:403px; }}
+    body.nav-expanded.example-open #hwd-panel {{ left:556px; }}
+    /* Example 열림 → 상단 헤더·탭바도 오른쪽으로(오렌지3 상단이 Example 컬럼 위에 안 겹치게).
+       Example 는 top:0 풀높이 컬럼이라 nav 펼침과 동일하게 상단 바를 밀어낸다. */
+    body.example-open #header-bar, body.example-open #wf-tabbar {{ left:403px; }}
+    body.nav-expanded.example-open #header-bar, body.nav-expanded.example-open #wf-tabbar {{ left:556px; }}
+    /* Example 열림 → 캔버스 푸시 (위젯 패널 열림/닫힘 분기) */
+    body.example-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.nav-expanded.example-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
+    body.example-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.nav-expanded.example-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
+    /* 실습 선택기 (이미지 4 — 노란 탭 드롭다운) */
+    #example-sel-wrap {{ flex-shrink:0; position:relative; padding:10px 12px; border-bottom:1px solid #eee; }}
+    #example-sel-btn {{ width:100%; position:relative; display:flex; align-items:center; justify-content:center;
+      background:#fff; color:#1a1a2e; border:1px solid #c7d2e0; border-radius:10px; padding:11px 34px;
+      min-height:42px; line-height:1.3; box-sizing:border-box;
+      font-size:14px; font-weight:700; cursor:pointer; transition:border-color .12s, box-shadow .12s; }}
+    #example-sel-btn:hover {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.08); }}
+    #example-sel-label {{ display:block; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+    #example-sel-btn .ex-chev {{ position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      color:#9ca3af; transition:transform .15s ease; }}
+    #example-sel-btn.open .ex-chev {{ transform:translateY(-50%) rotate(180deg); }}
+    #example-sel-list {{ display:none; position:absolute; left:12px; right:12px; top:54px; z-index:5;
+      background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.10);
+      padding:8px; max-height:64vh; overflow-y:auto; }}
+    #example-sel-list.open {{ display:block; }}
+    .ex-sel-item {{ margin:6px 0; padding:11px 14px; font-size:13.5px; font-weight:700; color:#1a1a2e;
+      background:#fff; border:1px solid #c7d2e0; border-radius:10px; cursor:pointer; text-align:center;
+      transition:border-color .12s, box-shadow .12s; }}
+    .ex-sel-item:hover {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.08); }}
+    .ex-sel-item.active {{ border-color:#F47B20; background:#fff7ed; color:#9a3412; }}
+    /* 실습 콘텐츠 (이미지 3) */
+    #example-content {{ flex:1; overflow-y:auto; padding:18px 18px 28px; scrollbar-width:thin; scrollbar-color:#e5e7eb #ffffff; }}
+    /* Example 패널 스크롤바 — 검은색 제거, 흰 트랙 + 연회색 thumb (2026-06-13) */
+    #example-sel-list {{ scrollbar-width:thin; scrollbar-color:#e5e7eb #ffffff; }}
+    #example-content::-webkit-scrollbar, #example-sel-list::-webkit-scrollbar {{ width:10px; background:#ffffff; }}
+    #example-content::-webkit-scrollbar-track, #example-sel-list::-webkit-scrollbar-track {{ background:#ffffff; }}
+    #example-content::-webkit-scrollbar-thumb, #example-sel-list::-webkit-scrollbar-thumb {{ background:#e5e7eb; border-radius:6px; border:2px solid #ffffff; }}
+    #example-content::-webkit-scrollbar-thumb:hover, #example-sel-list::-webkit-scrollbar-thumb:hover {{ background:#d1d5db; }}
+    .ex-badge {{ display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700;
+      padding:4px 11px; border-radius:999px; margin-bottom:12px; }}
+    .ex-badge.mission {{ background:#ede9fe; color:#7c3aed; }}
+    .ex-badge.practice {{ background:#cffafe; color:#0891b2; }}
+    .ex-title {{ font-size:21px; font-weight:800; color:#1a1a2e; margin:0 0 12px; }}
+    .ex-desc {{ font-size:14px; color:#374151; line-height:1.7; margin:0 0 18px; }}
+    .ex-step-title {{ font-size:15px; font-weight:700; color:#1a1a2e; margin:18px 0 8px; }}
+    .ex-list {{ margin:0; padding-left:20px; }}
+    .ex-list li {{ font-size:13.5px; color:#374151; line-height:1.7; }}
+    .ex-hint {{ margin-top:12px; border:1px solid #e5e7eb; border-radius:8px; padding:9px 12px;
+      font-size:13px; color:#6b7280; cursor:pointer; background:#fafafa; }}
+    .ex-kw {{ color:#0891b2; font-weight:600; }}
+    .ex-img {{ width:100%; display:block; margin:8px 0 14px; border:1px solid #e5e7eb;
+      border-radius:8px; background:#fff; }}
     .an-top {{ display:flex; align-items:center; justify-content:center; height:46px; padding:0 9px 0 12px; margin-bottom:4px; flex-shrink:0; cursor:pointer; }}
     #app-nav.expanded .an-top {{ justify-content:flex-start; padding:0 9px 0 14px; }}
     .an-brand {{ display:flex; align-items:center; gap:8px; min-width:0; }}
@@ -2252,8 +2324,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-title {{ font-size:25px; font-weight:800; color:#1a1a2e; }}
     .ovp-new {{ display:inline-flex; align-items:center; gap:7px; background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:7px; padding:3px 16px;
       font-size:13px; font-weight:400; cursor:pointer; transition:background .12s, border-color .12s; }}
-    /* 우상단 버튼 '+' 를 카드(.ovp-plus)와 동일 크기로 (2026-06-12) */
-    .ovp-new-plus {{ font-size:30px; color:#F47B20; font-weight:300; line-height:1; }}
+    /* 우상단 버튼 '+' — 인라인 라벨과 균형 위해 작게 (2026-06-12) */
+    .ovp-new-plus {{ font-size:18px; color:#F47B20; font-weight:300; line-height:1; }}
     /* 우상단 버튼 'New Workflow' 글자도 카드(.ovp-card) 라벨과 동일 스타일로 (2026-06-12) */
     .ovp-new-label {{ font-size:13.5px; color:#4b5563; font-weight:600; }}
     .ovp-new:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
@@ -3275,13 +3347,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <div class="ms"></div>
         <div class="mi" onclick="saveWorkflow()">저장</div>
         <div class="mi" onclick="saveWorkflow()">다른 이름으로 저장 ...</div>
-        <div class="ms"></div>
-        <div class="mi" onclick="closeMenu();ctShowInfo()">Workflow Info</div>
       </div>
     </div>
 
-    <!-- 헤더 가운데 안내 문구 -->
-    <div id="header-caption">오렌지3(Orange3) 기반의 웹 머신러닝·데이터 분석 실습 환경</div>
+    <!-- 헤더 브랜드 문구 (2026-06-13) — 좌측 5px, EBS Orange3 스타일(굵은 진한색) -->
+    <div id="header-caption">AI Data Analytics Training Platform</div>
 
     <!-- 우측 버튼 -->
     <div id="header-right">
@@ -3374,15 +3444,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <div class="an-subitem" onclick="event.stopPropagation(); openOwsDialog(); _anCloseMenuAcc()">불러오기</div>
       <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">저장</div>
       <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">다른 이름으로 저장 ...</div>
-      <div class="an-subitem" onclick="event.stopPropagation(); closeMenu(); ctShowInfo(); _anCloseMenuAcc()">Workflow Info</div>
     </div>
     <div class="an-item an-x-toggle" title="펼치기 / 접기" onclick="toggleAppNav()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       <span class="an-label">펼치기</span>
     </div>
-    <div class="an-item" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); showOverview()">
+    <div class="an-item" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); showOverview()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span class="an-label">WorkSpaces</span>
+    </div>
+    <div class="an-item" title="Widget" onclick="toggleWidgetMenu(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" transform="rotate(45 17.5 6.5)"/></svg>
+      <span class="an-label">Widget</span>
     </div>
     <div class="an-sep"></div>
     <div class="an-item" title="Analysis-Datasets" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openAnalysisDatasets()">
@@ -3393,6 +3466,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span class="an-label">Templates</span>
     </div>
+    <div class="an-item" title="Example" onclick="toggleExamplePanel(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h7A1.5 1.5 0 0 1 19 4.5v11A1.5 1.5 0 0 1 17.5 17H16"/><rect x="5" y="7" width="11" height="14" rx="1.5"/><line x1="8" y1="11" x2="13" y2="11"/><line x1="8" y1="14" x2="13" y2="14"/><line x1="8" y1="17" x2="11" y2="17"/></svg>
+      <span class="an-label">Example</span>
+    </div>
+    <div class="an-sep"></div>
     <div class="an-spacer"></div>
     <div class="an-sep"></div>
     <div class="an-item" title="Help" onclick="toggleHelpMenu(this, event)">
@@ -3415,7 +3493,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <button class="ovp-new" onclick="hideOverview(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
       </div>
       <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
-      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span></div>
+      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span><span class="ovp-tab" onclick="ovpSwitchTab('widgets')">Widget</span></div>
+      <div id="ovp-pane-widgets" style="display:none;">
+        <iframe id="ovp-wg-frame" title="Widget Introduce" style="width:100%;height:calc(100vh - 240px);min-height:420px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;"></iframe>
+      </div>
       <!-- Workflows 패널 -->
       <div id="ovp-pane-wf">
         <div class="ovp-grid">
@@ -3477,8 +3558,29 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div id="hwd-panel-body"></div>
     <!-- 패널 하단 footer 로고 (Phase 5, 2026-05-24) — EBS / 교육부 -->
     <div id="hwd-panel-footer">
+      <div id="hwd-footer-caption">Web-based machine learning &amp; data analysis platform powered by Orange3</div>
       <img src="/footer-logo" alt="" onerror="this.parentNode.style.display='none'"/>
     </div>
+  </div>
+
+  <!-- ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ── -->
+  <div id="example-panel" aria-hidden="true">
+    <div id="example-sel-wrap">
+      <button id="example-sel-btn" onclick="toggleExampleSel()"><span id="example-sel-label">Orange3로 해보는 데이터 분석</span><svg class="ex-chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
+      <div id="example-sel-list">
+        <div class="ex-sel-item active" onclick="loadExample(1)">Orange3로 해보는 데이터 분석</div>
+        <div class="ex-sel-item" onclick="loadExample(2)">실습 2</div>
+        <div class="ex-sel-item" onclick="loadExample(3)">실습 3</div>
+        <div class="ex-sel-item" onclick="loadExample(4)">실습 4</div>
+        <div class="ex-sel-item" onclick="loadExample(5)">실습 5</div>
+        <div class="ex-sel-item" onclick="loadExample(6)">실습 6</div>
+        <div class="ex-sel-item" onclick="loadExample(7)">실습 7</div>
+        <div class="ex-sel-item" onclick="loadExample(8)">실습 8</div>
+        <div class="ex-sel-item" onclick="loadExample(9)">실습 9</div>
+        <div class="ex-sel-item" onclick="loadExample(10)">실습 10</div>
+      </div>
+    </div>
+    <div id="example-content"></div>
   </div>
 
   <!-- ── 단계 3C: 위젯 드래그-드롭 zone (활성 시에만 캔버스 위에 떠서 drop 이벤트 캡처) ── -->
@@ -5131,6 +5233,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     function showOverview() {{
       var p=document.getElementById('overview-page'); if(!p) return;
+      try {{ _closeExamplePanel(); }} catch(_e) {{}}
       _ovWfPage = 0;
       try {{ ovpSwitchTab('wf'); }} catch(_e) {{}}   // 항상 Workflows 탭으로 초기화
       try {{ _ovRenderWfList(); }} catch(_e) {{}}
@@ -5141,15 +5244,27 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     function ovpSwitchTab(which) {{
       var tabs=document.querySelectorAll('#overview-page .ovp-tab');
       tabs.forEach(function(t){{ t.classList.remove('active'); }});
-      var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl');
+      var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl'),
+          wg=document.getElementById('ovp-pane-widgets');
+      if (wf) wf.style.display='none';
+      if (tpl) tpl.style.display='none';
+      if (wg) wg.style.display='none';
       if (which==='tpl') {{
         if (tabs[1]) tabs[1].classList.add('active');
-        if (wf) wf.style.display='none';
         if (tpl) tpl.style.display='';
         try {{ _ovtInit(); }} catch(_e) {{}}
+      }} else if (which==='widgets') {{
+        if (tabs[2]) tabs[2].classList.add('active');
+        if (wg) {{
+          wg.style.display='';
+          var f=document.getElementById('ovp-wg-frame');
+          if (f && !f.getAttribute('src')) {{
+            var _lg=(typeof INIT_LANG!=='undefined')?INIT_LANG:'en';
+            f.setAttribute('src', '/widget-guide?lang='+_lg);  // 래퍼 언어 전달, 최초 진입 시에만 로드
+          }}
+        }}
       }} else {{
         if (tabs[0]) tabs[0].classList.add('active');
-        if (tpl) tpl.style.display='none';
         if (wf) wf.style.display='';
       }}
     }}
@@ -5408,6 +5523,96 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (panel && panel.classList.contains('open')) return;
       var cat = (window._hwdCats && window._hwdCats[0] && window._hwdCats[0].name) || 'Data';
       try {{ _toggleWidgetPanel(cat); }} catch(_e) {{}}
+    }}
+    /* 사이드바 'Widget' 버튼 — 위젯 패널 열기/닫기 토글 (2026-06-13) */
+    function toggleWidgetMenu(el) {{
+      var panel = document.getElementById('hwd-panel');
+      if (panel && panel.classList.contains('open')) {{
+        _closeWidgetPanel();
+        if (el) el.classList.remove('active');
+      }} else {{
+        var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
+        appNavSelect(el);
+        _ensureWidgetPanel();
+      }}
+    }}
+
+    /* ── Example 학습 페이지 (사이드바 Example 버튼 → 별도 컬럼 패널, 2026-06-13) ── */
+    var EXAMPLES = {{
+      1: '<span class="ex-badge mission">⭐ 미션</span>'
+       + '<h1 class="ex-title">Orange3로 해보는 데이터 분석</h1>'
+       + '<p class="ex-desc">코드 없이 <b>드래그 앤 드롭</b>만으로 데이터를 분석해 봅니다. 수학적 원리보다 <b>입력 → 처리 → 출력</b> 과정을 직접 경험하며 머신러닝의 흐름을 익히는 것이 목표예요.</p>'
+       + '<span class="ex-badge practice">&lt;/&gt; 실습</span>'
+       + '<div class="ex-step-title">1. 데이터 불러오기</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">File</span> 위젯을 캔버스로 가져와 Google Sheets(공유 링크) 또는 CSV 데이터를 불러옵니다. 공유 링크는 링크가 있는 모든 사용자 권한으로 바꿔 주세요.</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_data_owfile_OWFile.png" alt="File 위젯" loading="lazy">'
+       + '<div class="ex-step-title">2. 데이터 필터링</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">Select Rows</span> 위젯으로 조건을 설정합니다(예: 판매량 &lt; 44). <span class="ex-kw">Data Table</span> 위젯을 연결해 결과를 확인해 보세요.</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_data_owselectrows_OWSelectRows.png" alt="Select Rows 위젯" loading="lazy">'
+       + '<div class="ex-step-title">3. 열 선택하기</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">Select Columns</span> 위젯으로 표시할 열(우측)과 숨길 열(좌측)을 나눕니다.</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_data_owselectcolumns_OWSelectAttributes.png" alt="Select Columns 위젯" loading="lazy">'
+       + '<div class="ex-step-title">4. 새 열 만들기 (수식)</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">Feature Constructor</span> 위젯으로 계산식 열을 추가합니다(예: 판매량 × 5000 = 매출).</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_data_owfeatureconstructor_OWFeatureConstructor.png" alt="Feature Constructor 위젯" loading="lazy">'
+       + '<div class="ex-step-title">5. 통계 시각화</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">Box Plot</span>으로 평균·중앙값·사분위수를 보고, <span class="ex-kw">Scatter Plot</span>으로 이상치와 군집을 확인합니다.</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_visualize_owboxplot_OWBoxPlot.png" alt="Box Plot 위젯" loading="lazy">'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_visualize_owscatterplot_OWScatterPlot.png" alt="Scatter Plot 위젯" loading="lazy">'
+       + '<div class="ex-step-title">6. 선형회귀로 예측하기</div>'
+       + '<ul class="ex-list"><li><span class="ex-kw">File</span>에서 각 열의 역할(Role)을 지정합니다 — <b>Target</b>(예측값), <b>Feature</b>(원인), <b>Meta</b>(참고), <b>Skip</b>(무시).</li><li><span class="ex-kw">Linear Regression</span> 모델을 연결하고, 새 독립변수를 입력해 값을 예측해 봅니다.</li></ul>'
+       + '<img class="ex-img" src="/widget-shot/Orange_widgets_model_owlinearregression_OWLinearRegression.png" alt="Linear Regression 위젯" loading="lazy">'
+       + '<div class="ex-hint">▶ 출처: paullab Korea — 제주 머신러닝 스터디(머신러닝 야학)</div>'
+    }};
+    function _exPlaceholder(n) {{
+      return '<span class="ex-badge mission">⭐ 미션</span>'
+           + '<h1 class="ex-title">실습 ' + n + '</h1>'
+           + '<p class="ex-desc">실습 ' + n + ' 콘텐츠가 준비 중입니다. 내용을 추가하면 이 영역에 표시됩니다.</p>';
+    }}
+    var EX_TITLES = {{ 1: 'Orange3로 해보는 데이터 분석' }};
+    function loadExample(n) {{
+      var c = document.getElementById('example-content');
+      if (c) c.innerHTML = EXAMPLES[n] || _exPlaceholder(n);
+      var lbl = document.getElementById('example-sel-label');
+      if (lbl) lbl.textContent = (EX_TITLES[n] || ('실습 ' + n));
+      document.querySelectorAll('#example-sel-list .ex-sel-item').forEach(function(it, i) {{
+        it.classList.toggle('active', i === n - 1);
+      }});
+      var lst = document.getElementById('example-sel-list'); if (lst) lst.classList.remove('open');
+      var btn = document.getElementById('example-sel-btn'); if (btn) btn.classList.remove('open');
+    }}
+    function toggleExampleSel() {{
+      var lst = document.getElementById('example-sel-list');
+      var btn = document.getElementById('example-sel-btn');
+      if (lst) lst.classList.toggle('open');
+      if (btn) btn.classList.toggle('open');
+    }}
+    function toggleExamplePanel(el) {{
+      var p = document.getElementById('example-panel');
+      if (!p) return;
+      var willOpen = !p.classList.contains('open');
+      if (willOpen) {{
+        var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
+        p.classList.add('open');
+        document.body.classList.add('example-open');
+        p.setAttribute('aria-hidden', 'false');
+        appNavSelect(el);
+        if (!p.dataset.loaded) {{ loadExample(1); p.dataset.loaded = '1'; }}
+      }} else {{
+        p.classList.remove('open');
+        document.body.classList.remove('example-open');
+        p.setAttribute('aria-hidden', 'true');
+        if (el) el.classList.remove('active');
+      }}
+    }}
+    function _closeExamplePanel() {{
+      var p = document.getElementById('example-panel');
+      if (!p || !p.classList.contains('open')) return;
+      p.classList.remove('open');
+      document.body.classList.remove('example-open');
+      p.setAttribute('aria-hidden', 'true');
+      var ex = document.querySelector('#app-nav .an-item[title="Example"]');
+      if (ex) ex.classList.remove('active');
     }}
 
     function showToast(msg, duration) {{
@@ -6000,7 +6205,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     const LANGS = {{
       ko: {{
         docTitle: '제목없음',
-        mi: ['새 문서','불러오기','저장','다른 이름으로 저장 ...','워크플로우 정보','닫기'],
+        mi: ['새 문서','불러오기','저장','다른 이름으로 저장 ...','닫기'],
         btns: [_DS_ICON + '분석 데이터셋', _TPL_ICON + '템플릿'],
         minimap: '미니맵',
         optionLabel: '옵션',
@@ -6009,7 +6214,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }},
       en: {{
         docTitle: 'Untitled',
-        mi: ['New','Open','Save','Save As ...','Workflow Info','Close'],
+        mi: ['New','Open','Save','Save As ...','Close'],
         btns: [_DS_ICON + 'Analysis-Datasets', _TPL_ICON + 'Templates'],
         minimap: 'MinMap',
         optionLabel: 'Option',
@@ -6018,7 +6223,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }},
       sl: {{
         docTitle: 'Brez naslova',
-        mi: ['Nov','Odpri','Shrani','Shrani kot ...','Informacije o poteku','Zapri'],
+        mi: ['Nov','Odpri','Shrani','Shrani kot ...','Zapri'],
         btns: [_DS_ICON + 'Analitične zbirke', _TPL_ICON + 'Predloge'],
         minimap: 'MinMap',
         optionLabel: 'Možnosti',
@@ -6129,11 +6334,14 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       const optLabel = document.getElementById('lang-label');
       if (optLabel && d.optionLabel) optLabel.textContent = d.optionLabel;
       // 헤더 가운데 안내 문구 — 언어별 분기
-      const hCap = document.getElementById('header-caption');
-      if (hCap && d.headerCaption) hCap.textContent = d.headerCaption;
+      const fCap = document.getElementById('hwd-footer-caption');
+      if (fCap && d.headerCaption) fCap.textContent = d.headerCaption;
       // Workflow Info 모달 헤더 — 언어별 분기 (2026-05-26)
       const wfTitle = document.querySelector('#wf-info-modal .wf-title-text');
       if (wfTitle && d.wfInfoTitle) wfTitle.textContent = d.wfInfoTitle;
+      // Help 메뉴로 이동한 Workflow Info 항목 라벨 i18n (2026-06-13)
+      const hwf = document.getElementById('help-wfinfo-tx');
+      if (hwf && d.wfInfoTitle) hwf.textContent = d.wfInfoTitle;
       // 정적 툴팁(title)·aria-label 일괄 갱신 (2026-05-26)
       const ttMap = TT_LANGS[code];
       if (ttMap) {{
@@ -6160,9 +6368,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 새 사이드바·Overview 라벨 i18n (2026-06-11) — 언어 전환 시 함께 갱신 */
     function applyNewUILang(code) {{
       var NAV = {{
-        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','분석 데이터셋','템플릿','도움말','설정'],
-        en: ['New','Open','Menu','Expand','WorkSpaces','Analysis-Datasets','Templates','Help','Settings'],
-        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Zbirke podatkov','Predloge','Pomoč','Nastavitve']
+        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','예제','도움말','설정'],
+        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Example','Help','Settings'],
+        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Primer','Pomoč','Nastavitve']
       }};
       var arr = NAV[code] || NAV.en;
       document.querySelectorAll('#app-nav .an-item .an-label').forEach(function(el, i) {{
@@ -7934,6 +8142,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }});
       panel.dataset.cat = catName;
       panel.classList.add('open');
+      document.body.classList.add('widgets-open');
       panel.setAttribute('aria-hidden', 'false');
     }}
 
@@ -7954,6 +8163,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var panel = document.getElementById('hwd-panel');
       if (!panel) return;
       panel.classList.remove('open');
+      document.body.classList.remove('widgets-open');
       panel.dataset.cat = '';
       panel.setAttribute('aria-hidden', 'true');
       document.querySelectorAll('#html-widget-dock .hwd-cat.active').forEach(function(el) {{
@@ -9067,6 +9277,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   </div>
   <!-- Help 드롭다운 (n8n 참조) — 항목은 아직 동작 미연결 (2026-06-12) -->
   <div id="help-menu">
+    <div class="set-mi" onclick="closeHelpMenu(); ctShowInfo()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M4 2h5l3 3v9H4z"/><line x1="6" y1="7.5" x2="10" y2="7.5"/><line x1="6" y1="10" x2="10" y2="10"/></svg></span><span class="set-mi-tx" id="help-wfinfo-tx">Workflow Info</span></div>
     <div class="set-mi"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="1"/><line x1="4.5" y1="6" x2="11.5" y2="6"/><line x1="4.5" y1="8.5" x2="9.5" y2="8.5"/></svg></span><span class="set-mi-tx">Documentation</span></div>
     <div class="set-mi" onclick="openAboutModal()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="8" y1="7.3" x2="8" y2="11" stroke-linecap="round"/><circle cx="8" cy="5" r="0.6" fill="currentColor" stroke="none"/></svg></span><span class="set-mi-tx">About</span></div>
   </div>
@@ -9098,8 +9309,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
     #x-meta-info {{
-      /* 캔버스 좌하단(위젯 패널 우측)으로 재배치 (2026-06-11) */
-      position: fixed; left: 357px; bottom: 22px; z-index: 50;
+      /* 위젯 패널 우측 끝 +20px(=캔버스 좌측 +20px)에서 시작. 좌측 메뉴/위젯 패널
+         펼침·닫힘 상태에 따라 left 가 함께 이동 (2026-06-13) */
+      position: fixed; left: 63px; bottom: 22px; z-index: 50;
+      transition: left .16s ease;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       font-size: 10pt; color: #9ca3af; line-height: 1.55;
       /* 불투명 흰 박스가 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
@@ -9111,6 +9324,15 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       display: grid; grid-template-columns: auto auto; column-gap: 22px; row-gap: 2px;
       justify-items: start;
     }}
+    /* 캔버스 좌측 시작점 +20px 추적 — #vnc-frame 푸시 규칙과 동일 상태 (2026-06-13) */
+    body.widgets-open #x-meta-info {{ left: 363px; }}              /* 위젯 패널 열림: 343+20 */
+    body.nav-expanded #x-meta-info {{ left: 216px; }}             /* 좌측 메뉴 펼침: 196+20 */
+    body.nav-expanded.widgets-open #x-meta-info {{ left: 516px; }} /* 둘 다 펼침: 496+20 */
+    /* Example 패널 열림 — 위젯 패널 우측 끝 +20 추적 (#vnc-frame 와 동일 상태, 2026-06-13) */
+    body.example-open.widgets-open #x-meta-info {{ left: 723px; }}              /* example+위젯: 703+20 */
+    body.nav-expanded.example-open.widgets-open #x-meta-info {{ left: 876px; }} /* 전부: 856+20 */
+    body.example-open:not(.widgets-open) #x-meta-info {{ left: 423px; }}        /* example만: 403+20 */
+    body.nav-expanded.example-open:not(.widgets-open) #x-meta-info {{ left: 576px; }} /* nav+example: 556+20 */
     #x-meta-info > div {{ white-space: nowrap; }}
   </style>
   <div id="x-meta-info">
@@ -13589,19 +13811,19 @@ ADMIN_SETTINGS_DEFAULT_PATH = os.environ.get(
 # 알려진 카테고리 — 시범 서비스 단계별 그룹화 (Phase 5, 2026-05-24).
 # 신규 addon 설치 시 해당 단계 그룹에 수동 추가.
 _ADMIN_CATEGORY_PHASES = [
-    {"phase": 1, "title": "1차 시범 서비스",
+    {"phase": 1, "title": "Orange Service Menu",
      "categories": ["Data", "Transform", "Visualize",
                     "Model", "Evaluate", "Unsupervised"]},
-    {"phase": 2, "title": "2차 시범 서비스",
+    {"phase": 2, "title": "Add on Menu 1",
      "categories": ["Image Analytics", "Network", "Time Series",
                     "Text Mining", "Geo"]},
-    {"phase": 3, "title": "3차 시범 서비스",
+    {"phase": 3, "title": "Add on Menu 2",
      "categories": ["Single Cell", "Spectroscopy", "Bioinformatics",
                     "Survival Analysis", "Fairness"]},
     # 4차 (2026-05-25) — 3차에서 이동한 3개 + 신규 addon 4종.
     # 사용자 지정 순서: Explain · Educational · Associate · Textable ·
     # Pumice · World Happiness · SNOM
-    {"phase": 4, "title": "4차 시범 서비스",
+    {"phase": 4, "title": "Add on Menu 3",
      "categories": ["Explain", "Educational", "Associate",
                     "Textable", "Pumice", "World Happiness", "SNOM"]},
 ]
@@ -14503,10 +14725,10 @@ async def api_admin_terminate_all(request: Request):
 # ── 관리자 페이지 공통 chrome (3-탭: 메뉴 관리 / 언어 설정 / 활성 세션) ────────
 _ADMIN_BASE_CSS = """
 body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;background:#fafafa;color:#1a1a1c}
-.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px}
-h1{font-size:22px;margin:0 0 6px;color:#1a1a1c}
-.sub{font-size:13px;color:#6b7280;margin-bottom:24px}
-.sub-bullets{margin:0 0 24px 0;padding-left:20px;line-height:1.65}
+.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px;position:relative}
+h1{font-size:15px;margin:0 0 6px;color:#1a1a1c}
+.sub{font-size:13px;color:#6b7280;margin-bottom:14px}
+.sub-bullets{margin:0 0 14px 0;padding-left:20px;line-height:1.65}
 .sub-bullets li{margin:0}
 .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
 h2{font-size:16px;margin:0 0 4px;color:#1a1a1c}
@@ -14532,8 +14754,8 @@ h2{font-size:16px;margin:0 0 4px;color:#1a1a1c}
 .lang-label{flex:1;font-size:14px;font-weight:500}
 .lang-hdr{display:grid;grid-template-columns:1fr auto auto;gap:24px;padding:8px 4px;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #e5e7eb;margin-bottom:6px}
 .lang-list .lang-row{display:grid;grid-template-columns:1fr auto auto;gap:24px;align-items:center}
-.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;padding-top:18px;border-top:1px solid #ececef;background:#fff;position:sticky;bottom:0}
-button{padding:10px 22px;border-radius:7px;border:1px solid #e5e7eb;background:#fff;color:#1a1a1c;cursor:pointer;font-size:13.5px;font-weight:600}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;padding-top:18px;border-top:1px solid #ececef;background:#fff}
+button{padding:6px 14px;border-radius:7px;border:1px solid #e5e7eb;background:#fff;color:#1a1a1c;cursor:pointer;font-size:12.5px;font-weight:600}
 button:hover{background:#f5f5f7}
 button.primary{background:#F47B20;color:#fff;border-color:#F47B20}
 button.primary:hover{background:#d96b10}
@@ -14542,9 +14764,9 @@ button:disabled{opacity:0.55;cursor:not-allowed}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .meta{margin-top:18px;font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
 .quick-bar{display:flex;gap:8px;margin-bottom:14px}
-.quick-bar button{padding:5px 12px;font-size:12px;font-weight:500}
+.quick-bar button{padding:6px 14px;font-size:12.5px;font-weight:600}
 /* 전체 선택/해제 버튼을 제목 줄 오른쪽으로 정렬 (2026-05-30) */
-.menu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.menu-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
 .menu-head .quick-bar{margin-bottom:0;flex-shrink:0}
 .phase-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:10px}
 .phase-head .phase-title{margin:0}
@@ -14553,6 +14775,16 @@ button:disabled{opacity:0.55;cursor:not-allowed}
 .admin-tabs a{padding:11px 18px;font-size:13.5px;font-weight:600;color:#6b7280;text-decoration:none;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
 .admin-tabs a:hover{color:#1a1a1c}
 .admin-tabs a.active{color:#F47B20;border-bottom-color:#F47B20}
+/* 공통 관리자 카드 메뉴 (텍스트 탭 대체, 하늘색) */
+.ovp-set-title{font-size:20px;font-weight:800;color:#1a1a2e;margin:0 0 16px}
+.ovp-set-hr{border:0;border-top:1px solid #e5e7eb;margin:0 0 14px}
+.ovp-set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:0}
+.ovp-set-hr2{border:0;border-top:1px solid #e5e7eb;margin:32px 0 16px}
+.ovp-set-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:54px;padding:9px 6px;text-align:center;background:#fff;border:1.5px solid #7dd3fc;border-radius:9px;cursor:pointer;color:#0c4a6e;font-size:12px;font-weight:600;text-decoration:none;transition:border-color .12s,box-shadow .12s,background .12s}
+.ovp-set-btn:hover{border-color:#38bdf8;background:#f0f9ff;box-shadow:0 4px 14px rgba(56,189,248,0.20);color:#075985}
+.ovp-set-btn.active{border-color:#38bdf8;background:#e0f2fe;color:#075985}
+.ovp-set-ic{color:#38bdf8;display:flex}
+.ovp-set-ic svg{width:18px;height:18px}
 .info-note{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:7px;margin:0 0 12px;font-size:12.5px;border:1px solid #e5e7eb;background:transparent}
 .info-note .info-note-title{flex-shrink:0;font-weight:700;min-width:64px;color:inherit}
 .info-note .info-note-body{line-height:1.55;color:inherit}
@@ -14580,7 +14812,7 @@ button:disabled{opacity:0.55;cursor:not-allowed}
 .wcat-card.is-open .wcat-toggle::before{content:'▾'}
 .wcat-card:not(.is-open) .wcat-toggle::before{content:'▸'}
 .wcat-tools{display:flex;gap:6px;margin-bottom:10px}
-.wcat-tools button{padding:4px 10px;font-size:12px;font-weight:500;border-radius:5px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
+.wcat-tools button{padding:6px 14px;font-size:12.5px;font-weight:600;border-radius:5px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
 .wcat-tools button:hover{background:#f5f5f7}
 .wcat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 14px}
 .wcat-grid .row{padding:4px 4px}
@@ -14615,7 +14847,7 @@ _ADMIN_AUTH_TEMPLATE = """
 #fb-remember-row{display:flex;align-items:center;gap:7px;margin:2px 0 12px;font-size:13px;color:#374151;cursor:pointer;user-select:none}
 #fb-remember-row input{width:15px;height:15px;margin:0;cursor:pointer;flex-shrink:0}
 #fb-login-err{color:#dc2626;font-size:12.5px;margin-top:10px;min-height:16px}
-#fb-logout-btn{position:fixed;top:14px;right:18px;z-index:99999;display:none;padding:6px 14px;font-size:12.5px;font-weight:600;background:#fff;border:1px solid #e5e7eb;border-radius:7px;cursor:pointer;color:#374151}
+#fb-logout-btn{position:absolute;top:14px;right:100px;z-index:99999;display:none;padding:6px 14px;font-size:12.5px;font-weight:600;background:#fff;border:1px solid #e5e7eb;border-radius:7px;cursor:pointer;color:#374151}
 #fb-logout-btn:hover{background:#f5f5f7}
 </style>
 <div id="fb-login-overlay"><div id="fb-login-card">
@@ -14718,20 +14950,40 @@ def _admin_auth_html() -> str:
     return _ADMIN_AUTH_TEMPLATE.replace("__FIREBASE_WEB_CONFIG__", cfg)
 
 
+_ADMIN_NAV_ITEMS = [
+    ("menu", "/admin/menu", "메뉴",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>'),
+    ("widgets", "/admin/widgets", "위젯",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'),
+    ("language", "/admin/language", "언어",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg>'),
+    ("splash", "/admin/splash", "로딩이미지",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>'),
+    ("firstpage", "/admin/firstpage", "첫페이지",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>'),
+    ("sessions", "/admin/sessions", "활성화 세션",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.2a3 3 0 0 1 0 5.6"/><path d="M21.5 20a6 6 0 0 0-4.5-5.8"/></svg>'),
+    ("usage", "/admin/usage", "이용현황",
+     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="11"/><line x1="10" y1="20" x2="10" y2="4"/><line x1="16" y1="20" x2="16" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>'),
+]
+
+
+def _admin_nav_cards(active: str) -> str:
+    """공통 관리자 카드 메뉴(하늘색) — 모든 관리자 페이지 상단 공통(인증 블록 제외)."""
+    cards = "".join(
+        f'<a class="ovp-set-btn{" active" if active == key else ""}" href="{href}">'
+        f'<span class="ovp-set-ic">{svg}</span><span>{label}</span></a>'
+        for key, href, label, svg in _ADMIN_NAV_ITEMS
+    )
+    return (f'<div class="ovp-set-title">Orange 3 Setting Menu</div>'
+            f'<hr class="ovp-set-hr">'
+            f'<div class="ovp-set-grid">{cards}</div>'
+            f'<hr class="ovp-set-hr2">')
+
+
 def _admin_nav_html(active: str) -> str:
-    """공통 5-탭 nav + Firebase 로그인 블록. active ∈ {'menu','widgets','language','splash','sessions'}."""
-    def cls(name): return ' class="active"' if active == name else ''
-    return (
-        '<nav class="admin-tabs">'
-        f'<a href="/admin/menu"{cls("menu")}>메뉴 설정</a>'
-        f'<a href="/admin/widgets"{cls("widgets")}>위젯 설정</a>'
-        f'<a href="/admin/language"{cls("language")}>언어 설정</a>'
-        f'<a href="/admin/splash"{cls("splash")}>로딩 이미지 설정</a>'
-        f'<a href="/admin/firstpage"{cls("firstpage")}>첫 페이지 지정</a>'
-        f'<a href="/admin/sessions"{cls("sessions")}>활성 세션</a>'
-        f'<a href="/admin/usage"{cls("usage")}>이용 현황</a>'
-        '</nav>'
-    ) + _admin_auth_html()
+    """카드 메뉴 + Firebase 로그인 블록."""
+    return _admin_nav_cards(active) + _admin_auth_html()
 
 
 @app.get("/admin/settings", response_class=HTMLResponse)
@@ -14755,10 +15007,10 @@ async def admin_usage_page():
   .u-sec{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;margin:14px 0}}
   .u-sec h2{{font-size:15px;margin:0 0 12px}}
   .bars{{display:flex;align-items:flex-end;gap:3px;height:120px}}
-  .bars .b{{flex:1;background:#e8820c;border-radius:3px 3px 0 0;min-height:2px;position:relative}}
+  .bars .b{{flex:1;background:#6b7280;border-radius:3px 3px 0 0;min-height:2px;position:relative}}
   .bars .b span{{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;color:#9ca3af}}
   .toprow{{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f3f5;font-size:13px}}
-  .toprow .c{{color:#e8820c;font-weight:700}}
+  .toprow .c{{color:#6b7280;font-weight:700}}
   .pills{{display:flex;gap:8px;flex-wrap:wrap}}
   .pill{{background:#f3f4f6;border-radius:16px;padding:4px 12px;font-size:12.5px}}
   .pill b{{color:#1f2937}}
@@ -14769,12 +15021,14 @@ async def admin_usage_page():
   .hm td.c{{width:16px;height:16px;border:1px solid #fff;border-radius:2px}}
 </style></head><body>
 <div class="wrap">
-  <h1>이용 현황</h1>
-  <div class="sub">일별 세션·위젯 이용 패턴입니다. 데이터 내용은 기록하지 않으며 세션 메타·위젯 사용만 집계합니다.</div>
   {nav}
-  <div class="u-sec" style="display:flex;align-items:center;gap:12px">
-    <label>날짜 <select id="u-date"></select></label>
-    <span id="u-empty" style="color:#9ca3af;font-size:13px"></span>
+  <div class="u-sec">
+    <h1>이용 현황</h1>
+    <ul class="sub sub-bullets"><li>일별 세션·위젯 이용 패턴입니다. 데이터 내용은 기록하지 않으며 세션 메타·위젯 사용만 집계합니다.</li></ul>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+      <label>날짜 <select id="u-date"></select></label>
+      <span id="u-empty" style="color:#9ca3af;font-size:13px"></span>
+    </div>
   </div>
   <div class="u-cards">
     <div class="u-card"><div class="v" id="c-sessions">–</div><div class="l">세션 수</div></div>
@@ -14820,7 +15074,7 @@ async function loadDay(day){{
   pills('u-engine', _eng); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
   const tw=document.getElementById('u-widgets');
   tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ?
-    '<div class="toprow" style="color:#9ca3af;font-size:11.5px"><span>위젯</span><span>추가 · <b style="color:#e8820c">실행</b></span></div>' +
+    '<div class="toprow" style="color:#9ca3af;font-size:11.5px"><span>위젯</span><span>추가 · <b style="color:#6b7280">실행</b></span></div>' +
     d.top_widgets.map(w=>
     `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span><span style="color:#6b7280">${{w.add||0}}</span> · <span class="c">${{w.run||0}}</span></span></div>`).join('')
     : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (캔버스에 위젯을 추가/실행하면 집계됨)</span>';
@@ -14843,7 +15097,7 @@ async function loadHeatmap(){{
       h+=`<tr><td class="d">${{lbl}}</td>`;
       row.hours.forEach((v,hr)=>{{
         const a=v?(0.12+0.88*v/mx):0;
-        h+=`<td class="c" style="background:rgba(232,130,12,${{a.toFixed(2)}})" title="${{lbl}} ${{hr}}시: ${{v}}"></td>`;
+        h+=`<td class="c" style="background:rgba(107,114,128,${{a.toFixed(2)}})" title="${{lbl}} ${{hr}}시: ${{v}}"></td>`;
       }});
       h+='</tr>';
     }});
@@ -14873,27 +15127,22 @@ async def admin_menu_page():
 <title>메뉴 설정 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}</style></head><body>
 <div class="wrap">
-  <h1>메뉴 설정</h1>
-  <div class="sub">위젯 사이드바·패널에 노출할 메뉴를 선택합니다. 체크 해제 시 모든 사용자에게서 숨김.</div>
   {nav}
-
   <div class="card">
+    <h1>메뉴 설정</h1>
+    <ul class="sub sub-bullets"><li>위젯 사이드바·패널에 노출할 메뉴를 선택합니다.</li></ul>
     <div class="menu-head">
-      <div>
-        <h2>메뉴 노출 설정</h2>
-        <div class="section-desc">시범 서비스 단계별로 그룹화되어 있습니다.</div>
-      </div>
+      <div></div>
       <div class="quick-bar">
         <button onclick="setAllMenu(true)">전체 선택</button>
         <button onclick="setAllMenu(false)">전체 해제</button>
       </div>
     </div>
     <div class="grid" id="menu-grid"></div>
-  </div>
-
-  <div class="actions">
-    <button onclick="loadMenu()">되돌리기</button>
-    <button id="save-btn" onclick="saveMenu()">저장</button>
+    <div class="actions">
+      <button onclick="loadMenu()">취소</button>
+      <button id="save-btn" onclick="saveMenu()">저장</button>
+    </div>
   </div>
 
   <div class="meta" id="meta"></div>
@@ -14932,7 +15181,7 @@ function renderMenu(){{
   _catPhases.forEach(ph => {{
     html += `<div class="phase-group phase-${{ph.phase}}">
       <div class="phase-head">
-        <div class="phase-title"><span class="phase-badge">${{ph.phase}}차</span>${{esc(ph.title)}}</div>
+        <div class="phase-title">${{esc(ph.title)}}</div>
         <div class="quick-bar">
           <button onclick="setPhaseMenu(${{ph.phase}}, true)">전체 선택</button>
           <button onclick="setPhaseMenu(${{ph.phase}}, false)">전체 해제</button>
@@ -15012,19 +15261,16 @@ async def admin_widgets_page():
 <title>위젯 설정 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}</style></head><body>
 <div class="wrap">
-  <h1>위젯 설정</h1>
-  <ul class="sub sub-bullets">
-    <li>위젯 비활성화 처리 메뉴</li>
-    <li>메뉴별 위젯의 노출 여부를 개별 토글 메뉴</li>
-    <li>메뉴 단위로 저장 버튼이 분리되어 있어 변경한 메뉴만 즉시 저장</li>
-    <li>위젯을 삭제하는 기능이 아니며, 비활성화(미선택) 기능</li>
-    <li>위젯을 완전히 미 노출이 필요한 경우는, 위젯 개별 소스에서 비노출 처리 진행 필요</li>
-  </ul>
   {nav}
-
   <div class="card">
+    <h1>위젯 설정</h1>
+    <ul class="sub sub-bullets">
+      <li>위젯 비활성화 처리 메뉴</li>
+      <li>위젯을 삭제하는 기능이 아니며, 비활성화(미선택) 기능</li>
+      <li>위젯을 완전히 미 노출이 필요한 경우는, 위젯 개별 소스에서 비노출 처리 진행 필요</li>
+    </ul>
     <div class="wcat-refresh">
-      <button onclick="refreshCatalog()">📦 메뉴 불러오기</button>
+      <button onclick="refreshCatalog()">메뉴 불러오기</button>
       <span class="cached-at" id="cached-at">—</span>
     </div>
     <div class="section-desc">위젯 목록은 워밍풀 컨테이너의 Orange3 레지스트리에서 가져옵니다. 신규 addon 설치 후엔 새로고침 필요.</div>
@@ -15083,11 +15329,8 @@ function renderCatalog(){{
   let html = '';
   _groups.forEach(g => {{
     const phaseCls = g.phase ? ('phase-' + g.phase) : 'phase-other';
-    const badge = g.phase
-      ? `<span class="phase-badge">${{g.phase}}차</span>`
-      : '';
     html += `<div class="phase-group ${{phaseCls}}">
-      <div class="phase-title">${{badge}}${{esc(g.title)}}</div>`;
+      <div class="phase-title">${{esc(g.title)}}</div>`;
     g.categories.forEach(cat => {{
       const canon = cat.category;
       const checked = cat.widgets.filter(w => w.visible).length;
@@ -15111,7 +15354,7 @@ function renderCatalog(){{
             }}).join('') +
           `</div>
           <div class="wcat-actions">
-            <button onclick="resetCat('${{esc(canon)}}')">되돌리기</button>
+            <button onclick="resetCat('${{esc(canon)}}')">취소</button>
             <button onclick="saveCat('${{esc(canon)}}')">저장</button>
           </div>`;
       html += `<div class="wcat-card" data-canon="${{esc(canon)}}">
@@ -15255,16 +15498,14 @@ async def admin_splash_page():
 .ready-msg-row .hint{{font-size:11.5px;color:#9ca3af}}
 </style></head><body>
 <div class="wrap">
-  <h1>로딩 이미지 설정</h1>
-  <ul class="sub sub-bullets">
-    <li>세션 로딩 중 / 완료 시 표시되는 splash 이미지 노출 여부 설정</li>
-    <li>각 이미지 별 체크 해제 시 즉시 비활성 — 새 세션부터 적용</li>
-  </ul>
   {nav}
-
   <div class="card">
-    <h2>이미지 노출 설정</h2>
-    <div class="section-desc">세션 로딩 단계별 splash 이미지의 노출 여부를 설정합니다.</div>
+    <h1>로딩 이미지 설정</h1>
+    <ul class="sub sub-bullets">
+      <li>세션 로딩 중 / 완료 시 표시되는 splash 이미지 노출 여부 설정</li>
+      <li>각 이미지 별 체크 해제 시 즉시 비활성</li>
+      <li>세션 로딩 단계별 splash 이미지의 노출 여부를 설정합니다.</li>
+    </ul>
 
     <div class="splash-card">
       <div class="splash-preview">
@@ -15290,7 +15531,7 @@ async def admin_splash_page():
           <label for="splash-loading">노출 사용</label>
         </div>
         <div class="wcat-actions">
-          <button onclick="resetLoading()">되돌리기</button>
+          <button onclick="resetLoading()">취소</button>
           <button id="save-loading-btn" onclick="saveLoading()">저장</button>
         </div>
       </div>
@@ -15322,7 +15563,7 @@ async def admin_splash_page():
           </div>
         </div>
         <div class="wcat-actions">
-          <button onclick="resetReady()">되돌리기</button>
+          <button onclick="resetReady()">취소</button>
           <button id="save-ready-btn" onclick="saveReady()">저장</button>
         </div>
       </div>
@@ -15610,13 +15851,10 @@ async def admin_language_page():
 <title>언어 설정 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}</style></head><body>
 <div class="wrap">
-  <h1>언어 설정</h1>
-  <div class="sub">전체 사용자에게 적용되는 사용 가능 언어와 기본 언어를 지정합니다.</div>
   {nav}
-
   <div class="card">
-    <h2>언어 노출 · 기본 언어</h2>
-    <div class="section-desc">기본 언어는 반드시 사용 가능 목록에 포함되어야 합니다. 신규 사용자는 기본 언어로 페이지가 로딩되며, 컨테이너 Orange3 도 자동 정렬됩니다.</div>
+    <h1>언어 설정</h1>
+    <ul class="sub sub-bullets"><li>전체 사용자에게 적용되는 사용 가능 언어와 기본 언어를 지정합니다.</li><li>기본 언어는 반드시 사용 가능 목록에 포함되어야 합니다. 신규 사용자는 기본 언어로 페이지가 로딩되며, 컨테이너 Orange3 도 자동 정렬됩니다.</li></ul>
 
     <div class="info-note method">
       <div class="info-note-title">적용 방식</div>
@@ -15634,11 +15872,10 @@ async def admin_language_page():
       <span>기본</span>
     </div>
     <div class="lang-list" id="lang-list"></div>
-  </div>
-
-  <div class="actions">
-    <button onclick="loadLang()">되돌리기</button>
-    <button id="save-btn" onclick="saveLang()">저장</button>
+    <div class="actions">
+      <button onclick="loadLang()">취소</button>
+      <button id="save-btn" onclick="saveLang()">저장</button>
+    </div>
   </div>
 
   <div class="meta" id="meta"></div>
@@ -15756,30 +15993,26 @@ async def admin_firstpage_page():
 .fp-thumb{{width:120px;height:auto;border:1px solid #e5e7eb;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.10);flex-shrink:0;background:#fff}}
 </style></head><body>
 <div class="wrap">
-  <h1>첫 페이지 지정</h1>
-  <div class="sub">사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</div>
   {nav}
-
   <div class="card">
-    <h2>접속 시 첫 페이지</h2>
-    <div class="section-desc">신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</div>
+    <h1>첫 페이지 지정</h1>
+    <ul class="sub sub-bullets"><li>사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</li><li>신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
     <div class="fp-list" id="fp-list">
       <label class="fp-row">
-        <input type="radio" name="first-page" value="canvas">
         <img class="fp-thumb" src="/admin/firstpage-thumb/canvas" alt="캔버스 미리보기" loading="lazy">
+        <input type="radio" name="first-page" value="canvas">
         <span class="fp-text"><b>캔버스 (기본)</b><div class="fp-desc">접속 시 바로 워크플로우 편집 캔버스로 시작합니다.</div></span>
       </label>
       <label class="fp-row">
-        <input type="radio" name="first-page" value="workspaces">
         <img class="fp-thumb" src="/admin/firstpage-thumb/workspaces" alt="WorkSpaces 미리보기" loading="lazy">
+        <input type="radio" name="first-page" value="workspaces">
         <span class="fp-text"><b>WorkSpaces</b><div class="fp-desc">접속 시 WorkSpaces 홈(최근 작업·템플릿)으로 시작합니다.</div></span>
       </label>
     </div>
-  </div>
-
-  <div class="actions">
-    <button onclick="loadFp()">되돌리기</button>
-    <button id="save-btn" onclick="saveFp()">저장</button>
+    <div class="actions">
+      <button onclick="loadFp()">취소</button>
+      <button id="save-btn" onclick="saveFp()">저장</button>
+    </div>
   </div>
   <div class="meta" id="meta"></div>
 </div>
@@ -15871,30 +16104,66 @@ async def api_widget_guide():
              "error": "위젯 카탈로그가 아직 없습니다 — 관리자 '위젯 설정'에서 메뉴 불러오기 후 다시 시도하세요."},
             status_code=503)
     ko_name = {}
+    ko_desc = {}
     if ko:
         for c in ko.get("categories", []):
             for w in (c.get("widgets") or []):
                 qn = w.get("qualified_name")
                 if qn:
                     ko_name[qn] = w.get("name", "")
+                    ko_desc[qn] = w.get("description", "")
     _HIDE = {"Orange Obsolete", "Orange 사용 중단됨", "Zastarelo"}
-    cats_out = []
+    # 관리자 '메뉴 노출 설정'(menu) · '위젯 설정'(widgets) 가시성 참조 — 숨긴 카테고리/위젯은
+    # 위젯 소개에서도 제외해 실제 사용자 노출과 동일하게 보여준다.
+    _admin = _admin_load_settings()
+    _menu_vis = _admin.get("menu") or {}
+    _wvis = _admin.get("widgets") or {}
+    # 카탈로그 카테고리를 canonical 키로 모은다 (이름 한/영 듀플 병합).
+    _by_canon: dict = {}
     for c in en.get("categories", []):
         cname = c.get("name", "")
         if cname in _HIDE:
             continue
+        canon = _ADMIN_CAT_ALIASES.get(cname, cname)
+        if not _menu_vis.get(canon, True):
+            continue   # 관리자 메뉴 노출 설정에서 숨긴 카테고리
+        _wmap = _wvis.get(canon) or {}
         ws = []
         for w in (c.get("widgets") or []):
+            wname = w.get("name", "")
+            if not _wmap.get(wname, True):
+                continue   # 관리자 위젯 설정에서 숨긴 위젯
             qn = w.get("qualified_name", "")
             ws.append({
                 "qualified_name": qn,
-                "name": w.get("name", ""),
+                "name": wname,
                 "name_ko": ko_name.get(qn, ""),
                 "description": w.get("description", ""),
+                "desc_ko": ko_desc.get(qn, ""),
                 "icon_b64": w.get("icon_b64", ""),
             })
-        if ws:
-            cats_out.append({"category": cname, "widgets": ws})
+        if not ws:
+            continue
+        if canon in _by_canon:
+            _by_canon[canon]["widgets"].extend(ws)
+        else:
+            _by_canon[canon] = {"category": canon, "widgets": ws}
+    # 관리자 '메뉴 설정/위젯 설정'과 동일한 시범단계(1~4차) 순서·그룹으로 정렬.
+    cats_out = []
+    seen = set()
+    for ph in _ADMIN_CATEGORY_PHASES:
+        for name in ph["categories"]:
+            c = _by_canon.get(name)
+            if c:
+                c["phase"] = ph["phase"]
+                c["phase_title"] = ph["title"]
+                cats_out.append(c)
+                seen.add(name)
+    for canon, c in _by_canon.items():
+        if canon not in seen:
+            c["phase"] = 0
+            c["phase_title"] = "기타"
+            cats_out.append(c)
     total = sum(len(c["widgets"]) for c in cats_out)
     return JSONResponse({"ok": True, "total": total, "categories": cats_out})
 
@@ -15915,7 +16184,8 @@ async def widget_guide_page():
   .wg-search {width:100%; padding:11px 14px; font-size:14px; border:1px solid #d1d5db; border-radius:9px; margin-bottom:8px; outline:none;}
   .wg-search:focus {border-color:#F47B20;}
   .wg-meta {color:#9ca3af; font-size:12.5px; margin-bottom:22px;}
-  .wg-cat-head {font-size:15px; font-weight:700; color:#1a1a2e; margin:26px 0 12px; display:flex; align-items:center; gap:8px;}
+  .wg-phase-head {font-size:18px; font-weight:800; color:#1a1a2e; margin:34px 0 6px; padding-bottom:8px; border-bottom:2px solid #F47B20;}
+  .wg-cat-head {font-size:15px; font-weight:700; color:#1a1a2e; margin:20px 0 12px; display:flex; align-items:center; gap:8px;}
   .wg-cat-n {color:#9ca3af; font-weight:500; font-size:13px;}
   .wg-grid {display:grid; grid-template-columns:repeat(auto-fill, minmax(186px,1fr)); gap:16px; margin-bottom:8px;}
   .wg-card {display:flex; flex-direction:column; align-items:center; text-align:center; gap:11px; background:#fff; border:1px solid #c7d2e0; border-radius:10px; padding:22px 16px 20px; text-decoration:none; color:inherit; cursor:pointer; transition:border-color .12s, box-shadow .12s;}
@@ -15934,15 +16204,33 @@ async def widget_guide_page():
   <div id="wg-list"></div>
 </div>
 <script>
-var _DATA = null;
+var LANG=(new URLSearchParams(location.search).get('lang')||'en');
+var I18N={
+  ko:{title:'위젯 소개', sub:'Orange3 위젯 — 아이콘 · 이름 · 설명', search:'위젯 이름·설명 검색...', loading:'불러오는 중…',
+      total:function(n){return '전체 '+n+'개 위젯';}, results:function(n){return ' · 검색 결과 '+n+'개';},
+      empty:'검색 결과가 없습니다.', fail:'불러오기 실패', err:function(m){return '오류: '+m;}},
+  en:{title:'Widget Guide', sub:'Orange3 widgets — icon, name, description', search:'Search widgets by name or description...', loading:'Loading…',
+      total:function(n){return n+' widgets';}, results:function(n){return ' · '+n+' results';},
+      empty:'No matching widgets.', fail:'Failed to load', err:function(m){return 'Error: '+m;}}
+};
+var T=I18N[LANG]||I18N.en;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+document.documentElement.lang=LANG;
+document.querySelector('h1').textContent=T.title;
+document.querySelector('.wg-sub').textContent=T.sub;
+document.getElementById('wg-search').setAttribute('placeholder', T.search);
+document.getElementById('wg-meta').textContent=T.loading;
+var _DATA=null;
+function dispName(w){ return (LANG==='ko' && w.name_ko) ? w.name_ko : w.name; }
+function dispDesc(w){ return (LANG==='ko' && w.desc_ko) ? w.desc_ko : w.description; }
 function render(filter){
   var host=document.getElementById('wg-list'); if(!_DATA) return;
   var f=(filter||'').trim().toLowerCase(); var html='', shown=0;
   _DATA.categories.forEach(function(cat){
     var ws=cat.widgets.filter(function(w){
       if(!f) return true;
-      return (w.name||'').toLowerCase().indexOf(f)>=0 || (w.name_ko||'').toLowerCase().indexOf(f)>=0 || (w.description||'').toLowerCase().indexOf(f)>=0;
+      return (w.name||'').toLowerCase().indexOf(f)>=0 || (w.name_ko||'').toLowerCase().indexOf(f)>=0
+          || (w.description||'').toLowerCase().indexOf(f)>=0 || (w.desc_ko||'').toLowerCase().indexOf(f)>=0;
     });
     if(!ws.length) return;
     html+='<div class="wg-cat-head">'+esc(cat.category)+' <span class="wg-cat-n">('+ws.length+')</span></div>';
@@ -15950,20 +16238,20 @@ function render(filter){
     ws.forEach(function(w){
       shown++;
       var img=w.icon_b64?'<img src="data:image/png;base64,'+w.icon_b64+'" alt="">':'';
-      html+='<a class="wg-card" href="/widget-guide/'+encodeURIComponent(w.qualified_name)+'?lang=ko" title="'+esc(w.name_ko||w.name)+'">'
+      html+='<a class="wg-card" href="/widget-guide/'+encodeURIComponent(w.qualified_name)+'?lang='+LANG+'" title="'+esc(w.name)+'">'
         +'<div class="wg-ic">'+img+'</div>'
-        +'<div class="wg-name">'+esc(w.name)+'</div>'
-        +'<div class="wg-desc">'+esc(w.description)+'</div></a>';
+        +'<div class="wg-name">'+esc(dispName(w))+'</div>'
+        +'<div class="wg-desc">'+esc(dispDesc(w))+'</div></a>';
     });
     html+='</div>';
   });
-  host.innerHTML=html||'<div class="wg-empty">검색 결과가 없습니다.</div>';
-  document.getElementById('wg-meta').textContent='전체 '+_DATA.total+'개 위젯'+(f?(' · 검색 결과 '+shown+'개'):'');
+  host.innerHTML=html||'<div class="wg-empty">'+esc(T.empty)+'</div>';
+  document.getElementById('wg-meta').textContent=T.total(_DATA.total)+(f?T.results(shown):'');
 }
 fetch('/api/widget-guide').then(function(r){return r.json();}).then(function(d){
-  if(!d.ok){document.getElementById('wg-meta').textContent=d.error||'불러오기 실패'; return;}
+  if(!d.ok){document.getElementById('wg-meta').textContent=d.error||T.fail; return;}
   _DATA=d; render('');
-}).catch(function(e){document.getElementById('wg-meta').textContent='오류: '+e.message;});
+}).catch(function(e){document.getElementById('wg-meta').textContent=T.err(e.message);});
 var _t; document.getElementById('wg-search').addEventListener('input', function(e){
   clearTimeout(_t); var v=e.target.value; _t=setTimeout(function(){render(v);},150);
 });
@@ -16025,7 +16313,14 @@ async def api_widget_detail(qn: str):
             names[lg] = wl.get("name", "")
             descs[lg] = wl.get("description", "")
     safe = qn.replace(".", "_")
-    has_shot = os.path.isfile("/app/html/widget-shots/" + safe + ".png")
+    _shot_path = "/app/html/widget-shots/" + safe + ".png"
+    _shot_url = None
+    if os.path.isfile(_shot_path):
+        try:
+            _mt = int(os.path.getmtime(_shot_path))   # 재캡쳐 시 캐시 무효화용 버전
+        except Exception:
+            _mt = 0
+        _shot_url = "/widget-shot/" + safe + ".png?v=" + str(_mt)
     # 위젯별 상세 본문(en/ko) — html/widget_content.json (orangedatamining 참조 + 번역)
     body = {}
     try:
@@ -16044,7 +16339,7 @@ async def api_widget_detail(qn: str):
         "inputs": w_en.get("inputs", []), "outputs": w_en.get("outputs", []),
         "keywords": w_en.get("keywords", []),
         "body": {"en": body.get("en", ""), "ko": body.get("ko", "")},
-        "shot": ("/widget-shot/" + safe + ".png") if has_shot else None,
+        "shot": _shot_url,
     })
 
 
@@ -16089,12 +16384,16 @@ async def widget_detail_page(qn: str):
 <script>
 (function(){
  var qn=decodeURIComponent((location.pathname.split('/widget-guide/')[1]||''));
- var lang=new URLSearchParams(location.search).get('lang')||'ko';
+ var lang=new URLSearchParams(location.search).get('lang')||'en';
+ var D=(lang==='ko')
+   ?{back:'← 위젯 목록',body:'상세 설명',io:'입력 / 출력',shot:'위젯 화면',kw:'키워드',ioEmpty:'없음',official:'공식 문서에서 자세히 보기 ↗',loading:'불러오는 중…',fail:'불러오기 실패',errp:'오류: ',tsfx:' — 위젯 상세'}
+   :{back:'← Widget list',body:'Details',io:'Inputs / Outputs',shot:'Widget screen',kw:'Keywords',ioEmpty:'None',official:'View full documentation ↗',loading:'Loading…',fail:'Failed to load',errp:'Error: ',tsfx:' — Widget'};
  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
- function io(arr){if(!arr||!arr.length)return '<div class="wd-io-empty">없음</div>';return '<div class="wd-io">'+arr.map(function(x){return '<div class="wd-io-row"><b>'+esc(x.name)+'</b> — '+esc(x.type||'')+'</div>';}).join('')+'</div>';}
+ var _l0=document.querySelector('#wd-root .wd-loading'); if(_l0) _l0.textContent=D.loading;
+ function io(arr){if(!arr||!arr.length)return '<div class="wd-io-empty">'+esc(D.ioEmpty)+'</div>';return '<div class="wd-io">'+arr.map(function(x){return '<div class="wd-io-row"><b>'+esc(x.name)+'</b> — '+esc(x.type||'')+'</div>';}).join('')+'</div>';}
  fetch('/api/widget-detail/'+encodeURIComponent(qn)).then(function(r){return r.json();}).then(function(d){
    var root=document.getElementById('wd-root');
-   if(!d.ok){root.innerHTML='<div class="wd-loading">'+esc(d.error||'불러오기 실패')+'</div>';return;}
+   if(!d.ok){root.innerHTML='<div class="wd-loading">'+esc(d.error||D.fail)+'</div>';return;}
    var name=(d.names&&d.names[lang])||d.name;
    var desc=(d.descs&&d.descs[lang])||d.description;
    var img=d.icon_b64?'<img src="data:image/png;base64,'+d.icon_b64+'" alt="">':'';
@@ -16102,24 +16401,24 @@ async def widget_detail_page(qn: str):
    var oc=(d.category||'').toLowerCase().replace(/\\s+/g,'-');
    var on=(d.name||'').toLowerCase().replace(/\\s+/g,'-');
    var officialUrl='https://orangedatamining.com/widget-catalog/'+oc+'/'+on+'/';
-   var shot=d.shot?('<div class="wd-sec"><h2>위젯 화면</h2><img class="wd-shot" src="'+d.shot+'" alt="'+esc(name)+'"></div>'):'';
-   var kw=(d.keywords&&d.keywords.length)?('<div class="wd-sec"><h2>키워드</h2><div class="wd-kw">'+d.keywords.map(function(k){return '<span>'+esc(k)+'</span>';}).join('')+'</div></div>'):'';
+   var shot=d.shot?('<div class="wd-sec"><h2>'+esc(D.shot)+'</h2><img class="wd-shot" src="'+d.shot+'" alt="'+esc(name)+'"></div>'):'';
+   var kw=(d.keywords&&d.keywords.length)?('<div class="wd-sec"><h2>'+esc(D.kw)+'</h2><div class="wd-kw">'+d.keywords.map(function(k){return '<span>'+esc(k)+'</span>';}).join('')+'</div></div>'):'';
    var body=(d.body&&(d.body[lang]||d.body.en||d.body.ko))||'';
-   var bodyHtml=body?('<div class="wd-sec"><h2>상세 설명</h2>'+body.split('\\n').filter(function(x){return x.trim();}).map(function(pp){return '<p class="wd-p">'+esc(pp)+'</p>';}).join('')+'</div>'):'';
-   document.title=name+' — 위젯 상세';
+   var bodyHtml=body?('<div class="wd-sec"><h2>'+esc(D.body)+'</h2>'+body.split('\\n').filter(function(x){return x.trim();}).map(function(pp){return '<p class="wd-p">'+esc(pp)+'</p>';}).join('')+'</div>'):'';
+   document.title=name+D.tsfx;
    root.innerHTML=
-     '<a class="wd-back" href="/widget-guide">← 위젯 목록</a>'
+     '<a class="wd-back" href="/widget-guide?lang='+lang+'">'+esc(D.back)+'</a>'
     +'<div class="wd-head"><div class="wd-ic">'+img+'</div>'
     +'<div><div class="wd-title">'+esc(name)+'</div><span class="wd-cat">'+esc(d.category)+'</span></div>'
     +'<div class="wd-langs">'+lb('ko','한국어')+lb('en','EN')+'</div></div>'
     +'<div class="wd-desc">'+esc(desc)+'</div>'
     +bodyHtml
-    +'<div class="wd-sec"><h2>입력 / 출력</h2><div style="display:flex;gap:32px;flex-wrap:wrap">'
+    +'<div class="wd-sec"><h2>'+esc(D.io)+'</h2><div style="display:flex;gap:32px;flex-wrap:wrap">'
       +'<div style="flex:1;min-width:200px"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Inputs</div>'+io(d.inputs)+'</div>'
       +'<div style="flex:1;min-width:200px"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Outputs</div>'+io(d.outputs)+'</div>'
     +'</div></div>'+shot+kw
-    +'<a class="wd-official" href="'+officialUrl+'" target="_blank" rel="noopener">공식 문서에서 자세히 보기 ↗</a>';
- }).catch(function(e){document.getElementById('wd-root').innerHTML='<div class="wd-loading">오류: '+esc(e.message)+'</div>';});
+    +'<a class="wd-official" href="'+officialUrl+'" target="_blank" rel="noopener">'+esc(D.official)+'</a>';
+ }).catch(function(e){document.getElementById('wd-root').innerHTML='<div class="wd-loading">'+esc(D.errp+e.message)+'</div>';});
 })();
 </script>
 </body></html>""")
@@ -16193,10 +16492,10 @@ async def admin_sessions():
 <title>활성 세션 — 관리자</title>
 <style>
 body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;background:#fafafa;color:#1a1a1c}
-.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px}
-h1{font-size:22px;margin:0 0 6px;color:#1a1a1c}
-.sub{font-size:13px;color:#6b7280;margin-bottom:24px}
-.sub-bullets{margin:0 0 24px 0;padding-left:20px;line-height:1.65}
+.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px;position:relative}
+h1{font-size:15px;margin:0 0 6px;color:#1a1a1c}
+.sub{font-size:13px;color:#6b7280;margin-bottom:14px}
+.sub-bullets{margin:0 0 14px 0;padding-left:20px;line-height:1.65}
 .sub-bullets li{margin:0}
 .admin-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin:0 0 24px}
 .admin-tabs a{padding:11px 18px;font-size:13.5px;font-weight:600;color:#6b7280;text-decoration:none;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
@@ -16265,28 +16564,29 @@ tbody tr.admin-row:hover{background:#fef3c7}
 .pool-input-row input[type=number]{width:72px;padding:6px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:13px;font-family:Consolas,monospace;text-align:right}
 .pool-input-row input[type=number]:focus{outline:none;border-color:#F47B20}
 .pool-input-row .max-hint{font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
-.pool-input-row button{padding:6px 14px;border-radius:5px;border:1px solid #F47B20;background:#F47B20;color:#fff;cursor:pointer;font-size:12px;font-weight:600}
+.pool-input-row button{padding:6px 14px;border-radius:5px;border:1px solid #F47B20;background:#F47B20;color:#fff;cursor:pointer;font-size:12.5px;font-weight:600}
 .pool-input-row button:hover{background:#d96b10;border-color:#d96b10}
 .pool-input-row button:disabled{opacity:0.55;cursor:not-allowed}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#1a1a1c;color:#fff;padding:10px 18px;border-radius:8px;font-size:13.5px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .meta{margin-top:14px;font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
+.ovp-set-title{font-size:20px;font-weight:800;color:#1a1a2e;margin:0 0 16px}
+.ovp-set-hr{border:0;border-top:1px solid #e5e7eb;margin:0 0 14px}
+.ovp-set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:0}
+.ovp-set-hr2{border:0;border-top:1px solid #e5e7eb;margin:32px 0 16px}
+.ovp-set-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:54px;padding:9px 6px;text-align:center;background:#fff;border:1.5px solid #7dd3fc;border-radius:9px;cursor:pointer;color:#0c4a6e;font-size:12px;font-weight:600;text-decoration:none;transition:border-color .12s,box-shadow .12s,background .12s}
+.ovp-set-btn:hover{border-color:#38bdf8;background:#f0f9ff;box-shadow:0 4px 14px rgba(56,189,248,0.20);color:#075985}
+.ovp-set-btn.active{border-color:#38bdf8;background:#e0f2fe;color:#075985}
+.ovp-set-ic{color:#38bdf8;display:flex}
+.ovp-set-ic svg{width:18px;height:18px}
 </style></head><body>
 <div class="wrap">
-  <h1>활성 세션</h1>
-  <div class="sub">현재 실행 중인 Orange3 세션 현황입니다. 5초마다 자동 갱신.</div>
-  <nav class="admin-tabs">
-    <a href="/admin/menu">메뉴 설정</a>
-    <a href="/admin/widgets">위젯 설정</a>
-    <a href="/admin/language">언어 설정</a>
-    <a href="/admin/splash">로딩 이미지 설정</a>
-    <a href="/admin/firstpage">첫 페이지 지정</a>
-    <a href="/admin/sessions" class="active">활성 세션</a>
-    <a href="/admin/usage">이용 현황</a>
-  </nav>
+  __ADMIN_NAV__
   __FB_AUTH_BLOCK__
 
   <div class="card">
+    <h1>활성 세션</h1>
+    <ul class="sub sub-bullets"><li>현재 실행 중인 Orange3 세션 현황입니다. 5초마다 자동 갱신.</li></ul>
     <div class="toolbar">
       <h2>워밍풀 크기</h2>
       <div class="right">
@@ -16641,7 +16941,7 @@ async function loadAll(){
 loadAll();
 setInterval(loadAll, 5000);
 </script>
-</body></html>""".replace("__FB_AUTH_BLOCK__", _admin_auth_html()))
+</body></html>""".replace("__ADMIN_NAV__", _admin_nav_cards("sessions")).replace("__FB_AUTH_BLOCK__", _admin_auth_html()))
 
 
 @app.delete("/admin/sessions/{sid}")
