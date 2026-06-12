@@ -2294,6 +2294,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #app-nav.expanded .an-badge {{ opacity:1; }}
     /* ── 사이드바 Menu 인라인 아코디언 (별도 팝업 대신 아래로 펼침) ── */
     .an-item.an-acc-open .an-chev {{ transform:rotate(90deg); }}
+    /* 아코디언(Menu/Example) 화살표: 닫힘=아래, 펼침=위 (2026-06-13) */
+    #an-menu-btn .an-chev, #an-example-btn .an-chev {{ transform:rotate(90deg); }}
+    #an-menu-btn.an-acc-open .an-chev, #an-example-btn.an-acc-open .an-chev {{ transform:rotate(-90deg); }}
     .an-acc {{ max-height:0; overflow:hidden; flex-shrink:0; transition:max-height .2s ease; }}
     .an-acc.open {{ max-height:220px; }}
     .an-subitem {{ display:flex; align-items:center; height:30px; margin:0 6px; padding:0 8px 0 39px;
@@ -3441,7 +3444,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <!-- 사이드바 Menu 인라인 아코디언 (팝업 플라이아웃 대체 — 아래로 펼침) -->
     <div id="an-menu-acc" class="an-acc">
       <div class="an-subitem" onclick="event.stopPropagation(); hideOverview(); _ensureWidgetPanel(); wfAddTab(); _anCloseMenuAcc()">새 문서</div>
-      <div class="an-subitem" onclick="event.stopPropagation(); openOwsDialog(); _anCloseMenuAcc()">불러오기</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); _ensureWidgetPanel(); openOwsDialog(); _anCloseMenuAcc()">불러오기</div>
       <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">저장</div>
       <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">다른 이름으로 저장 ...</div>
     </div>
@@ -3458,17 +3461,22 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <span class="an-label">Widget</span>
     </div>
     <div class="an-sep"></div>
-    <div class="an-item" title="Analysis-Datasets" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openAnalysisDatasets()">
+    <div class="an-item" title="Analysis-Datasets" onclick="appNavSelect(this); hideOverview(); openAnalysisDatasets()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
       <span class="an-label">Analysis-Datasets</span>
     </div>
-    <div class="an-item" title="Templates" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openLessonTemplates()">
+    <div class="an-item" title="Templates" onclick="appNavSelect(this); hideOverview(); openLessonTemplates()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span class="an-label">Templates</span>
     </div>
-    <div class="an-item" title="Example" onclick="toggleExamplePanel(this)">
+    <div class="an-item" id="an-example-btn" title="Example" onclick="event.stopPropagation(); _anToggleExampleAcc(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h7A1.5 1.5 0 0 1 19 4.5v11A1.5 1.5 0 0 1 17.5 17H16"/><rect x="5" y="7" width="11" height="14" rx="1.5"/><line x1="8" y1="11" x2="13" y2="11"/><line x1="8" y1="14" x2="13" y2="14"/><line x1="8" y1="17" x2="11" y2="17"/></svg>
-      <span class="an-label">Example</span>
+      <span class="an-label">Examples</span>
+      <span class="an-chev">›</span>
+    </div>
+    <div id="an-example-acc" class="an-acc">
+      <div class="an-subitem" onclick="event.stopPropagation(); _anCloseExampleAcc(); toggleExamplePanel(document.getElementById('an-example-btn'))">Example 01</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); _anCloseExampleAcc(); toggleExamplePanel(document.getElementById('an-example-btn'))">Example 02</div>
     </div>
     <div class="an-sep"></div>
     <div class="an-spacer"></div>
@@ -3490,7 +3498,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div class="ovp-inner">
       <div class="ovp-top">
         <h1 class="ovp-title">WorkSpaces</h1>
-        <button class="ovp-new" onclick="hideOverview(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
+        <button class="ovp-new" onclick="hideOverview(); _ensureWidgetPanel(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
       </div>
       <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
       <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span><span class="ovp-tab" onclick="ovpSwitchTab('widgets')">Widget</span></div>
@@ -3500,16 +3508,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <!-- Workflows 패널 -->
       <div id="ovp-pane-wf">
         <div class="ovp-grid">
-          <div class="ovp-card ovp-card-new" onclick="hideOverview(); wfAddTab();">
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); _ensureWidgetPanel(); wfAddTab();">
             <div class="ovp-plus">+</div>
             <div>새 워크플로우</div>
           </div>
-          <div class="ovp-card ovp-card-new" onclick="hideOverview(); openOwsDialog();">
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); _ensureWidgetPanel(); openOwsDialog();">
             <div class="ovp-plus" style="font-size:22px;">↥</div>
             <div>워크플로우 열기</div>
           </div>
           <!-- Browse Templates (파란 영역) — 기존 모달 그대로 유지 -->
-          <div class="ovp-card ovp-card-new" onclick="hideOverview(); _ensureWidgetPanel(); openLessonTemplates();">
+          <div class="ovp-card ovp-card-new" onclick="hideOverview(); openLessonTemplates();">
             <div class="ovp-plus" style="font-size:20px;">▦</div>
             <div>템플릿 둘러보기</div>
           </div>
@@ -5205,6 +5213,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           var t2=document.querySelectorAll('#wf-tabbar-inner .wf-tab');
           if (t2[idx]) t2[idx].click();   // 기존 wfSwitch 핸들러 재사용
           hideOverview();
+          try {{ _ensureWidgetPanel(); }} catch(_e) {{}}   // 워크플로우 선택=캔버스 로딩 → 위젯 메뉴 노출
         }});
       }});
       _ovRenderPager(total, pages);
@@ -5512,10 +5521,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }}
       return '';
     }};
-    /* Overview 를 떠나면(워크플로우 선택·카드·다른 메뉴 등 어떤 경로든) 위젯 메뉴 재노출 */
+    /* Overview 닫기만 — 위젯 메뉴는 캔버스 로딩(새 워크플로우·열기)에서만 별도 호출 (2026-06-13) */
     function hideOverview() {{
       var p=document.getElementById('overview-page'); if(p) p.classList.remove('show');
-      _ensureWidgetPanel();
     }}
     /* 위젯 메뉴 항상 노출 — 닫혀 있으면 다시 연다 */
     function _ensureWidgetPanel() {{
@@ -5696,6 +5704,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       acc.classList.toggle('open', willOpen);
       btn.classList.toggle('an-acc-open', willOpen);
       // 다른 플라이아웃/드롭다운 닫기 (중복 노출 방지)
+      try {{ _anCloseExampleAcc(); }} catch(_e) {{}}
       try {{ closeMenu(); }} catch(_e) {{}}
       try {{ closeSettingsMenu(); }} catch(_e) {{}}
       try {{ closeHelpMenu(); }} catch(_e) {{}}
@@ -5704,6 +5713,26 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var acc = document.getElementById('an-menu-acc');
       if (acc) acc.classList.remove('open');
       var btn = document.getElementById('an-menu-btn');
+      if (btn) btn.classList.remove('an-acc-open');
+    }}
+    /* Example 하위 아코디언 (Menu 와 동일 방식, 2026-06-13) */
+    function _anToggleExampleAcc(btn) {{
+      var nav = document.getElementById('app-nav');
+      var acc = document.getElementById('an-example-acc');
+      if (!acc || !btn) return;
+      if (nav && !nav.classList.contains('expanded')) {{ try {{ toggleAppNav(); }} catch(_e) {{}} }}
+      var willOpen = !acc.classList.contains('open');
+      acc.classList.toggle('open', willOpen);
+      btn.classList.toggle('an-acc-open', willOpen);
+      try {{ _anCloseMenuAcc(); }} catch(_e) {{}}
+      try {{ closeMenu(); }} catch(_e) {{}}
+      try {{ closeSettingsMenu(); }} catch(_e) {{}}
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
+    }}
+    function _anCloseExampleAcc() {{
+      var acc = document.getElementById('an-example-acc');
+      if (acc) acc.classList.remove('open');
+      var btn = document.getElementById('an-example-btn');
       if (btn) btn.classList.remove('an-acc-open');
     }}
 
@@ -6369,7 +6398,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     function applyNewUILang(code) {{
       var NAV = {{
         ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','예제','도움말','설정'],
-        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Example','Help','Settings'],
+        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Examples','Help','Settings'],
         sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Primer','Pomoč','Nastavitve']
       }};
       var arr = NAV[code] || NAV.en;
