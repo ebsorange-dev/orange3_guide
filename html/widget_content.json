@@ -1,0 +1,1086 @@
+{
+  "Orange.widgets.data.owfile.OWFile": {
+    "en": "The File widget reads an input data file (a data table with data instances) and sends the dataset to its output channel. It keeps a history of recently opened files and also ships with a directory of sample datasets pre-installed with Orange.\nSupported formats include tab-delimited (.tab), comma-separated (.csv) and Excel (.xlsx) files; data can also be loaded directly from a URL.\nAfter a file is loaded, the widget shows dataset information and a list of columns. For each column you can edit its name, type (numeric, categorical, text or datetime) and role (feature, target, meta or skip), then click Apply to send the updated data.",
+    "ko": "File(파일) 위젯은 입력 데이터 파일(데이터 인스턴스로 구성된 데이터 테이블)을 읽어 출력 채널로 데이터셋을 전송합니다. 최근 연 파일 기록을 유지하며, Orange에 기본 포함된 예제 데이터셋 디렉터리도 함께 제공합니다.\n지원 형식은 탭 구분(.tab), 쉼표 구분(.csv), 엑셀(.xlsx) 등이며, URL에서 직접 데이터를 불러올 수도 있습니다.\n파일을 불러오면 데이터셋 정보와 열 목록이 표시됩니다. 각 열의 이름, 유형(수치·범주·텍스트·날짜시간), 역할(특성·목표·메타·건너뛰기)을 편집한 뒤 Apply를 눌러 변경된 데이터를 전송할 수 있습니다."
+  },
+  "Orange.widgets.data.owcsvimport.OWCSVFileImport": {
+    "en": "The CSV File Import widget imports a data table from a CSV or other plain-text file. Unlike the File widget, it gives full control over how the file is parsed: column delimiter, quote character, decimal and thousands separators, text encoding and which rows are headers.\nA live preview shows the parsed result before importing, and the type and role of each column can be adjusted.\nImport settings are remembered per file, so the same file is read the same way the next time it is loaded.",
+    "ko": "CSV File Import(CSV 파일 가져오기) 위젯은 CSV나 기타 일반 텍스트 파일에서 데이터 테이블을 가져옵니다. File 위젯과 달리 열 구분자, 인용 부호, 소수점·천 단위 구분자, 텍스트 인코딩, 머리글 행 지정 등 파싱 방식을 세밀하게 제어할 수 있습니다.\n실시간 미리보기로 가져오기 전에 파싱 결과를 확인할 수 있고, 각 열의 유형과 역할도 조정할 수 있습니다.\n가져오기 설정은 파일별로 기억되어, 같은 파일을 다음에 불러올 때도 동일하게 읽힙니다."
+  },
+  "Orange.widgets.data.owdatasets.OWDataSets": {
+    "en": "The Datasets widget lets you browse and load datasets from an online repository curated by the Orange team. Each dataset is listed with its size, number of instances and variables, and a short description.\nSelecting a dataset downloads it and sends it to the output, providing a convenient way to obtain example and benchmark data without manually downloading files.",
+    "ko": "Datasets(데이터셋) 위젯은 Orange 팀이 큐레이션한 온라인 저장소에서 데이터셋을 탐색하고 불러옵니다. 각 데이터셋은 크기, 인스턴스·변수 수, 짧은 설명과 함께 목록으로 표시됩니다.\n데이터셋을 선택하면 다운로드되어 출력으로 전송되므로, 파일을 직접 내려받지 않고도 예제·벤치마크 데이터를 손쉽게 얻을 수 있습니다."
+  },
+  "Orange.widgets.data.owtable.OWTable": {
+    "en": "The Data Table widget displays the input dataset in a spreadsheet-like table, with instances in rows and variables in columns. Feature, target (highlighted) and meta attributes are shown together.\nYou can sort by any column and select rows; the selected instances are sent to the output. It is the most common way to inspect data at any point in a workflow.",
+    "ko": "Data Table(데이터 테이블) 위젯은 입력 데이터셋을 스프레드시트 형태의 표로 보여줍니다. 행에는 인스턴스, 열에는 변수가 표시되며 특성·목표(강조 표시)·메타 속성을 함께 봅니다.\n열 기준으로 정렬하고 행을 선택할 수 있으며, 선택한 인스턴스는 출력으로 전송됩니다. 워크플로우 어느 지점에서든 데이터를 확인하는 가장 일반적인 방법입니다."
+  },
+  "Orange.widgets.data.owpaintdata.OWPaintData": {
+    "en": "The Paint Data widget lets you create a dataset by hand, painting data points onto a two-dimensional plane with the mouse. You can define class labels and use brush tools to put, move or remove points.\nIt is mainly used for teaching and for quickly building small datasets to experiment with classification, clustering and other methods.",
+    "ko": "Paint Data(데이터 그리기) 위젯은 마우스로 2차원 평면에 점을 찍어 데이터셋을 직접 만들 수 있게 합니다. 클래스 레이블을 정의하고 브러시 도구로 점을 추가·이동·삭제할 수 있습니다.\n주로 교육용으로, 또는 분류·군집화 등 다양한 기법을 빠르게 실험하기 위한 소규모 데이터셋을 만들 때 사용합니다."
+  },
+  "Orange.widgets.data.owdatainfo.OWDataInfo": {
+    "en": "The Data Info widget shows basic information about the input dataset: the number of instances, the number and type of features (numeric, categorical, text, datetime), the target variable, meta attributes and whether any values are missing.\nIt is a handy quick summary for verifying the data at any stage of a workflow.",
+    "ko": "Data Info(데이터 정보) 위젯은 입력 데이터셋의 기본 정보를 보여줍니다. 인스턴스 수, 특성의 개수와 유형(수치·범주·텍스트·날짜시간), 목표 변수, 메타 속성, 결측값 여부 등을 표시합니다.\n워크플로우의 각 단계에서 데이터를 빠르게 요약·확인하는 데 유용합니다."
+  },
+  "Orange.widgets.data.owrank.OWRank": {
+    "en": "The Rank widget scores and ranks features by their relevance to the target variable, using methods such as information gain, gain ratio, Gini, ANOVA, chi-square and ReliefF.\nFeatures are listed sorted by score, and you can select the top-ranked ones to pass to the output — a common way to perform feature selection before modeling.",
+    "ko": "Rank(순위) 위젯은 정보 이득, 이득 비율, 지니, ANOVA, 카이제곱, ReliefF 등 다양한 방법으로 특성이 목표 변수와 얼마나 관련 있는지 점수를 매겨 순위를 정합니다.\n특성은 점수순으로 정렬되어 표시되며, 상위 특성을 선택해 출력으로 보낼 수 있어 모델링 전 특성 선택에 흔히 사용됩니다."
+  },
+  "Orange.widgets.data.oweditdomain.OWEditDomain": {
+    "en": "The Edit Domain widget lets you change the definition (domain) of a dataset without altering its values. You can rename variables, change their type or role, reorder or merge categorical values, add labels and choose the target variable.\nThe transformed data is sent to the output, which makes it useful for cleaning up data before analysis.",
+    "ko": "Edit Domain(도메인 편집) 위젯은 데이터 값은 그대로 두고 데이터셋의 정의(도메인)를 변경합니다. 변수 이름 변경, 유형·역할 변경, 범주 값의 순서 변경·병합, 레이블 추가, 목표 변수 지정 등을 할 수 있습니다.\n변환된 데이터가 출력으로 전송되어 분석 전 데이터 정리에 유용합니다."
+  },
+  "Orange.widgets.data.owcolor.OWColor": {
+    "en": "The Color widget sets the colors used to represent variables and their values in visualizations. For categorical variables you can assign a color to each value; for numeric variables you can choose a color palette and gradient.\nIt does not change the data itself, only how it is displayed in downstream visualization widgets.",
+    "ko": "Color(색상) 위젯은 시각화에서 변수와 그 값을 나타내는 색상을 지정합니다. 범주형 변수는 각 값마다 색을 지정할 수 있고, 수치형 변수는 색상 팔레트와 그라데이션을 선택할 수 있습니다.\n데이터 자체는 바꾸지 않고, 이후 시각화 위젯에서 표시되는 방식만 변경합니다."
+  },
+  "Orange.widgets.data.owfeaturestatistics.OWFeatureStatistics": {
+    "en": "The Feature Statistics widget gives a quick overview of each feature in the dataset. For every variable it shows the type, a small distribution histogram and summary statistics such as mean, median, dispersion, minimum, maximum and the proportion of missing values.\nIt helps you understand and screen variables before further analysis.",
+    "ko": "Feature Statistics(특성 통계) 위젯은 데이터셋의 각 특성을 한눈에 요약해 보여줍니다. 변수마다 유형, 작은 분포 히스토그램, 평균·중앙값·산포·최소·최대·결측값 비율 같은 요약 통계를 표시합니다.\n본격적인 분석 전에 변수를 이해하고 선별하는 데 도움이 됩니다."
+  },
+  "Orange.widgets.data.owsave.OWSave": {
+    "en": "The Save Data widget saves the input dataset to a file on disk. It supports Orange's native tab-delimited format as well as CSV, Excel and other formats, and you choose the location, file name and format.\nIt is typically placed at the end of a workflow to export processed or transformed data for use elsewhere.",
+    "ko": "Save Data(데이터 저장) 위젯은 입력 데이터셋을 디스크의 파일로 저장합니다. Orange 고유의 탭 구분 형식은 물론 CSV, 엑셀 등 여러 형식을 지원하며, 저장 위치·파일 이름·형식을 직접 선택할 수 있습니다.\n보통 워크플로우의 끝에 두어, 처리·변환한 데이터를 다른 곳에서 쓰도록 내보낼 때 사용합니다."
+  },
+  "Orange.widgets.data.owdatasampler.OWDataSampler": {
+    "en": "The Data Sampler selects a subset of data instances using various sampling methods, such as a fixed proportion or number of rows, cross-validation folds, or bootstrap. It outputs the selected sample and, separately, the remaining instances.",
+    "ko": "Data Sampler(데이터 샘플러)는 고정 비율·개수, 교차검증 폴드, 부트스트랩 등 다양한 표본추출 방법으로 데이터 인스턴스의 부분집합을 선택합니다. 선택된 표본과 나머지 인스턴스를 각각 출력합니다."
+  },
+  "Orange.widgets.data.owselectcolumns.OWSelectAttributes": {
+    "en": "The Select Columns widget lets you compose the data domain by hand: choose which variables are used as features, which is the target, and which are metas, and reorder or ignore variables. The reshaped data is sent to the output.",
+    "ko": "Select Columns(열 선택) 위젯은 데이터 도메인을 직접 구성하게 해줍니다. 어떤 변수를 특성으로, 무엇을 목표로, 무엇을 메타로 둘지 선택하고 순서 변경·제외도 가능합니다. 재구성된 데이터가 출력으로 전송됩니다."
+  },
+  "Orange.widgets.data.owselectrows.OWSelectRows": {
+    "en": "The Select Rows widget selects the instances that match user-defined conditions on the variables (for example numeric ranges or categorical values). Matching rows are sent to the output, and non-matching rows are available separately.",
+    "ko": "Select Rows(행 선택) 위젯은 변수에 대한 사용자 조건(예: 수치 범위, 범주 값)에 맞는 인스턴스를 선택합니다. 조건에 맞는 행은 출력으로 전송되며, 맞지 않는 행도 별도로 제공됩니다."
+  },
+  "Orange.widgets.data.owtranspose.OWTranspose": {
+    "en": "The Transpose widget transposes the data table, swapping rows and columns so that instances become features and features become instances. It is often used before clustering or correlating variables instead of instances.",
+    "ko": "Transpose(전치) 위젯은 데이터 테이블의 행과 열을 맞바꿔 인스턴스가 특성이 되고 특성이 인스턴스가 되도록 전치합니다. 인스턴스 대신 변수를 군집화·상관 분석하기 전에 자주 사용합니다."
+  },
+  "orangecontrib.single_cell.widgets.owscpreprocess.OWscPreprocess": {
+    "en": "The Single Cell Preprocess widget prepares single-cell gene-expression data for analysis, offering steps such as normalization, library-size scaling, log transformation and gene/cell filtering.",
+    "ko": "Single Cell Preprocess(단일세포 전처리) 위젯은 단일세포 유전자 발현 데이터를 분석에 맞게 준비합니다. 정규화, 라이브러리 크기 스케일링, 로그 변환, 유전자/세포 필터링 등의 단계를 제공합니다."
+  },
+  "Orange.widgets.data.owsplit.OWSplit": {
+    "en": "The Split widget splits the dataset into subsets according to the values of a selected categorical variable, producing one group of instances per value.",
+    "ko": "Split(분할) 위젯은 선택한 범주형 변수의 값에 따라 데이터셋을 부분집합으로 나눕니다. 값마다 하나의 인스턴스 그룹이 만들어집니다."
+  },
+  "Orange.widgets.data.owmergedata.OWMergeData": {
+    "en": "The Merge Data widget combines two datasets by matching their rows on selected key variables, similar to a database join. You choose how rows are paired (e.g. by row index or by a shared identifier).",
+    "ko": "Merge Data(데이터 병합) 위젯은 선택한 키 변수로 행을 매칭해 두 데이터셋을 결합합니다(데이터베이스 조인과 유사). 행을 어떻게 짝지을지(행 인덱스, 공통 식별자 등)를 선택할 수 있습니다."
+  },
+  "Orange.widgets.data.owconcatenate.OWConcatenate": {
+    "en": "The Concatenate widget appends multiple datasets into a single one, stacking their instances. Variables can be intersected or unioned, and a source column can mark which dataset each instance came from.",
+    "ko": "Concatenate(연결) 위젯은 여러 데이터셋의 인스턴스를 쌓아 하나로 이어붙입니다. 변수는 교집합 또는 합집합으로 처리할 수 있고, 각 인스턴스가 어느 데이터셋에서 왔는지 표시하는 소스 열도 추가할 수 있습니다."
+  },
+  "Orange.widgets.data.owselectbydataindex.OWSelectByDataIndex": {
+    "en": "The Select by Data Index widget selects from one dataset the instances whose indices appear in a second, reference dataset. It is useful for recovering the rows that another widget kept or removed.",
+    "ko": "Select by Data Index(데이터 인덱스로 선택) 위젯은 두 번째 참조 데이터셋에 있는 인덱스와 일치하는 인스턴스를 첫 데이터셋에서 선택합니다. 다른 위젯이 남기거나 제거한 행을 되살릴 때 유용합니다."
+  },
+  "Orange.widgets.data.owunique.OWUnique": {
+    "en": "The Unique widget removes duplicate instances, keeping a single representative for each group of identical (or selected-variable-identical) rows according to the chosen rule.",
+    "ko": "Unique(고유값) 위젯은 중복 인스턴스를 제거하고, 동일한(또는 선택 변수 기준으로 동일한) 행 그룹마다 선택한 규칙에 따라 대표 1개만 남깁니다."
+  },
+  "Orange.widgets.data.owaggregatecolumns.OWAggregateColumns": {
+    "en": "The Aggregate Columns widget creates a new feature by aggregating the values of several selected numeric columns within each instance, using operations such as sum, mean, min, max or variance.",
+    "ko": "Aggregate Columns(열 집계) 위젯은 선택한 여러 수치 열의 값을 인스턴스별로 합·평균·최소·최대·분산 등으로 집계해 새 특성을 만듭니다."
+  },
+  "Orange.widgets.data.owgroupby.OWGroupBy": {
+    "en": "The Group by widget groups instances by one or more selected variables and computes aggregations (count, sum, mean, median, …) for each group, much like SQL GROUP BY.",
+    "ko": "Group by(그룹화) 위젯은 선택한 하나 이상의 변수로 인스턴스를 그룹화하고, 그룹별 집계(개수·합·평균·중앙값 등)를 계산합니다. SQL의 GROUP BY와 유사합니다."
+  },
+  "Orange.widgets.data.owpivot.OWPivot": {
+    "en": "The Pivot Table widget summarizes the data into a cross-tabulation: you choose a row variable, a column variable and an aggregation of the values, producing a compact pivot table.",
+    "ko": "Pivot Table(피벗 테이블) 위젯은 데이터를 교차표로 요약합니다. 행 변수, 열 변수, 값 집계 방식을 선택하면 간결한 피벗 표가 만들어집니다."
+  },
+  "Orange.widgets.data.owtransform.OWTransform": {
+    "en": "The Apply Domain widget applies the domain — the variable definitions and transformations — learned on one dataset to another dataset, so that new data is processed exactly like the original.",
+    "ko": "Apply Domain(도메인 적용) 위젯은 한 데이터셋에서 학습한 도메인(변수 정의·변환)을 다른 데이터셋에 적용합니다. 새 데이터가 원본과 동일한 방식으로 처리되도록 합니다."
+  },
+  "Orange.widgets.data.owpreprocess.OWPreprocess": {
+    "en": "The Preprocess widget builds a preprocessing pipeline from steps such as normalization, imputation, discretization, continuization and feature selection. It can apply the pipeline to data or output it as a reusable preprocessor.",
+    "ko": "Preprocess(전처리) 위젯은 정규화·결측값 대치·이산화·연속화·특성 선택 등의 단계로 전처리 파이프라인을 구성합니다. 파이프라인을 데이터에 적용하거나 재사용 가능한 전처리기로 출력할 수 있습니다."
+  },
+  "Orange.widgets.data.owimpute.OWImpute": {
+    "en": "The Impute widget fills in missing values using a chosen strategy: average or most frequent value, a model-based prediction, a fixed value, or by removing instances or features with missing data.",
+    "ko": "Impute(대치) 위젯은 결측값을 선택한 방법으로 채웁니다. 평균/최빈값, 모델 기반 예측, 고정값, 또는 결측이 있는 인스턴스·특성 제거 등을 사용할 수 있습니다."
+  },
+  "Orange.widgets.data.owcontinuize.OWContinuize": {
+    "en": "The Continuize widget converts categorical variables into numeric (continuous) form, for example with one-hot encoding, and can also normalize or standardize numeric features so they are ready for numeric models.",
+    "ko": "Continuize(연속화) 위젯은 범주형 변수를 원-핫 인코딩 등으로 수치(연속)형으로 변환하고, 수치 특성을 정규화·표준화해 수치 기반 모델에 바로 쓸 수 있게 만듭니다."
+  },
+  "Orange.widgets.data.owdiscretize.OWDiscretize": {
+    "en": "The Discretize widget converts numeric variables into categorical ones by grouping their values into bins, using methods such as equal-width, equal-frequency or entropy-based (MDL) discretization.",
+    "ko": "Discretize(이산화) 위젯은 수치 변수의 값을 구간(bin)으로 묶어 범주형으로 변환합니다. 등간격, 등빈도, 엔트로피 기반(MDL) 등의 방법을 사용합니다."
+  },
+  "Orange.widgets.data.owrandomize.OWRandomize": {
+    "en": "The Randomize widget randomly shuffles parts of the data — class values, features and/or meta values — which is useful for creating baselines and for testing whether a model has learned real structure.",
+    "ko": "Randomize(무작위화) 위젯은 데이터의 일부(클래스 값·특성·메타 값)를 무작위로 섞습니다. 베이스라인을 만들거나 모델이 실제 구조를 학습했는지 검증하는 데 유용합니다."
+  },
+  "Orange.widgets.data.owpurgedomain.OWPurgeDomain": {
+    "en": "The Purge Domain widget cleans the data domain by removing redundant elements, such as constant features and categorical values that no longer appear in the data.",
+    "ko": "Purge Domain(도메인 정리) 위젯은 상수 특성이나 더 이상 데이터에 나타나지 않는 범주 값처럼 불필요한 요소를 제거해 데이터 도메인을 정리합니다."
+  },
+  "Orange.widgets.data.owmelt.OWMelt": {
+    "en": "The Melt widget reshapes a wide table into long format, unpivoting several selected columns into variable–value pairs so that each original column value becomes its own row.",
+    "ko": "Melt(멜트) 위젯은 넓은(wide) 표를 긴(long) 형식으로 변형합니다. 선택한 여러 열을 변수–값 쌍으로 언피벗해, 원래 각 열의 값이 별도의 행이 되도록 합니다."
+  },
+  "Orange.widgets.data.owfeatureconstructor.OWFeatureConstructor": {
+    "en": "The Formula widget (Feature Constructor) creates new features by writing expressions over existing variables, supporting arithmetic, logical and string operations as well as conditional formulas.",
+    "ko": "Formula(수식, 특성 생성기) 위젯은 기존 변수에 대한 수식을 작성해 새로운 특성을 만듭니다. 산술·논리·문자열 연산과 조건식을 지원합니다."
+  },
+  "Orange.widgets.data.owcreateclass.OWCreateClass": {
+    "en": "The Create Class widget builds a new categorical (class) variable from an existing variable, for example by matching text patterns or substrings to assign each instance to a class.",
+    "ko": "Create Class(클래스 생성) 위젯은 기존 변수로부터 새로운 범주형(클래스) 변수를 만듭니다. 예를 들어 텍스트 패턴·부분 문자열을 매칭해 각 인스턴스를 클래스에 배정합니다."
+  },
+  "Orange.widgets.data.owcreateinstance.OWCreateInstance": {
+    "en": "The Create Instance widget lets you create or edit a single data instance by setting the value of each feature, which is handy for what-if exploration and for feeding a specific case to a model.",
+    "ko": "Create Instance(인스턴스 생성) 위젯은 각 특성의 값을 지정해 단일 데이터 인스턴스를 만들거나 편집하게 해줍니다. 가정(what-if) 탐색이나 특정 사례를 모델에 입력할 때 유용합니다."
+  },
+  "Orange.widgets.data.owpythonscript.OWPythonScript": {
+    "en": "The Python Script widget runs arbitrary Python code on its inputs, giving full programmatic control to transform data, compute custom results, or produce outputs that no other widget provides.",
+    "ko": "Python Script(파이썬 스크립트) 위젯은 입력에 대해 임의의 파이썬 코드를 실행합니다. 데이터 변환, 맞춤 결과 계산, 다른 위젯이 제공하지 않는 출력 생성까지 프로그래밍으로 완전히 제어할 수 있습니다."
+  },
+  "Orange.widgets.visualize.owtreeviewer.OWTreeGraph": {
+    "en": "The Tree Viewer visualizes a classification or regression tree as a node-link diagram. You can browse the nodes, inspect class distributions and rules, and select the instances that fall into a chosen branch.",
+    "ko": "Tree Viewer(트리 뷰어)는 분류·회귀 트리를 노드-링크 다이어그램으로 시각화합니다. 노드를 탐색하며 클래스 분포와 규칙을 확인하고, 선택한 분기에 속하는 인스턴스를 선택할 수 있습니다."
+  },
+  "Orange.widgets.visualize.owboxplot.OWBoxPlot": {
+    "en": "The Box Plot shows the distribution of a numeric variable as a box plot — quartiles, median and outliers — optionally split by a categorical variable to compare groups.",
+    "ko": "Box Plot(상자 그림)은 수치 변수의 분포를 사분위수·중앙값·이상치가 있는 상자 그림으로 보여주며, 범주형 변수로 나눠 그룹을 비교할 수 있습니다."
+  },
+  "Orange.widgets.visualize.owviolinplot.OWViolinPlot": {
+    "en": "The Violin Plot shows the distribution of a numeric variable as a violin (density) shape, optionally grouped by a categorical variable for comparison.",
+    "ko": "Violin Plot(바이올린 플롯)은 수치 변수의 분포를 밀도 형태의 바이올린으로 보여주며, 범주형 변수로 그룹화해 비교할 수 있습니다."
+  },
+  "Orange.widgets.visualize.owdistributions.OWDistributions": {
+    "en": "The Distributions widget displays the distribution of a single variable as a histogram or density curve, optionally split by the target class.",
+    "ko": "Distributions(분포) 위젯은 단일 변수의 분포를 히스토그램이나 밀도 곡선으로 표시하며, 목표 클래스별로 나눠 볼 수 있습니다."
+  },
+  "Orange.widgets.visualize.owscatterplot.OWScatterPlot": {
+    "en": "The Scatter Plot draws instances as points on two chosen axes, with color, shape and size encoding other variables. It supports selection and can automatically find the most informative pair of axes.",
+    "ko": "Scatter Plot(산점도)은 선택한 두 축에 인스턴스를 점으로 그리고 색·모양·크기로 다른 변수를 인코딩합니다. 선택을 지원하며 가장 정보가 많은 축 쌍을 자동으로 찾아줄 수 있습니다."
+  },
+  "Orange.widgets.visualize.owlineplot.OWLinePlot": {
+    "en": "The Line Plot draws each instance (or group) as a line across the features, which is useful for profiles and time-series-like data.",
+    "ko": "Line Plot(선 그래프)은 각 인스턴스(또는 그룹)를 특성에 걸친 선으로 그립니다. 프로파일이나 시계열 형태의 데이터에 유용합니다."
+  },
+  "Orange.widgets.visualize.owbarplot.OWBarPlot": {
+    "en": "The Bar Plot shows the values of a variable as bars per instance or group, optionally colored or annotated by another variable.",
+    "ko": "Bar Plot(막대 그래프)은 변수 값을 인스턴스나 그룹별 막대로 보여주며, 다른 변수로 색을 입히거나 주석을 달 수 있습니다."
+  },
+  "Orange.widgets.visualize.owsieve.OWSieveDiagram": {
+    "en": "The Sieve Diagram visualizes the relationship between two categorical variables by comparing observed and expected frequencies in a grid of rectangles.",
+    "ko": "Sieve Diagram(체 다이어그램)은 관측 빈도와 기대 빈도를 사각형 격자로 비교해 두 범주형 변수 사이의 관계를 시각화합니다."
+  },
+  "Orange.widgets.visualize.owmosaic.OWMosaicDisplay": {
+    "en": "The Mosaic Display shows the joint distribution of two or more categorical variables as nested rectangles whose sizes reflect frequencies.",
+    "ko": "Mosaic Display(모자이크 표시)는 둘 이상의 범주형 변수의 결합 분포를, 빈도에 따라 크기가 정해지는 중첩 사각형으로 보여줍니다."
+  },
+  "Orange.widgets.visualize.owfreeviz.OWFreeViz": {
+    "en": "FreeViz is an optimization-based linear projection that positions class-separating axes to display multivariate data in two dimensions.",
+    "ko": "FreeViz는 클래스를 잘 분리하는 축을 최적화로 배치해 다변량 데이터를 2차원으로 표시하는 선형 투영입니다."
+  },
+  "Orange.widgets.visualize.owlinearprojection.OWLinearProjection": {
+    "en": "The Linear Projection widget projects multivariate data onto a 2-D plane using a chosen linear projection such as PCA, LDA or manually placed anchors.",
+    "ko": "Linear Projection(선형 투영) 위젯은 PCA·LDA 또는 수동 앵커 등 선택한 선형 투영으로 다변량 데이터를 2차원 평면에 투영합니다."
+  },
+  "Orange.widgets.visualize.owradviz.OWRadviz": {
+    "en": "Radviz is a radial projection that places variables on a circle and instances inside it, helping reveal class structure in multivariate data.",
+    "ko": "Radviz는 변수를 원 위에, 인스턴스를 원 안에 배치하는 방사형 투영으로, 다변량 데이터의 클래스 구조를 드러내는 데 도움이 됩니다."
+  },
+  "Orange.widgets.visualize.owheatmap.OWHeatMap": {
+    "en": "The Heat Map displays the data matrix as a color-coded grid, with optional clustering of rows and columns to reveal patterns.",
+    "ko": "Heat Map(히트맵)은 데이터 행렬을 색으로 표현한 격자로 보여주며, 행·열 군집화를 적용해 패턴을 드러낼 수 있습니다."
+  },
+  "Orange.widgets.visualize.owvenndiagram.OWVennDiagram": {
+    "en": "The Venn Diagram shows the overlap between selected subsets — for example sets of instances or features — as intersecting circles.",
+    "ko": "Venn Diagram(벤 다이어그램)은 선택한 부분집합들(예: 인스턴스나 특성 집합) 사이의 겹침을 교차하는 원으로 보여줍니다."
+  },
+  "Orange.widgets.visualize.owsilhouetteplot.OWSilhouettePlot": {
+    "en": "The Silhouette Plot visualizes clustering quality by showing each instance's silhouette score grouped by cluster, making poorly assigned instances easy to spot.",
+    "ko": "Silhouette Plot(실루엣 플롯)은 각 인스턴스의 실루엣 점수를 군집별로 묶어 보여줘 군집화 품질을 평가하고, 잘못 배정된 인스턴스를 쉽게 찾게 합니다."
+  },
+  "Orange.widgets.visualize.owpythagorastree.OWPythagorasTree": {
+    "en": "The Pythagorean Tree visualizes a decision tree as a Pythagorean-tree fractal, where rectangle size reflects how many instances reach each node.",
+    "ko": "Pythagorean Tree(피타고라스 트리)는 결정 트리를 피타고라스 트리 프랙탈로 시각화하며, 사각형 크기는 각 노드에 도달하는 인스턴스 수를 나타냅니다."
+  },
+  "Orange.widgets.visualize.owpythagoreanforest.OWPythagoreanForest": {
+    "en": "The Pythagorean Forest shows all the trees of a random forest as small Pythagorean trees side by side for visual comparison.",
+    "ko": "Pythagorean Forest(피타고라스 포레스트)는 랜덤 포레스트의 모든 트리를 작은 피타고라스 트리로 나란히 보여줘 시각적으로 비교하게 합니다."
+  },
+  "Orange.widgets.visualize.owruleviewer.OWRuleViewer": {
+    "en": "The CN2 Rule Viewer lists and lets you inspect the IF–THEN rules induced by the CN2 Rule Induction widget.",
+    "ko": "CN2 Rule Viewer(규칙 뷰어)는 CN2 규칙 유도 위젯이 만든 IF–THEN 규칙을 나열하고 살펴볼 수 있게 해줍니다."
+  },
+  "Orange.widgets.visualize.ownomogram.OWNomogram": {
+    "en": "The Nomogram visualizes a Naive Bayes or Logistic Regression model as a nomogram, showing how much each feature contributes to the prediction.",
+    "ko": "Nomogram(노모그램)은 나이브 베이즈나 로지스틱 회귀 모델을 노모그램으로 시각화해, 각 특성이 예측에 얼마나 기여하는지 보여줍니다."
+  },
+  "Orange.widgets.visualize.owscoringsheetviewer.OWScoringSheetViewer": {
+    "en": "The Scoring Sheet Viewer displays a scoring-sheet model as a simple point-based table, making the prediction easy to interpret.",
+    "ko": "Scoring Sheet Viewer(스코어링 시트 뷰어)는 스코어링 시트 모델을 점수 기반의 간단한 표로 보여줘 예측을 쉽게 해석하게 합니다."
+  },
+  "Orange.widgets.model.owconstant.OWConstant": {
+    "en": "The Constant learner is a baseline that always predicts the majority class (for classification) or the mean value (for regression), useful for comparison.",
+    "ko": "Constant(상수) 학습기는 항상 다수 클래스(분류)나 평균값(회귀)을 예측하는 베이스라인으로, 비교 기준으로 유용합니다."
+  },
+  "Orange.widgets.model.owrules.OWRuleLearner": {
+    "en": "The CN2 Rule Induction learner builds a set of IF–THEN classification rules using the CN2 algorithm, producing an interpretable model.",
+    "ko": "CN2 Rule Induction(CN2 규칙 유도) 학습기는 CN2 알고리즘으로 IF–THEN 분류 규칙 집합을 만들어 해석 가능한 모델을 생성합니다."
+  },
+  "Orange.widgets.model.owcalibratedlearner.OWCalibratedLearner": {
+    "en": "The Calibrated Learner wraps another learner to calibrate its probability estimates (sigmoid or isotonic) and to tune the decision threshold.",
+    "ko": "Calibrated Learner(보정 학습기)는 다른 학습기를 감싸 확률 추정값을 보정(시그모이드·등위회귀)하고 결정 임계값을 조정합니다."
+  },
+  "Orange.widgets.model.owknn.OWKNNLearner": {
+    "en": "The kNN learner classifies or predicts an instance based on its k nearest neighbors, using a chosen distance metric and weighting.",
+    "ko": "kNN 학습기는 선택한 거리 척도와 가중치로, 가장 가까운 k개의 이웃을 기반으로 인스턴스를 분류·예측합니다."
+  },
+  "Orange.widgets.model.owtree.OWTreeLearner": {
+    "en": "The Tree learner builds a decision tree for classification or regression, with controls for depth, minimum leaf size and splitting criteria.",
+    "ko": "Tree(트리) 학습기는 분류·회귀를 위한 결정 트리를 만들며, 깊이·최소 리프 크기·분할 기준 등을 조정할 수 있습니다."
+  },
+  "Orange.widgets.model.owrandomforest.OWRandomForest": {
+    "en": "The Random Forest learner trains an ensemble of decision trees on bootstrap samples; it is robust and a strong general-purpose model.",
+    "ko": "Random Forest(랜덤 포레스트) 학습기는 부트스트랩 표본으로 여러 결정 트리를 학습하는 앙상블로, 견고하고 범용적으로 강력한 모델입니다."
+  },
+  "Orange.widgets.model.owgradientboosting.OWGradientBoosting": {
+    "en": "The Gradient Boosting learner builds trees sequentially so each corrects the previous ones' errors, with scikit-learn, XGBoost and CatBoost backends.",
+    "ko": "Gradient Boosting(그래디언트 부스팅) 학습기는 각 트리가 이전 트리의 오류를 보정하도록 순차적으로 학습하며, scikit-learn·XGBoost·CatBoost 백엔드를 지원합니다."
+  },
+  "Orange.widgets.model.owsvm.OWSVM": {
+    "en": "The SVM learner trains a support vector machine for classification or regression, with linear and kernel (RBF, polynomial, sigmoid) options.",
+    "ko": "SVM 학습기는 선형 및 커널(RBF·다항·시그모이드) 옵션으로 분류·회귀용 서포트 벡터 머신을 학습합니다."
+  },
+  "Orange.widgets.model.owlinearregression.OWLinearRegression": {
+    "en": "The Linear Regression learner fits a linear model to a numeric target, optionally with ridge, lasso or elastic-net regularization.",
+    "ko": "Linear Regression(선형 회귀) 학습기는 수치 목표에 선형 모델을 적합하며, 능형(ridge)·라쏘(lasso)·엘라스틱넷 정규화를 선택할 수 있습니다."
+  },
+  "Orange.widgets.model.owlogisticregression.OWLogisticRegression": {
+    "en": "The Logistic Regression learner fits a logistic regression classifier, with optional L1 or L2 regularization.",
+    "ko": "Logistic Regression(로지스틱 회귀) 학습기는 L1·L2 정규화를 선택할 수 있는 로지스틱 회귀 분류기를 적합합니다."
+  },
+  "Orange.widgets.model.ownaivebayes.OWNaiveBayes": {
+    "en": "The Naive Bayes learner is a probabilistic classifier based on Bayes' theorem with the assumption that features are conditionally independent.",
+    "ko": "Naive Bayes(나이브 베이즈) 학습기는 특성들이 조건부 독립이라는 가정 아래 베이즈 정리에 기반한 확률적 분류기입니다."
+  },
+  "Orange.widgets.model.owscoringsheet.OWScoringSheet": {
+    "en": "The Scoring Sheet learner builds an interpretable point-based scoring model, where each condition adds points toward a class.",
+    "ko": "Scoring Sheet(스코어링 시트) 학습기는 각 조건이 클래스에 점수를 더하는, 해석 가능한 점수 기반 모델을 만듭니다."
+  },
+  "Orange.widgets.model.owadaboost.OWAdaBoost": {
+    "en": "The AdaBoost learner is a boosting ensemble that combines many weak learners, focusing on previously misclassified instances, into a strong model.",
+    "ko": "AdaBoost 학습기는 이전에 잘못 분류된 인스턴스에 집중하며 여러 약한 학습기를 결합하는 부스팅 앙상블입니다."
+  },
+  "Orange.widgets.model.owpls.OWPLS": {
+    "en": "The PLS learner performs partial least squares regression, which is effective when there are many correlated features.",
+    "ko": "PLS 학습기는 부분 최소제곱(PLS) 회귀를 수행하며, 상관된 특성이 많을 때 효과적입니다."
+  },
+  "Orange.widgets.model.owcurvefit.OWCurveFit": {
+    "en": "The Curve Fit learner fits a user-defined parametric curve (a formula) to the data by optimizing its parameters.",
+    "ko": "Curve Fit(곡선 적합) 학습기는 사용자가 정의한 매개변수 곡선(수식)을 매개변수 최적화로 데이터에 적합합니다."
+  },
+  "Orange.widgets.model.owneuralnetwork.OWNNLearner": {
+    "en": "The Neural Network learner trains a multilayer perceptron with configurable hidden layers, activation function and regularization.",
+    "ko": "Neural Network(신경망) 학습기는 은닉층 구성·활성화 함수·정규화를 설정할 수 있는 다층 퍼셉트론을 학습합니다."
+  },
+  "Orange.widgets.model.owsgd.OWSGD": {
+    "en": "The Stochastic Gradient Descent learner trains linear classifiers and regressors by SGD, which scales well to large datasets.",
+    "ko": "Stochastic Gradient Descent(확률적 경사하강법) 학습기는 SGD로 선형 분류기·회귀기를 학습하며 대용량 데이터에 잘 확장됩니다."
+  },
+  "Orange.widgets.model.owstack.OWStackedLearner": {
+    "en": "The Stacking learner combines several base models with a meta-learner that learns from their predictions to make the final prediction.",
+    "ko": "Stacking(스태킹) 학습기는 여러 기본 모델을, 그 예측으로부터 학습하는 메타 학습기로 결합해 최종 예측을 만듭니다."
+  },
+  "Orange.widgets.model.owsavemodel.OWSaveModel": {
+    "en": "The Save Model widget saves a trained model to a file so it can be reused later.",
+    "ko": "Save Model(모델 저장) 위젯은 학습된 모델을 파일로 저장해 나중에 재사용할 수 있게 합니다."
+  },
+  "Orange.widgets.model.owloadmodel.OWLoadModel": {
+    "en": "The Load Model widget loads a previously saved model from a file and sends it to the output.",
+    "ko": "Load Model(모델 불러오기) 위젯은 이전에 저장한 모델을 파일에서 불러와 출력으로 전송합니다."
+  },
+  "Orange.widgets.evaluate.owtestandscore.OWTestAndScore": {
+    "en": "The Test and Score widget evaluates and compares learners using cross-validation or other sampling, reporting metrics such as AUC, CA, F1, precision, recall and RMSE.",
+    "ko": "Test and Score(테스트 및 점수) 위젯은 교차검증 등으로 학습기를 평가·비교하며 AUC·정확도·F1·정밀도·재현율·RMSE 같은 지표를 보고합니다."
+  },
+  "Orange.widgets.evaluate.owpredictions.OWPredictions": {
+    "en": "The Predictions widget applies one or more models to data and shows their predictions side by side, with evaluation metrics when the true class is available.",
+    "ko": "Predictions(예측) 위젯은 하나 이상의 모델을 데이터에 적용해 예측을 나란히 보여주며, 실제 클래스가 있으면 평가 지표도 표시합니다."
+  },
+  "Orange.widgets.evaluate.owfeatureaspredictor.OWFeatureAsPredictor": {
+    "en": "The Feature as Predictor widget treats an existing feature as if it were a model's prediction, providing a simple baseline to compare models against.",
+    "ko": "Feature as Predictor(특성을 예측기로) 위젯은 기존 특성을 모델의 예측처럼 취급해, 모델 비교를 위한 간단한 베이스라인을 제공합니다."
+  },
+  "Orange.widgets.evaluate.owconfusionmatrix.OWConfusionMatrix": {
+    "en": "The Confusion Matrix shows the matrix of a classifier's predicted versus actual classes and lets you select misclassified (or any) instances for inspection.",
+    "ko": "Confusion Matrix(혼동 행렬)는 분류기의 예측 클래스와 실제 클래스의 행렬을 보여주고, 잘못 분류된(또는 임의의) 인스턴스를 선택해 살펴볼 수 있게 합니다."
+  },
+  "Orange.widgets.evaluate.owrocanalysis.OWROCAnalysis": {
+    "en": "The ROC Analysis widget plots ROC curves to compare classifiers by their trade-off between true-positive and false-positive rates.",
+    "ko": "ROC Analysis(ROC 분석) 위젯은 ROC 곡선을 그려, 참양성률과 거짓양성률 사이의 절충으로 분류기를 비교합니다."
+  },
+  "Orange.widgets.evaluate.owliftcurve.OWLiftCurve": {
+    "en": "The Performance Curve widget shows lift and precision-recall style curves to evaluate how well a classifier ranks positive instances.",
+    "ko": "Performance Curve(성능 곡선) 위젯은 리프트 및 정밀도-재현율 형태의 곡선을 보여줘, 분류기가 양성 인스턴스를 얼마나 잘 순위 매기는지 평가합니다."
+  },
+  "Orange.widgets.evaluate.owcalibrationplot.OWCalibrationPlot": {
+    "en": "The Calibration Plot compares predicted probabilities with observed frequencies to show how well-calibrated a classifier is.",
+    "ko": "Calibration Plot(보정 플롯)은 예측 확률과 관측 빈도를 비교해 분류기의 확률 보정이 얼마나 잘 되어 있는지 보여줍니다."
+  },
+  "Orange.widgets.evaluate.owpermutationplot.OWPermutationPlot": {
+    "en": "The Permutation Plot shows how a model's performance changes as each feature's values are permuted, indicating feature importance.",
+    "ko": "Permutation Plot(순열 플롯)은 각 특성의 값을 섞었을 때 모델 성능이 어떻게 변하는지 보여줘 특성 중요도를 나타냅니다."
+  },
+  "Orange.widgets.evaluate.owparameterfitter.OWParameterFitter": {
+    "en": "The Parameter Fitter searches over a learner's hyper-parameter values and plots the resulting performance to help with tuning.",
+    "ko": "Parameter Fitter(매개변수 적합기)는 학습기의 하이퍼파라미터 값을 탐색하고 그에 따른 성능을 그래프로 보여줘 튜닝을 돕습니다."
+  },
+  "Orange.widgets.unsupervised.owdistancefile.OWDistanceFile": {
+    "en": "The Distance File widget loads a precomputed distance matrix from a file and sends it to the output.",
+    "ko": "Distance File(거리 파일) 위젯은 미리 계산된 거리 행렬을 파일에서 불러와 출력으로 전송합니다."
+  },
+  "Orange.widgets.unsupervised.owdistancematrix.OWDistanceMatrix": {
+    "en": "The Distance Matrix widget displays a distance matrix in a table, where you can view, select and pass on the distances.",
+    "ko": "Distance Matrix(거리 행렬) 위젯은 거리 행렬을 표로 표시해, 거리를 보고 선택하고 전달할 수 있게 합니다."
+  },
+  "Orange.widgets.unsupervised.owtsne.OWtSNE": {
+    "en": "The t-SNE widget projects high-dimensional data into two dimensions using t-SNE, revealing clusters and local structure.",
+    "ko": "t-SNE 위젯은 t-SNE로 고차원 데이터를 2차원으로 투영해 군집과 국소 구조를 드러냅니다."
+  },
+  "Orange.widgets.data.owcorrelations.OWCorrelations": {
+    "en": "The Correlations widget finds and ranks the most strongly correlated pairs of features in the data.",
+    "ko": "Correlations(상관관계) 위젯은 데이터에서 가장 강하게 상관된 특성 쌍을 찾아 순위를 매깁니다."
+  },
+  "Orange.widgets.unsupervised.owdistancemap.OWDistanceMap": {
+    "en": "The Distance Map visualizes a distance matrix as a color-coded map, making clusters of similar items visible.",
+    "ko": "Distance Map(거리 지도)은 거리 행렬을 색으로 표현한 지도로 시각화해, 유사한 항목들의 군집을 보이게 합니다."
+  },
+  "Orange.widgets.unsupervised.owhierarchicalclustering.OWHierarchicalClustering": {
+    "en": "The Hierarchical Clustering widget builds a dendrogram from a distance matrix and lets you cut it at a chosen level to form clusters.",
+    "ko": "Hierarchical Clustering(계층적 군집화) 위젯은 거리 행렬로 덴드로그램을 만들고, 선택한 수준에서 잘라 군집을 형성하게 합니다."
+  },
+  "Orange.widgets.unsupervised.owkmeans.OWKMeans": {
+    "en": "The k-Means widget partitions instances into k clusters and can automatically choose the best k using the silhouette score.",
+    "ko": "k-Means(k-평균) 위젯은 인스턴스를 k개의 군집으로 나누며, 실루엣 점수로 최적의 k를 자동 선택할 수 있습니다."
+  },
+  "Orange.widgets.unsupervised.owlouvainclustering.OWLouvainClustering": {
+    "en": "The Louvain Clustering widget detects communities (clusters) using the Louvain method on a nearest-neighbor graph built from the data.",
+    "ko": "Louvain Clustering(루뱅 군집화) 위젯은 데이터로 만든 최근접 이웃 그래프에 루뱅 방법을 적용해 커뮤니티(군집)를 찾습니다."
+  },
+  "Orange.widgets.unsupervised.owdbscan.OWDBSCAN": {
+    "en": "The DBSCAN widget performs density-based clustering, finding clusters of arbitrary shape and marking low-density points as outliers.",
+    "ko": "DBSCAN 위젯은 밀도 기반 군집화를 수행해 임의의 모양의 군집을 찾고, 밀도가 낮은 점은 이상치로 표시합니다."
+  },
+  "Orange.widgets.unsupervised.owmanifoldlearning.OWManifoldLearning": {
+    "en": "The Manifold Learning widget performs nonlinear dimensionality reduction (Isomap, LLE, MDS, t-SNE, Spectral) to embed data in a low-dimensional space.",
+    "ko": "Manifold Learning(다양체 학습) 위젯은 비선형 차원 축소(Isomap·LLE·MDS·t-SNE·Spectral)를 수행해 데이터를 저차원 공간에 임베딩합니다."
+  },
+  "Orange.widgets.data.owoutliers.OWOutliers": {
+    "en": "The Outliers widget detects outliers and anomalies using methods such as one-class SVM, elliptic envelope or local outlier factor.",
+    "ko": "Outliers(이상치) 위젯은 원-클래스 SVM, 타원 포락선, 국소 이상치 인자(LOF) 등의 방법으로 이상치·이상값을 탐지합니다."
+  },
+  "Orange.widgets.unsupervised.owpca.OWPCA": {
+    "en": "The PCA widget performs principal component analysis for linear dimensionality reduction and shows how much variance each component explains.",
+    "ko": "PCA 위젯은 선형 차원 축소를 위한 주성분 분석을 수행하고, 각 성분이 설명하는 분산의 비율을 보여줍니다."
+  },
+  "Orange.widgets.data.owneighbors.OWNeighbors": {
+    "en": "The Neighbors widget finds the instances most similar (nearest) to a given reference instance, using a chosen distance.",
+    "ko": "Neighbors(이웃) 위젯은 선택한 거리 기준으로, 주어진 참조 인스턴스와 가장 유사한(가까운) 인스턴스를 찾습니다."
+  },
+  "Orange.widgets.unsupervised.owcorrespondence.OWCorrespondenceAnalysis": {
+    "en": "The Correspondence Analysis widget explores associations between categorical variables by projecting their categories into a low-dimensional space.",
+    "ko": "Correspondence Analysis(대응 분석) 위젯은 범주형 변수의 범주들을 저차원 공간에 투영해 변수 사이의 연관성을 탐색합니다."
+  },
+  "Orange.widgets.unsupervised.owdistances.OWDistances": {
+    "en": "The Distances widget computes a distance matrix between instances (or between features) using a chosen metric such as Euclidean, Manhattan or cosine.",
+    "ko": "Distances(거리) 위젯은 유클리드·맨해튼·코사인 등 선택한 척도로 인스턴스(또는 특성) 사이의 거리 행렬을 계산합니다."
+  },
+  "Orange.widgets.unsupervised.owdistancetransformation.OWDistanceTransformation": {
+    "en": "The Distance Transformation widget transforms an input distance matrix, for example by normalizing or inverting its values.",
+    "ko": "Distance Transformation(거리 변환) 위젯은 입력 거리 행렬을 정규화하거나 값을 반전하는 등으로 변환합니다."
+  },
+  "Orange.widgets.unsupervised.owmds.OWMDS": {
+    "en": "The MDS widget performs multidimensional scaling, placing instances in two dimensions so that their pairwise distances match the input distance matrix as closely as possible.",
+    "ko": "MDS 위젯은 다차원 척도법을 수행해, 인스턴스 간 거리가 입력 거리 행렬과 최대한 일치하도록 인스턴스를 2차원에 배치합니다."
+  },
+  "Orange.widgets.unsupervised.owsavedistances.OWSaveDistances": {
+    "en": "The Save Distance Matrix widget saves a distance matrix to a file for later use.",
+    "ko": "Save Distance Matrix(거리 행렬 저장) 위젯은 거리 행렬을 파일로 저장해 나중에 사용할 수 있게 합니다."
+  },
+  "Orange.widgets.unsupervised.owsom.OWSOM": {
+    "en": "The Self-Organizing Map widget trains a SOM that maps instances onto a 2-D grid while preserving their topology, revealing clusters.",
+    "ko": "Self-Organizing Map(자기조직화 지도) 위젯은 인스턴스를 위상을 보존하며 2차원 격자에 매핑하는 SOM을 학습해 군집을 드러냅니다."
+  },
+  "orangecontrib.imageanalytics.widgets.owimageimport.OWImportImages": {
+    "en": "The Import Images widget loads images from a folder (and its subfolders) into a table, with one row per image and metadata such as file path, size and category.",
+    "ko": "Import Images(이미지 가져오기) 위젯은 폴더(및 하위 폴더)의 이미지를 표로 불러옵니다. 이미지마다 한 행이 되고 파일 경로·크기·카테고리 같은 메타데이터가 함께 들어옵니다."
+  },
+  "orangecontrib.imageanalytics.widgets.owimageviewer.OWImageViewer": {
+    "en": "The Image Viewer displays the input images in a grid, optionally grouped or colored by a variable, and lets you select images to pass on.",
+    "ko": "Image Viewer(이미지 뷰어)는 입력 이미지를 격자로 표시하며, 변수로 그룹화·색상 지정할 수 있고 전달할 이미지를 선택하게 해줍니다."
+  },
+  "orangecontrib.imageanalytics.widgets.owimageembedding.OWImageEmbedding": {
+    "en": "The Image Embedding widget sends images to a deep neural network (local or remote) and returns an embedding vector describing each image, ready for clustering or classification.",
+    "ko": "Image Embedding(이미지 임베딩) 위젯은 이미지를 심층 신경망(로컬 또는 원격)에 보내 각 이미지를 설명하는 임베딩 벡터를 반환합니다. 군집화·분류에 바로 활용할 수 있습니다."
+  },
+  "orangecontrib.imageanalytics.widgets.owimagegrid.OWImageGrid": {
+    "en": "The Image Grid arranges images on a two-dimensional grid based on their similarity (embeddings), so that visually similar images are placed near each other.",
+    "ko": "Image Grid(이미지 그리드)는 이미지의 유사도(임베딩)에 따라 2차원 격자에 배치해, 시각적으로 비슷한 이미지가 서로 가까이 놓이도록 합니다."
+  },
+  "orangecontrib.imageanalytics.widgets.owsaveimages.OWSaveImages": {
+    "en": "The Save Images widget saves the input images to a folder on disk.",
+    "ko": "Save Images(이미지 저장) 위젯은 입력 이미지를 디스크의 폴더에 저장합니다."
+  },
+  "orangecontrib.network.widgets.OWNxFile.OWNxFile": {
+    "en": "The Network File widget loads a network (graph) from a file, optionally together with a table of node data.",
+    "ko": "Network File(네트워크 파일) 위젯은 파일에서 네트워크(그래프)를 불러오며, 노드 데이터 표를 함께 불러올 수도 있습니다."
+  },
+  "orangecontrib.network.widgets.OWNxExplorer.OWNxExplorer": {
+    "en": "The Network Explorer visualizes and interactively explores a network, with layout algorithms, node and edge styling, and selection of nodes.",
+    "ko": "Network Explorer(네트워크 탐색기)는 레이아웃 알고리즘, 노드·엣지 스타일링, 노드 선택과 함께 네트워크를 시각화하고 대화식으로 탐색합니다."
+  },
+  "orangecontrib.network.widgets.OWNxGenerator.OWNxGenerator": {
+    "en": "The Network Generator creates synthetic networks of classic types such as random, small-world and scale-free graphs.",
+    "ko": "Network Generator(네트워크 생성기)는 랜덤·좁은 세상(small-world)·척도 없는(scale-free) 그래프 등 고전적 유형의 합성 네트워크를 생성합니다."
+  },
+  "orangecontrib.network.widgets.OWNxAnalysis.OWNxAnalysis": {
+    "en": "The Network Analysis widget computes node- and network-level metrics such as degree, various centralities, clustering coefficient and connected components.",
+    "ko": "Network Analysis(네트워크 분석) 위젯은 차수, 여러 중심성, 군집 계수, 연결 요소 등 노드 및 네트워크 수준의 지표를 계산합니다."
+  },
+  "orangecontrib.network.widgets.OWNxClustering.OWNxClustering": {
+    "en": "The Network Clustering widget detects communities (clusters) within a network using community-detection methods.",
+    "ko": "Network Clustering(네트워크 군집화) 위젯은 커뮤니티 탐지 방법으로 네트워크 안의 커뮤니티(군집)를 찾습니다."
+  },
+  "orangecontrib.network.widgets.OWNxGroups.OWNxGroups": {
+    "en": "The Network Of Groups widget builds a higher-level network whose nodes represent groups of the original nodes, summarizing connections between groups.",
+    "ko": "Network Of Groups(그룹 네트워크) 위젯은 원래 노드들의 그룹을 노드로 갖는 상위 수준 네트워크를 만들어, 그룹 간 연결을 요약합니다."
+  },
+  "orangecontrib.network.widgets.OWNxFromDistances.OWNxFromDistances": {
+    "en": "The Network From Distances widget builds a network by connecting instances whose pairwise distance is below a chosen threshold.",
+    "ko": "Network From Distances(거리로부터 네트워크) 위젯은 인스턴스 간 거리가 선택한 임계값 이하인 경우 연결해 네트워크를 만듭니다."
+  },
+  "orangecontrib.network.widgets.OWNxNeighbor.OWNxNeighbor": {
+    "en": "The Network of Neighbors widget builds a network that connects each node to its nearest neighbors.",
+    "ko": "Network of Neighbors(이웃 네트워크) 위젯은 각 노드를 가장 가까운 이웃들과 연결한 네트워크를 만듭니다."
+  },
+  "orangecontrib.network.widgets.OWNxEmbeddings.OWNxEmbedding": {
+    "en": "The Network Embeddings widget computes vector embeddings of nodes that capture the structure of the network, for use in downstream analysis.",
+    "ko": "Network Embeddings(네트워크 임베딩) 위젯은 네트워크 구조를 담은 노드의 벡터 임베딩을 계산해 후속 분석에 사용할 수 있게 합니다."
+  },
+  "orangecontrib.network.widgets.ownxsinglemode.OWNxSingleMode": {
+    "en": "The Single Mode widget converts a two-mode (bipartite) network into a single-mode network by linking nodes of one type through shared nodes of the other.",
+    "ko": "Single Mode(단일 모드) 위젯은 이종(이분) 네트워크를, 다른 유형의 공유 노드를 통해 한 유형의 노드들을 연결하는 단일 모드 네트워크로 변환합니다."
+  },
+  "orangecontrib.network.widgets.OWNxSave.OWNxSave": {
+    "en": "The Save Network widget saves a network to a file on disk.",
+    "ko": "Save Network(네트워크 저장) 위젯은 네트워크를 디스크의 파일로 저장합니다."
+  },
+  "orangecontrib.timeseries.widgets.owyahoofinance.OWYahooFinance": {
+    "en": "The Yahoo Finance widget downloads historical stock and financial time series (open, high, low, close, volume) from Yahoo Finance.",
+    "ko": "Yahoo Finance 위젯은 Yahoo Finance에서 주가·금융 시계열(시가·고가·저가·종가·거래량)을 내려받습니다."
+  },
+  "orangecontrib.timeseries.widgets.owtabletotimeseries.OWTableToTimeseries": {
+    "en": "The Form Timeseries widget converts an ordinary data table into a time series by selecting which variable defines time (and the ordering of rows).",
+    "ko": "Form Timeseries(시계열 구성) 위젯은 어떤 변수가 시간을 정의하는지(그리고 행 순서를) 선택해 일반 데이터 표를 시계열로 변환합니다."
+  },
+  "orangecontrib.timeseries.widgets.owinterpolate.OWInterpolate": {
+    "en": "The Interpolate widget fills missing values in a time series using interpolation methods such as linear or spline.",
+    "ko": "Interpolate(보간) 위젯은 선형·스플라인 등 보간 방법으로 시계열의 결측값을 채웁니다."
+  },
+  "orangecontrib.timeseries.widgets.owmovingtransform.OWMovingTransform": {
+    "en": "The Moving Transform widget computes moving-window aggregates (mean, sum, standard deviation, …) over a time series.",
+    "ko": "Moving Transform(이동 변환) 위젯은 시계열에 대해 이동 창 집계(평균·합·표준편차 등)를 계산합니다."
+  },
+  "orangecontrib.timeseries.widgets.owlinechart.OWLineChart": {
+    "en": "The Line Chart widget plots one or more time series as line charts over time, with zooming and selection.",
+    "ko": "Line Chart(선 차트) 위젯은 하나 이상의 시계열을 시간 축의 선 차트로 그리며, 확대·선택을 지원합니다."
+  },
+  "orangecontrib.timeseries.widgets.owperiodogram.OWPeriodogram": {
+    "en": "The Periodogram widget shows the power spectrum of a time series to reveal its dominant periodicities.",
+    "ko": "Periodogram(주기도) 위젯은 시계열의 파워 스펙트럼을 보여줘 지배적인 주기를 드러냅니다."
+  },
+  "orangecontrib.timeseries.widgets.owcorrelogram.OWCorrelogram": {
+    "en": "The Correlogram widget plots the autocorrelation (and partial autocorrelation) of a time series across different lags.",
+    "ko": "Correlogram(상관도) 위젯은 시계열의 자기상관(및 부분 자기상관)을 여러 시차에 걸쳐 그립니다."
+  },
+  "orangecontrib.timeseries.widgets.owspiralogram.OWSpiralogram": {
+    "en": "The Spiralogram visualizes periodic patterns in a time series on a spiral, making seasonality easy to see.",
+    "ko": "Spiralogram(나선도)은 시계열의 주기 패턴을 나선 위에 시각화해 계절성을 쉽게 볼 수 있게 합니다."
+  },
+  "orangecontrib.timeseries.widgets.owgrangercausality.OWGrangerCausality": {
+    "en": "The Granger Causality widget tests whether one time series helps predict another, reporting Granger-causality relationships.",
+    "ko": "Granger Causality(그레인저 인과) 위젯은 한 시계열이 다른 시계열의 예측에 도움이 되는지 검정해 그레인저 인과 관계를 보고합니다."
+  },
+  "orangecontrib.timeseries.widgets.owarimamodel.OWARIMAModel": {
+    "en": "The ARIMA Model widget fits an ARIMA model to a time series and forecasts future values.",
+    "ko": "ARIMA Model(ARIMA 모델) 위젯은 시계열에 ARIMA 모델을 적합하고 미래 값을 예측합니다."
+  },
+  "orangecontrib.timeseries.widgets.owvarmodel.OWVARModel": {
+    "en": "The VAR Model widget fits a vector autoregression model to several time series for joint forecasting.",
+    "ko": "VAR Model(VAR 모델) 위젯은 여러 시계열에 벡터 자기회귀(VAR) 모델을 적합해 공동 예측을 수행합니다."
+  },
+  "orangecontrib.timeseries.widgets.owmodelevaluation.OWModelEvaluation": {
+    "en": "The Model Evaluation widget evaluates and compares time-series forecasting models on out-of-sample data.",
+    "ko": "Model Evaluation(모델 평가) 위젯은 표본 외 데이터에서 시계열 예측 모델을 평가·비교합니다."
+  },
+  "orangecontrib.timeseries.widgets.owtimeslice.OWTimeSlice": {
+    "en": "The Time Slice widget selects a sub-interval of a time series by a chosen time range.",
+    "ko": "Time Slice(시간 구간) 위젯은 선택한 시간 범위로 시계열의 부분 구간을 선택합니다."
+  },
+  "orangecontrib.timeseries.widgets.owdifference.OWDifference": {
+    "en": "The Difference widget differences a time series (subtracting previous values) to remove trend or seasonality and make it more stationary.",
+    "ko": "Difference(차분) 위젯은 시계열을 차분(이전 값을 빼기)해 추세나 계절성을 제거하고 더 정상(stationary)에 가깝게 만듭니다."
+  },
+  "orangecontrib.timeseries.widgets.owseasonaladjustment.OWSeasonalAdjustment": {
+    "en": "The Seasonal Adjustment widget removes the seasonal component from a time series to reveal the underlying trend.",
+    "ko": "Seasonal Adjustment(계절 조정) 위젯은 시계열에서 계절 성분을 제거해 기저 추세를 드러냅니다."
+  },
+  "orangecontrib.text.widgets.owcorpus.OWCorpus": {
+    "en": "The Corpus widget loads a text corpus — a collection of documents — from built-in example collections or your own data.",
+    "ko": "Corpus(말뭉치) 위젯은 내장 예제 모음이나 사용자 데이터에서 텍스트 말뭉치(문서 모음)를 불러옵니다."
+  },
+  "orangecontrib.text.widgets.owimportdocuments.OWImportDocuments": {
+    "en": "The Import Documents widget imports documents from a folder of text, PDF or Word files into a corpus.",
+    "ko": "Import Documents(문서 가져오기) 위젯은 텍스트·PDF·워드 파일이 든 폴더에서 문서를 말뭉치로 가져옵니다."
+  },
+  "orangecontrib.text.widgets.owcreatecorpus.OWCreateCorpus": {
+    "en": "The Create Corpus widget lets you type or paste documents to build a small corpus by hand.",
+    "ko": "Create Corpus(말뭉치 생성) 위젯은 문서를 직접 입력하거나 붙여넣어 소규모 말뭉치를 손으로 만들 수 있게 합니다."
+  },
+  "orangecontrib.text.widgets.owguardian.OWGuardian": {
+    "en": "The Guardian widget retrieves news articles from The Guardian's API and returns them as a corpus.",
+    "ko": "The Guardian 위젯은 The Guardian API에서 뉴스 기사를 가져와 말뭉치로 반환합니다."
+  },
+  "orangecontrib.text.widgets.ownyt.OWNYT": {
+    "en": "The NY Times widget retrieves articles from the New York Times API and returns them as a corpus.",
+    "ko": "NY Times 위젯은 뉴욕타임스 API에서 기사를 가져와 말뭉치로 반환합니다."
+  },
+  "orangecontrib.text.widgets.owpubmed.OWPubmed": {
+    "en": "The Pubmed widget retrieves biomedical article abstracts from PubMed and returns them as a corpus.",
+    "ko": "Pubmed 위젯은 PubMed에서 생의학 논문 초록을 가져와 말뭉치로 반환합니다."
+  },
+  "orangecontrib.text.widgets.owtwitter.OWTwitter": {
+    "en": "The Twitter widget retrieves tweets matching a query as a corpus (requires Twitter API access).",
+    "ko": "Twitter 위젯은 질의에 맞는 트윗을 말뭉치로 가져옵니다(트위터 API 접근 필요)."
+  },
+  "orangecontrib.text.widgets.owwikipedia.OWWikipedia": {
+    "en": "The Wikipedia widget retrieves Wikipedia articles matching a query and returns them as a corpus.",
+    "ko": "Wikipedia 위젯은 질의에 맞는 위키백과 문서를 가져와 말뭉치로 반환합니다."
+  },
+  "orangecontrib.text.widgets.owpreprocess.OWPreprocess": {
+    "en": "The Preprocess Text widget builds a text preprocessing pipeline — tokenization, normalization (lowercasing, stemming/lemmatization), stopword and token filtering, and n-grams.",
+    "ko": "Preprocess Text(텍스트 전처리) 위젯은 토큰화, 정규화(소문자화·어간/표제어 추출), 불용어·토큰 필터링, n-그램 등의 텍스트 전처리 파이프라인을 구성합니다."
+  },
+  "orangecontrib.text.widgets.owcorpustonetwork.OWCorpusToNetwork": {
+    "en": "The Corpus to Network widget builds a network from a corpus, for example connecting documents or words by co-occurrence.",
+    "ko": "Corpus to Network(말뭉치→네트워크) 위젯은 말뭉치로부터 네트워크를 만듭니다. 예를 들어 동시 출현으로 문서나 단어를 연결합니다."
+  },
+  "orangecontrib.text.widgets.owbagofwords.OWTBagOfWords": {
+    "en": "The Bag of Words widget represents each document as a bag-of-words or TF-IDF feature vector of its terms.",
+    "ko": "Bag of Words(단어 가방) 위젯은 각 문서를 그 안의 용어들에 대한 단어 가방 또는 TF-IDF 특성 벡터로 표현합니다."
+  },
+  "orangecontrib.text.widgets.owdocumentembedding.OWDocumentEmbedding": {
+    "en": "The Document Embedding widget computes dense embedding vectors for documents using a language model, capturing their meaning.",
+    "ko": "Document Embedding(문서 임베딩) 위젯은 언어 모델을 사용해 문서의 의미를 담은 밀집 임베딩 벡터를 계산합니다."
+  },
+  "orangecontrib.text.widgets.owsimhash.OWSimhash": {
+    "en": "The Similarity Hashing widget computes a SimHash of each document, useful for finding near-duplicate texts.",
+    "ko": "Similarity Hashing(유사도 해싱) 위젯은 각 문서의 SimHash를 계산하며, 유사 중복 텍스트를 찾는 데 유용합니다."
+  },
+  "orangecontrib.text.widgets.owsentimentanalysis.OWSentimentAnalysis": {
+    "en": "The Sentiment Analysis widget scores the sentiment (positive/negative) of documents using lexicons or pretrained models.",
+    "ko": "Sentiment Analysis(감성 분석) 위젯은 사전(lexicon)이나 사전학습 모델을 사용해 문서의 감성(긍정/부정)을 점수화합니다."
+  },
+  "orangecontrib.text.widgets.owtweetprofiler.OWTweetProfiler": {
+    "en": "The Tweet Profiler widget adds emotion and sentiment profiles to tweets or short texts.",
+    "ko": "Tweet Profiler(트윗 프로파일러) 위젯은 트윗이나 짧은 텍스트에 감정·감성 프로필을 추가합니다."
+  },
+  "orangecontrib.text.widgets.owtopicmodeling.OWTopicModeling": {
+    "en": "The Topic Modelling widget discovers latent topics in a corpus using methods such as LSI, LDA, HDP or NMF.",
+    "ko": "Topic Modelling(토픽 모델링) 위젯은 LSI·LDA·HDP·NMF 등의 방법으로 말뭉치 안의 잠재 토픽을 찾아냅니다."
+  },
+  "orangecontrib.text.widgets.owldavis.OWLDAvis": {
+    "en": "The LDAvis widget interactively visualizes the topics produced by LDA topic modelling and their most relevant terms.",
+    "ko": "LDAvis 위젯은 LDA 토픽 모델링이 만든 토픽과 그 대표 용어들을 대화식으로 시각화합니다."
+  },
+  "orangecontrib.text.widgets.owcorpusviewer.OWCorpusViewer": {
+    "en": "The Corpus Viewer widget lets you browse, search and read the documents of a corpus and their content.",
+    "ko": "Corpus Viewer(말뭉치 뷰어) 위젯은 말뭉치의 문서와 그 내용을 탐색·검색·열람할 수 있게 합니다."
+  },
+  "orangecontrib.text.widgets.owscoredocuments.OWScoreDocuments": {
+    "en": "The Score Documents widget scores documents by how well they match given words or queries.",
+    "ko": "Score Documents(문서 점수) 위젯은 주어진 단어나 질의에 문서가 얼마나 잘 맞는지로 문서에 점수를 매깁니다."
+  },
+  "orangecontrib.text.widgets.owwordcloud.OWWordCloud": {
+    "en": "The Word Cloud widget displays the most frequent or important words of a corpus as a word cloud, sized by weight.",
+    "ko": "Word Cloud(워드 클라우드) 위젯은 말뭉치에서 가장 빈번하거나 중요한 단어를 가중치 크기에 따라 워드 클라우드로 표시합니다."
+  },
+  "orangecontrib.text.widgets.owconcordance.OWConcordance": {
+    "en": "The Concordance widget shows the contexts — the surrounding words — in which a chosen word appears across the corpus.",
+    "ko": "Concordance(용례 색인) 위젯은 선택한 단어가 말뭉치 전반에서 나타나는 문맥(주변 단어)을 보여줍니다."
+  },
+  "orangecontrib.text.widgets.owdocmap.OWDocMap": {
+    "en": "The Document Map widget projects documents into two dimensions by similarity, giving a map-like overview of the corpus.",
+    "ko": "Document Map(문서 지도) 위젯은 문서를 유사도에 따라 2차원에 투영해 말뭉치를 지도처럼 개관하게 합니다."
+  },
+  "orangecontrib.text.widgets.owwordenrichment.OWWordEnrichment": {
+    "en": "The Word Enrichment widget finds words that are statistically over-represented in a selected subset of documents compared with the rest.",
+    "ko": "Word Enrichment(단어 enrichment) 위젯은 선택한 문서 부분집합에서 나머지에 비해 통계적으로 과대 표현된 단어를 찾습니다."
+  },
+  "orangecontrib.text.widgets.owduplicates.OWDuplicates": {
+    "en": "The Duplicate Detection widget detects and groups duplicate or near-duplicate documents in a corpus.",
+    "ko": "Duplicate Detection(중복 탐지) 위젯은 말뭉치에서 중복이거나 유사 중복인 문서를 탐지해 묶습니다."
+  },
+  "orangecontrib.text.widgets.owwordlist.OWWordList": {
+    "en": "The Word List widget lets you create and manage a list of words for use by other text-mining widgets.",
+    "ko": "Word List(단어 목록) 위젯은 다른 텍스트 마이닝 위젯에서 사용할 단어 목록을 만들고 관리하게 해줍니다."
+  },
+  "orangecontrib.text.widgets.owkeywords.OWKeywords": {
+    "en": "The Extract Keywords widget extracts the most representative keywords from each document using methods such as TF-IDF, YAKE or RAKE.",
+    "ko": "Extract Keywords(키워드 추출) 위젯은 TF-IDF·YAKE·RAKE 등의 방법으로 각 문서에서 가장 대표적인 키워드를 추출합니다."
+  },
+  "orangecontrib.text.widgets.owannotator.OWAnnotator": {
+    "en": "The Annotated Corpus Map widget shows a document map with automatically generated annotations describing each cluster of documents.",
+    "ko": "Annotated Corpus Map(주석 말뭉치 지도) 위젯은 각 문서 군집을 설명하는 자동 생성 주석과 함께 문서 지도를 보여줍니다."
+  },
+  "orangecontrib.text.widgets.owontology.OWOntology": {
+    "en": "The Ontology widget builds and explores a hierarchical ontology of words or concepts derived from the corpus.",
+    "ko": "Ontology(온톨로지) 위젯은 말뭉치에서 도출한 단어·개념의 계층적 온톨로지를 만들고 탐색합니다."
+  },
+  "orangecontrib.text.widgets.owsemanticviewer.OWSemanticViewer": {
+    "en": "The Semantic Viewer widget highlights the passages of documents that are most semantically relevant to a query.",
+    "ko": "Semantic Viewer(의미 뷰어) 위젯은 질의에 의미적으로 가장 관련 있는 문서 구절을 강조해 보여줍니다."
+  },
+  "orangecontrib.text.widgets.owcollocations.OWCollocations": {
+    "en": "The Collocations widget finds frequent word collocations — multi-word expressions that occur together more often than by chance.",
+    "ko": "Collocations(연어) 위젯은 우연보다 더 자주 함께 나타나는 다단어 표현, 즉 빈번한 연어를 찾습니다."
+  },
+  "orangecontrib.text.widgets.owstatistics.OWStatistics": {
+    "en": "The Statistics widget computes per-document text statistics (word and character counts, lengths, ratios, …) and adds them as new features.",
+    "ko": "Statistics(통계) 위젯은 문서별 텍스트 통계(단어·문자 수, 길이, 비율 등)를 계산해 새로운 특성으로 추가합니다."
+  },
+  "orangecontrib.geo.widgets.owgeocoding.OWGeocoding": {
+    "en": "The Geocoding widget converts place names or addresses into geographic coordinates (latitude and longitude), and can also do the reverse.",
+    "ko": "Geocoding(지오코딩) 위젯은 지명이나 주소를 지리 좌표(위도·경도)로 변환하며, 그 반대(역지오코딩)도 가능합니다."
+  },
+  "orangecontrib.geo.widgets.owmap.OWMap": {
+    "en": "The Geo Map widget plots data points on an interactive geographic map according to their coordinates, with color and size encoding.",
+    "ko": "Geo Map(지도) 위젯은 데이터 점을 좌표에 따라 대화식 지리 지도에 표시하며, 색과 크기로 값을 인코딩합니다."
+  },
+  "orangecontrib.geo.widgets.owchoropleth.OWChoropleth": {
+    "en": "The Choropleth Map widget shows an aggregated value per region as a color-shaded choropleth map.",
+    "ko": "Choropleth Map(단계구분도) 위젯은 지역별 집계 값을 색 농담으로 표현한 단계구분도로 보여줍니다."
+  },
+  "orangecontrib.geo.widgets.owgeotransform.OWGeoTransform": {
+    "en": "The Geo Transform widget transforms geographic coordinates between coordinate reference systems (map projections).",
+    "ko": "Geo Transform(지리 변환) 위젯은 지리 좌표를 좌표 참조 체계(지도 투영) 사이에서 변환합니다."
+  },
+  "orangecontrib.snom.widgets.owpreprocessimage.OWPreprocessImage": {
+    "en": "Preprocesses scanning near-field optical microscopy (SNOM) images — for example leveling, alignment and noise removal — before further analysis.",
+    "ko": "SNOM(주사 근접장 광학 현미경) 이미지를 분석 전에 레벨링·정렬·노이즈 제거 등으로 전처리합니다."
+  },
+  "orangecontrib.worldhappiness.widgets.owwhstudy.OWWHStudy": {
+    "en": "Retrieves socioeconomic indicators (such as World Happiness scores and World Bank indices) from a remote database for the selected countries and years.",
+    "ko": "선택한 국가·연도에 대해 원격 데이터베이스에서 사회경제 지표(세계 행복지수, 세계은행 지수 등)를 가져옵니다."
+  },
+  "orangecontrib.pumice.widgets.owclimatedata.OWClimateData": {
+    "en": "Provides climate data for use in teaching and demonstrations.",
+    "ko": "교육·시연용 기후 데이터를 제공합니다."
+  },
+  "orangecontrib.pumice.widgets.owcompair.OWComPair": {
+    "en": "Learns a model that compares pairs of items and predicts which of the two is preferred.",
+    "ko": "두 항목을 비교하는 모델을 학습해 둘 중 어느 것이 선호되는지 예측합니다."
+  },
+  "orangecontrib.pumice.widgets.owrecommendation.OWRecommendation": {
+    "en": "Demonstrates a simple network-based recommendation algorithm.",
+    "ko": "간단한 네트워크 기반 추천 알고리즘을 시연합니다."
+  },
+  "_textable.widgets.OWTextableTextField.OWTextableTextField": {
+    "en": "Imports text typed or pasted directly into the widget as a text source.",
+    "ko": "위젯에 직접 입력하거나 붙여넣은 텍스트를 텍스트 소스로 가져옵니다."
+  },
+  "_textable.widgets.OWTextableTextFiles.OWTextableTextFiles": {
+    "en": "Imports text data from raw text files.",
+    "ko": "원시 텍스트 파일에서 텍스트 데이터를 가져옵니다."
+  },
+  "_textable.widgets.OWTextableURLs.OWTextableURLs": {
+    "en": "Fetches text data from online URLs.",
+    "ko": "온라인 URL에서 텍스트 데이터를 가져옵니다."
+  },
+  "_textable.widgets.OWTextablePreprocess.OWTextablePreprocess": {
+    "en": "Performs basic text preprocessing (such as case and character recoding) on a segmentation.",
+    "ko": "세그먼테이션에 대해 대소문자·문자 변환 등 기본 텍스트 전처리를 수행합니다."
+  },
+  "_textable.widgets.OWTextableRecode.OWTextableRecode": {
+    "en": "Recodes text using custom regular-expression substitutions.",
+    "ko": "사용자 정의 정규식 치환으로 텍스트를 재코딩합니다."
+  },
+  "_textable.widgets.OWTextableTreetagger.Treetagger": {
+    "en": "Performs part-of-speech tagging and lemmatization with TreeTagger.",
+    "ko": "TreeTagger로 품사 태깅과 표제어 추출을 수행합니다."
+  },
+  "_textable.widgets.OWTextableMerge.OWTextableMerge": {
+    "en": "Merges two or more segmentations into a single one.",
+    "ko": "둘 이상의 세그먼테이션을 하나로 병합합니다."
+  },
+  "_textable.widgets.OWTextableSegment.OWTextableSegment": {
+    "en": "Subdivides a segmentation into smaller segments using regular expressions.",
+    "ko": "정규식을 사용해 세그먼테이션을 더 작은 세그먼트로 분할합니다."
+  },
+  "_textable.widgets.OWTextableSelect.OWTextableSelect": {
+    "en": "Selects a subset of segments from a segmentation by content or annotation.",
+    "ko": "내용이나 주석을 기준으로 세그먼테이션에서 세그먼트의 부분집합을 선택합니다."
+  },
+  "_textable.widgets.OWTextableIntersect.OWTextableIntersect": {
+    "en": "Includes or excludes segments based on their presence in another segmentation.",
+    "ko": "다른 세그먼테이션에 존재하는지를 기준으로 세그먼트를 포함하거나 제외합니다."
+  },
+  "_textable.widgets.OWTextableExtractXML.OWTextableExtractXML": {
+    "en": "Creates a new segmentation based on XML markup found in the text.",
+    "ko": "텍스트의 XML 마크업을 기반으로 새로운 세그먼테이션을 만듭니다."
+  },
+  "_textable.widgets.OWTextableDisplay.OWTextableDisplay": {
+    "en": "Displays or exports the details of a segmentation.",
+    "ko": "세그먼테이션의 세부 내용을 표시하거나 내보냅니다."
+  },
+  "_textable.widgets.OWTextableContext.OWTextableContext": {
+    "en": "Explores the context (surrounding text) of segments.",
+    "ko": "세그먼트의 문맥(주변 텍스트)을 탐색합니다."
+  },
+  "_textable.widgets.OWTextableCount.OWTextableCount": {
+    "en": "Counts the occurrences of segment types.",
+    "ko": "세그먼트 유형의 출현 횟수를 셉니다."
+  },
+  "_textable.widgets.OWTextableLength.OWTextableLength": {
+    "en": "Computes the (average) length of segments.",
+    "ko": "세그먼트의 (평균) 길이를 계산합니다."
+  },
+  "_textable.widgets.OWTextableVariety.OWTextableVariety": {
+    "en": "Measures the variety (diversity) of segment types.",
+    "ko": "세그먼트 유형의 다양성을 측정합니다."
+  },
+  "_textable.widgets.OWTextableCooccurrence.OWTextableCooccurrence": {
+    "en": "Measures co-occurrence between segment types.",
+    "ko": "세그먼트 유형 간의 동시 출현을 측정합니다."
+  },
+  "_textable.widgets.OWTextableCategory.OWTextableCategory": {
+    "en": "Builds a table of categories defined by the content or annotations of segments.",
+    "ko": "세그먼트의 내용이나 주석으로 정의된 범주의 표를 만듭니다."
+  },
+  "_textable.widgets.OWTextableConvert.OWTextableConvert": {
+    "en": "Converts, transforms or exports Orange Textable tables.",
+    "ko": "Orange Textable 표를 변환·가공하거나 내보냅니다."
+  },
+  "_textable.widgets.OWTextableMessage.OWTextableMessage": {
+    "en": "Parses JSON data in a segmentation and uses it to control other widgets.",
+    "ko": "세그먼테이션의 JSON 데이터를 파싱해 다른 위젯을 제어하는 데 사용합니다."
+  },
+  "_textable.widgets.OWTextableInterchange.OWTextableInterchange": {
+    "en": "Converts a Textable segmentation into a Text Mining corpus and vice versa.",
+    "ko": "Textable 세그먼테이션을 텍스트 마이닝 말뭉치로, 또는 그 반대로 변환합니다."
+  },
+  "orangecontrib.single_cell.widgets.owmultisample.OWMultiSample": {
+    "en": "Loads one or more samples for multi-sample single-cell analysis.",
+    "ko": "다중 표본 단일세포 분석을 위해 하나 이상의 표본을 불러옵니다."
+  },
+  "orangecontrib.single_cell.widgets.owscdatasets.OWscDataSets": {
+    "en": "Loads a single-cell dataset from an online repository.",
+    "ko": "온라인 저장소에서 단일세포 데이터셋을 불러옵니다."
+  },
+  "orangecontrib.single_cell.widgets.owdropout.OWDropout": {
+    "en": "Selects informative genes based on dropout (zero-inflation) patterns in single-cell data.",
+    "ko": "단일세포 데이터의 드롭아웃(영값 과다) 패턴을 기반으로 정보가 많은 유전자를 선택합니다."
+  },
+  "orangecontrib.single_cell.widgets.owfilter.OWFilter": {
+    "en": "Filters cells and genes by quality criteria such as counts.",
+    "ko": "카운트 등 품질 기준으로 세포와 유전자를 필터링합니다."
+  },
+  "orangecontrib.single_cell.widgets.owbatchnorm.OWBatchNorm": {
+    "en": "Normalizes a single-cell dataset to remove batch effects.",
+    "ko": "단일세포 데이터셋을 정규화해 배치 효과를 제거합니다."
+  },
+  "orangecontrib.single_cell.widgets.owharmony.OWHarmony": {
+    "en": "Removes batch effects from single-cell data using the Harmony integration method.",
+    "ko": "Harmony 통합 방법으로 단일세포 데이터의 배치 효과를 제거합니다."
+  },
+  "orangecontrib.single_cell.widgets.owaligndatasets.OWAlignDatasets": {
+    "en": "Aligns multiple datasets and visualizes their correlation in a diagram.",
+    "ko": "여러 데이터셋을 정렬하고 상관관계를 다이어그램으로 시각화합니다."
+  },
+  "orangecontrib.single_cell.widgets.owscoregenes.OWRank": {
+    "en": "Scores and filters genes by their relevance.",
+    "ko": "유전자를 관련성에 따라 점수화하고 필터링합니다."
+  },
+  "orangecontrib.single_cell.widgets.owscorecells.OWScoreCells": {
+    "en": "Adds a per-cell score based on a given set of genes.",
+    "ko": "주어진 유전자 집합을 기반으로 세포별 점수를 추가합니다."
+  },
+  "orangecontrib.single_cell.widgets.owdotmatrix.OWDotMatrix": {
+    "en": "Performs cluster analysis and displays the result as a dot matrix.",
+    "ko": "군집 분석을 수행하고 결과를 점 행렬(dot matrix)로 표시합니다."
+  },
+  "orangecontrib.single_cell.widgets.owspatialautocorrelation.OWSpatialAutocorrelation": {
+    "en": "Computes Moran's I or Geary's C spatial autocorrelation scores.",
+    "ko": "Moran's I 또는 Geary's C 공간 자기상관 점수를 계산합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owspectra.OWSpectra": {
+    "en": "Plots spectra (intensity versus wavenumber/wavelength) and lets you select spectra or spectral regions.",
+    "ko": "스펙트럼(파수·파장 대비 강도)을 그리고 스펙트럼이나 스펙트럼 영역을 선택하게 합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owhyper.OWHyper": {
+    "en": "Visualizes hyperspectral image data, showing a spatial map alongside the spectrum at each selected point.",
+    "ko": "초분광 이미지 데이터를 시각화해, 공간 지도와 선택 지점의 스펙트럼을 함께 보여줍니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owspectralseries.OWSpectralSeries": {
+    "en": "Displays a series of spectra over time or another ordering variable.",
+    "ko": "시간이나 다른 정렬 변수에 따른 일련의 스펙트럼을 표시합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owinterpolate.OWInterpolate": {
+    "en": "Interpolates spectra onto a common set of wavenumbers or points.",
+    "ko": "스펙트럼을 공통 파수·점 집합으로 보간합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owpreprocess.OWPreprocess": {
+    "en": "Builds a spectral preprocessing pipeline with steps such as baseline correction, smoothing, normalization and derivatives.",
+    "ko": "기준선 보정·평활화·정규화·미분 등의 단계로 스펙트럼 전처리 파이프라인을 구성합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owintegrate.OWIntegrate": {
+    "en": "Integrates spectra over chosen regions to obtain peak areas or heights.",
+    "ko": "선택한 영역에 대해 스펙트럼을 적분해 피크 면적이나 높이를 구합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owpeakfit.OWPeakFit": {
+    "en": "Fits peak functions to a spectral region to extract peak parameters.",
+    "ko": "스펙트럼 영역에 피크 함수를 적합해 피크 매개변수를 추출합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owmultifile.OWMultifile": {
+    "en": "Reads spectra from several input files into a single dataset.",
+    "ko": "여러 입력 파일의 스펙트럼을 하나의 데이터셋으로 읽어들입니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owtilefile.OWTilefile": {
+    "en": "Reads large data tile-by-tile from input files, preprocessing each tile, and outputs a data table.",
+    "ko": "큰 데이터를 입력 파일에서 타일 단위로 읽어 각 타일을 전처리하고 데이터 표로 출력합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owaverage.OWAverage": {
+    "en": "Computes average spectra, optionally per group.",
+    "ko": "스펙트럼의 평균을, 필요 시 그룹별로 계산합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owbin.OWBin": {
+    "en": "Bins a hyperspectral dataset along a continuous variable such as spatial coordinates.",
+    "ko": "초분광 데이터셋을 공간 좌표 같은 연속 변수로 구간화(binning)합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owcos.OWCos": {
+    "en": "Performs two-dimensional correlation analysis on a series of spectra.",
+    "ko": "일련의 스펙트럼에 대해 2차원 상관 분석을 수행합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owfft.OWFFT": {
+    "en": "Performs a fast Fourier transform on an interferogram (with zero-filling) to obtain a spectrum.",
+    "ko": "인터페로그램에 (영 채움을 포함한) 고속 푸리에 변환을 수행해 스펙트럼을 얻습니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owoverlay.OWOverlay": {
+    "en": "Adds an image overlay to a hyperspectral dataset for display in HyperSpectra.",
+    "ko": "초분광 데이터셋에 HyperSpectra에서 표시할 이미지 오버레이를 추가합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owpls.OWPLS": {
+    "en": "Partial least squares regression for multivariate spectral data analysis.",
+    "ko": "다변량 스펙트럼 데이터 분석을 위한 부분 최소제곱(PLS) 회귀입니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owpolar.OWPolar": {
+    "en": "Computes azimuth angle, orientation function, amplitude and intensity from multi-angle polarization spectra.",
+    "ko": "다중 각도 편광 스펙트럼으로부터 방위각·배향 함수·진폭·강도를 계산합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owreshape.OWReshape": {
+    "en": "Reshapes the dataset to build or modify 2-D spatial maps from spectra.",
+    "ko": "데이터셋의 형태를 바꿔 스펙트럼으로부터 2D 공간 지도를 만들거나 수정합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owsnr.OWSNR": {
+    "en": "Computes the signal-to-noise ratio, averages or standard deviation, grouped by a chosen variable.",
+    "ko": "선택한 변수로 그룹화해 신호 대 잡음비(SNR), 평균 또는 표준편차를 계산합니다."
+  },
+  "orangecontrib.spectroscopy.widgets.owstackalign.OWStackAlign": {
+    "en": "Aligns and crops a stack of (hyperspectral) images using various methods.",
+    "ko": "여러 방법으로 (초분광) 이미지 스택을 정렬하고 잘라냅니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWDatabasesUpdate.OWDatabasesUpdate": {
+    "en": "Updates the local systems-biology databases used by the bioinformatics widgets.",
+    "ko": "생물정보학 위젯이 사용하는 로컬 시스템생물학 데이터베이스를 업데이트합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGEODatasets.OWGEODatasets": {
+    "en": "Accesses gene-expression datasets from the NCBI Gene Expression Omnibus (GEO) repository.",
+    "ko": "NCBI GEO 저장소에서 유전자 발현 데이터셋에 접근합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWdictyExpress.OWdictyExpress": {
+    "en": "Loads time-course gene-expression data from the dictyExpress database.",
+    "ko": "dictyExpress 데이터베이스에서 시간 경과 유전자 발현 데이터를 불러옵니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGenialisExpressions.OWGenialisExpressions": {
+    "en": "Loads gene-expression data from the Genialis Expressions platform.",
+    "ko": "Genialis Expressions 플랫폼에서 유전자 발현 데이터를 불러옵니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGenes.OWGenes": {
+    "en": "A tool for matching, mapping and working with gene identifiers.",
+    "ko": "유전자 식별자를 매칭·매핑하고 다루는 도구입니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWDifferentialExpression.OWDifferentialExpression": {
+    "en": "Selects genes by differential-expression analysis between groups of samples.",
+    "ko": "표본 그룹 간 차등 발현 분석으로 유전자를 선택합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGOBrowser.OWGOBrowser": {
+    "en": "Performs Gene Ontology (GO) enrichment analysis and lets you browse enriched GO terms.",
+    "ko": "유전자 온톨로지(GO) enrichment 분석을 수행하고 enriched GO 용어를 탐색하게 합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWKEGGPathwayBrowser.OWKEGGPathwayBrowser": {
+    "en": "Browses KEGG pathways that include an input set of genes.",
+    "ko": "입력 유전자 집합을 포함하는 KEGG 경로를 탐색합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGeneSets.OWGeneSets": {
+    "en": "Manages and selects gene sets for use in enrichment and scoring analyses.",
+    "ko": "enrichment·점수 분석에 사용할 유전자 집합을 관리하고 선택합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWGeneSetEnrichment.OWGeneSets": {
+    "en": "Tests gene sets for statistical enrichment in the data.",
+    "ko": "데이터에서 유전자 집합의 통계적 enrichment를 검정합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWVolcanoPlot.OWVolcanoPlot": {
+    "en": "Plots fold change versus p-value to highlight significantly changed genes.",
+    "ko": "변화 배수(fold change) 대 p-값을 그려 유의하게 변한 유전자를 강조합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWClusterAnalysis.OWClusterAnalysis": {
+    "en": "Displays the differentially expressed genes that characterize each cluster.",
+    "ko": "각 군집을 특징짓는 차등 발현 유전자를 표시합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWHomologs.OWHomologs": {
+    "en": "Maps genes to their homologs in other organisms.",
+    "ko": "유전자를 다른 생물종의 상동 유전자(homolog)로 매핑합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWMarkerGenes.OWMarkerGenes": {
+    "en": "Provides curated marker genes for cell types and tissues.",
+    "ko": "세포 유형·조직에 대한 큐레이션된 마커 유전자를 제공합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWAnnotateProjection.OWAnnotateProjection": {
+    "en": "Annotates projection clusters with characteristic genes or terms.",
+    "ko": "투영 군집을 특징 유전자나 용어로 주석합니다."
+  },
+  "orangecontrib.bioinformatics.widgets.OWSingleSampleScoring.OWSingleSampleScoring": {
+    "en": "Scores gene sets for each individual sample.",
+    "ko": "개별 표본마다 유전자 집합 점수를 계산합니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owassurvivaldata.OWAsSurvivalData": {
+    "en": "Marks the Time and Event features as target variables so other widgets treat the dataset as survival data.",
+    "ko": "Time과 Event 특성을 목표 변수로 표시해 다른 위젯이 데이터를 생존 데이터로 취급하게 합니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owkaplanmeier.OWKaplanMeier": {
+    "en": "Visualizes survival over time using the Kaplan-Meier estimator, optionally split into groups.",
+    "ko": "Kaplan-Meier 추정량으로 시간에 따른 생존을 시각화하며, 그룹별로 나눌 수 있습니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owcoxregression.OWCoxRegression": {
+    "en": "Fits a Cox proportional-hazards regression model, optionally with L1 (LASSO), L2 (ridge) or elastic-net regularization.",
+    "ko": "L1(LASSO)·L2(ridge)·엘라스틱넷 정규화를 선택할 수 있는 Cox 비례위험 회귀 모델을 적합합니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owranksurvivalfeatures.OWRankSurvivalFeatures": {
+    "en": "Ranks features by univariate Cox regression analysis.",
+    "ko": "단변량 Cox 회귀 분석으로 특성의 순위를 매깁니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owstepwisecoxregression.OWStepwiseCoxRegression": {
+    "en": "Selects features for a Cox model using backward elimination.",
+    "ko": "후진 제거법으로 Cox 모델의 특성을 선택합니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owchorts.OWCohorts": {
+    "en": "Stratifies samples into low- and high-risk groups (cohorts).",
+    "ko": "표본을 저위험·고위험 그룹(코호트)으로 층화합니다."
+  },
+  "orangecontrib.survival_analysis.widgets.owsurvivalnomogram.OWSurvivalNomogram": {
+    "en": "Visualizes a survival model as a nomogram for interpretable risk estimation.",
+    "ko": "생존 모델을 노모그램으로 시각화해 해석 가능한 위험 추정을 제공합니다."
+  },
+  "orangecontrib.fairness.widgets.owasfairness.OWAsFairness": {
+    "en": "Converts a dataset into a fairness dataset by marking the protected attribute and the favorable class values.",
+    "ko": "보호 속성과 유리한(favorable) 클래스 값을 표시해 데이터셋을 공정성 데이터셋으로 변환합니다."
+  },
+  "orangecontrib.fairness.widgets.owdatasetbias.OWDatasetBias": {
+    "en": "Computes dataset bias metrics, such as disparate impact, between protected groups.",
+    "ko": "보호 그룹 간 격차 영향(disparate impact) 등 데이터셋 편향 지표를 계산합니다."
+  },
+  "orangecontrib.fairness.widgets.owreweighing.OWReweighing": {
+    "en": "Applies the reweighing algorithm, adjusting instance weights to reduce bias before modeling.",
+    "ko": "재가중(reweighing) 알고리즘을 적용해 모델링 전에 인스턴스 가중치를 조정하여 편향을 줄입니다."
+  },
+  "orangecontrib.fairness.widgets.owadversarialdebiasing.OWAdversarialDebiasing": {
+    "en": "An adversarial debiasing classifier that can be trained with or without fairness constraints.",
+    "ko": "공정성 제약을 적용하거나 적용하지 않고 학습할 수 있는 적대적 디바이어싱 분류기입니다."
+  },
+  "orangecontrib.fairness.widgets.owequalizedodds.OWEqualizedOdds": {
+    "en": "A postprocessing algorithm that adjusts a classifier's predictions to satisfy the equalized-odds fairness criterion.",
+    "ko": "분류기의 예측을 조정해 균등 기회(equalized odds) 공정성 기준을 만족시키는 후처리 알고리즘입니다."
+  },
+  "orangecontrib.fairness.widgets.owweightedlogisticregression.OWWeightedLogisticRegression": {
+    "en": "A logistic regression variant with instance weighting and LASSO (L1) regularization, used in fairness pipelines.",
+    "ko": "인스턴스 가중치와 LASSO(L1) 정규화를 적용한 로지스틱 회귀 변형으로, 공정성 파이프라인에 사용됩니다."
+  },
+  "orangecontrib.fairness.widgets.owcombinepreprocessors.OWCombinePreprocessors": {
+    "en": "Combines multiple preprocessors into a single preprocessor.",
+    "ko": "여러 전처리기를 하나의 전처리기로 결합합니다."
+  },
+  "orangecontrib.explain.widgets.owpermutationimportance.OWPermutationImportance": {
+    "en": "Inspects a model using the permutation feature importance technique, showing how much each feature affects performance.",
+    "ko": "순열 특성 중요도 기법으로 모델을 살펴보며, 각 특성이 성능에 얼마나 영향을 주는지 보여줍니다."
+  },
+  "orangecontrib.explain.widgets.owexplainmodel.OWExplainModel": {
+    "en": "Explains a model's overall behavior using SHAP values aggregated across the data.",
+    "ko": "데이터 전반에 걸쳐 집계한 SHAP 값으로 모델의 전반적 동작을 설명합니다."
+  },
+  "orangecontrib.explain.widgets.owexplainprediction.OWExplainPrediction": {
+    "en": "Explains a single prediction by showing how each feature contributed to it.",
+    "ko": "각 특성이 단일 예측에 어떻게 기여했는지 보여주어 그 예측을 설명합니다."
+  },
+  "orangecontrib.explain.widgets.owexplainpredictions.OWExplainPredictions": {
+    "en": "Explains multiple predictions and aggregates the per-feature contributions.",
+    "ko": "여러 예측을 설명하고 특성별 기여도를 집계합니다."
+  },
+  "orangecontrib.explain.widgets.owice.OWICE": {
+    "en": "Shows individual conditional expectation (ICE) curves — how a prediction depends on a feature of interest.",
+    "ko": "개별 조건부 기대(ICE) 곡선으로, 예측이 관심 특성에 어떻게 의존하는지 보여줍니다."
+  },
+  "orangecontrib.educational.widgets.owcreatetable.OWCreateTable": {
+    "en": "Lets you create a small data table by entering values directly.",
+    "ko": "값을 직접 입력해 소규모 데이터 표를 만들 수 있게 합니다."
+  },
+  "orangecontrib.educational.widgets.owgooglesheets.OWGoogleSheets": {
+    "en": "Reads data from a Google Sheets spreadsheet by its URL.",
+    "ko": "URL로 Google Sheets 스프레드시트의 데이터를 읽어옵니다."
+  },
+  "orangecontrib.educational.widgets.owkmeans.OWKmeans": {
+    "en": "Demonstrates how the k-means clustering algorithm works, step by step and interactively.",
+    "ko": "k-평균 군집화 알고리즘의 작동 과정을 단계별·대화식으로 시연합니다."
+  },
+  "orangecontrib.educational.widgets.owgradientdescent.OWGradientDescent": {
+    "en": "Demonstrates gradient descent for logistic or linear regression.",
+    "ko": "로지스틱·선형 회귀에서의 경사하강법을 시연합니다."
+  },
+  "orangecontrib.educational.widgets.owpolynomialregression.OWPolynomialRegression": {
+    "en": "Demonstrates univariate regression with polynomial feature expansion.",
+    "ko": "다항 특성 확장을 사용한 단변량 회귀를 시연합니다."
+  },
+  "orangecontrib.educational.widgets.owpolynomialclassification.OWPolynomialClassification": {
+    "en": "Demonstrates classification with polynomial expansion of the variables.",
+    "ko": "변수의 다항 확장을 사용한 분류를 시연합니다."
+  },
+  "orangecontrib.educational.widgets.owpiecharts.OWPieChart": {
+    "en": "Draws a pie chart — a light-hearted educational visualization widget.",
+    "ko": "원 그래프(파이 차트)를 그리는, 가벼운 교육용 시각화 위젯입니다."
+  },
+  "orangecontrib.educational.widgets.owrandomdata.OWRandomData": {
+    "en": "Generates a random data sample for experimentation and teaching.",
+    "ko": "실험·교육용 무작위 데이터 표본을 생성합니다."
+  },
+  "orangecontrib.associate.widgets.owitemsets.OWItemsets": {
+    "en": "Finds sets of items that frequently appear together (frequent itemset mining).",
+    "ko": "함께 자주 등장하는 항목 집합을 찾습니다(빈발 항목집합 마이닝)."
+  },
+  "orangecontrib.associate.widgets.owassociate.OWAssociate": {
+    "en": "Induces association rules — IF–THEN co-occurrence rules — from the data.",
+    "ko": "데이터로부터 연관 규칙(IF–THEN 동시 출현 규칙)을 유도합니다."
+  }
+}

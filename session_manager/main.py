@@ -2217,9 +2217,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .an-label {{ font-size:13.5px; font-weight:500; opacity:0; transition:opacity .1s; }}
     #app-nav.expanded .an-label {{ opacity:1; }}
     .an-badge {{ font-size:9px; font-weight:700; color:#7c3aed; background:#f3e8ff; padding:1px 6px; border-radius:6px; margin-left:auto; opacity:0; transition:opacity .1s; }}
-    .an-chev {{ margin-left:auto; color:#9ca3af; font-size:16px; line-height:1; opacity:0; transition:opacity .1s; }}
+    .an-chev {{ margin-left:auto; color:#9ca3af; font-size:16px; line-height:1; opacity:0; transition:opacity .1s, transform .16s ease; }}
     #app-nav.expanded .an-chev {{ opacity:1; }}
     #app-nav.expanded .an-badge {{ opacity:1; }}
+    /* ── 사이드바 Menu 인라인 아코디언 (별도 팝업 대신 아래로 펼침) ── */
+    .an-item.an-acc-open .an-chev {{ transform:rotate(90deg); }}
+    .an-acc {{ max-height:0; overflow:hidden; flex-shrink:0; transition:max-height .2s ease; }}
+    .an-acc.open {{ max-height:220px; }}
+    .an-subitem {{ display:flex; align-items:center; height:30px; margin:0 6px; padding:0 8px 0 39px;
+      border-radius:8px; color:#52525b; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap;
+      opacity:0; transition:background .1s, opacity .1s; }}
+    #app-nav.expanded .an-subitem {{ opacity:1; }}
+    .an-subitem:hover {{ background:#f1f1f3; color:#1a1a2e; }}
     .an-spacer {{ flex:1; min-height:8px; }}
     .an-sep {{ height:1px; background:#ececed; margin:5px 14px; flex-shrink:0; }}
     /* 위젯 카테고리를 사이드바 안에 직접 통합 (별도 레일 없음) */
@@ -2241,8 +2250,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-inner {{ max-width:1080px; margin:0 auto; padding:34px 40px; }}
     .ovp-top {{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }}
     .ovp-title {{ font-size:25px; font-weight:800; color:#1a1a2e; }}
-    .ovp-new {{ background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:7px; padding:8px 16px;
+    .ovp-new {{ display:inline-flex; align-items:center; gap:7px; background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:7px; padding:3px 16px;
       font-size:13px; font-weight:400; cursor:pointer; transition:background .12s, border-color .12s; }}
+    /* 우상단 버튼 '+' 를 카드(.ovp-plus)와 동일 크기로 (2026-06-12) */
+    .ovp-new-plus {{ font-size:30px; color:#F47B20; font-weight:300; line-height:1; }}
+    /* 우상단 버튼 'New Workflow' 글자도 카드(.ovp-card) 라벨과 동일 스타일로 (2026-06-12) */
+    .ovp-new-label {{ font-size:13.5px; color:#4b5563; font-weight:600; }}
     .ovp-new:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
     .ovp-sub {{ color:#6b7280; font-size:13.5px; margin-bottom:18px; }}
     .ovp-tabs {{ display:flex; gap:18px; border-bottom:1px solid #e5e7eb; margin-bottom:20px; }}
@@ -3264,8 +3277,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <div class="mi" onclick="saveWorkflow()">다른 이름으로 저장 ...</div>
         <div class="ms"></div>
         <div class="mi" onclick="closeMenu();ctShowInfo()">Workflow Info</div>
-        <div class="ms"></div>
-        <div class="mi" onclick="closeMenu();wfCloseActive()">닫기</div>
       </div>
     </div>
 
@@ -3352,10 +3363,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/></svg>
       <span class="an-label">Open</span>
     </div>
-    <div class="an-item" title="메뉴 (파일)" onclick="event.stopPropagation(); hideOverview(); _hwdToggleSidebarMenu(this)">
+    <div class="an-item" id="an-menu-btn" title="메뉴 (파일)" onclick="event.stopPropagation(); hideOverview(); _anToggleMenuAcc(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12.5" x2="17" y2="12.5"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
       <span class="an-label">Menu</span>
       <span class="an-chev">›</span>
+    </div>
+    <!-- 사이드바 Menu 인라인 아코디언 (팝업 플라이아웃 대체 — 아래로 펼침) -->
+    <div id="an-menu-acc" class="an-acc">
+      <div class="an-subitem" onclick="event.stopPropagation(); hideOverview(); _ensureWidgetPanel(); wfAddTab(); _anCloseMenuAcc()">새 문서</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); openOwsDialog(); _anCloseMenuAcc()">불러오기</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">저장</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); saveWorkflow(); _anCloseMenuAcc()">다른 이름으로 저장 ...</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); closeMenu(); ctShowInfo(); _anCloseMenuAcc()">Workflow Info</div>
     </div>
     <div class="an-item an-x-toggle" title="펼치기 / 접기" onclick="toggleAppNav()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
@@ -3393,7 +3412,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div class="ovp-inner">
       <div class="ovp-top">
         <h1 class="ovp-title">WorkSpaces</h1>
-        <button class="ovp-new" onclick="hideOverview(); wfAddTab();">+ New Workflow</button>
+        <button class="ovp-new" onclick="hideOverview(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
       </div>
       <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
       <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span></div>
@@ -5177,8 +5196,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       _OVT_CATS.forEach(function(key) {{
         var ic=_OVT_ICONS[key]||'';
         html+='<button class="ovt-cat-btn" data-cat="'+_ovEsc(key).replace(/"/g,'&quot;')+'">'
-            + '<span class="ovt-cat-ic"><svg width="24" height="24" viewBox="0 0 16 16" fill="none">'+ic+'</svg></span>'
-            + '<span class="ovt-cat-lbl">'+_ovEsc(_ovtCatLabel(key))+'</span></button>';
+            + '<span class="ovt-cat-ic"><svg width="28" height="28" viewBox="0 0 16 16" fill="none">'+ic+'</svg></span>'
+            + '<span class="ovt-cat-lbl">'+_ovEsc(_ovtCatLabel(key))+'</span>'
+            + '<span class="ovt-cat-count">(0)</span></button>';
       }});
       host.innerHTML=html;
       host.querySelectorAll('.ovt-cat-btn').forEach(function(b) {{
@@ -5191,10 +5211,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         var key=b.getAttribute('data-cat');
         var n=(_lcTemplates||[]).filter(function(t) {{ return _ovtMatch(key,t); }}).length;
         var badge=b.querySelector('.ovt-cat-count');
-        if (n>0) {{
-          if (!badge) {{ badge=document.createElement('span'); badge.className='ovt-cat-count'; b.appendChild(badge); }}
-          badge.textContent='('+n+')';
-        }} else if (badge) {{ badge.remove(); }}
+        // 0 이어도 다음 줄에 (0) 표기 (2026-06-12)
+        if (!badge) {{ badge=document.createElement('span'); badge.className='ovt-cat-count'; b.appendChild(badge); }}
+        badge.textContent='('+n+')';
       }});
     }}
     function _ovtLoadCat(key) {{
@@ -5459,6 +5478,28 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (lang) lang.classList.remove('open');
       try {{ closeSettingsMenu(); }} catch(_e) {{}}
       try {{ closeHelpMenu(); }} catch(_e) {{}}
+    }}
+
+    /* 사이드바 Menu 인라인 아코디언 — 별도 팝업 대신 항목을 아래로 펼침(접기). */
+    function _anToggleMenuAcc(btn) {{
+      var nav = document.getElementById('app-nav');
+      var acc = document.getElementById('an-menu-acc');
+      if (!acc || !btn) return;
+      // 접힌 상태면 먼저 펼쳐야 서브항목 라벨이 보인다.
+      if (nav && !nav.classList.contains('expanded')) {{ try {{ toggleAppNav(); }} catch(_e) {{}} }}
+      var willOpen = !acc.classList.contains('open');
+      acc.classList.toggle('open', willOpen);
+      btn.classList.toggle('an-acc-open', willOpen);
+      // 다른 플라이아웃/드롭다운 닫기 (중복 노출 방지)
+      try {{ closeMenu(); }} catch(_e) {{}}
+      try {{ closeSettingsMenu(); }} catch(_e) {{}}
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
+    }}
+    function _anCloseMenuAcc() {{
+      var acc = document.getElementById('an-menu-acc');
+      if (acc) acc.classList.remove('open');
+      var btn = document.getElementById('an-menu-btn');
+      if (btn) btn.classList.remove('an-acc-open');
     }}
 
 
@@ -6141,11 +6182,22 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var t=document.querySelector('.ovp-title'); if(t) t.textContent=o.title;
       var s=document.querySelector('.ovp-sub'); if(s) s.innerHTML=o.sub;
       document.querySelectorAll('.ovp-tab').forEach(function(el,i){{ if(o.tabs[i]!==undefined) el.textContent=o.tabs[i]; }});
-      var nb=document.querySelector('.ovp-new'); if(nb) nb.textContent=o.newBtn;
+      var nbl=document.querySelector('.ovp-new .ovp-new-label'); if(nbl) nbl.textContent=(o.newBtn||'').replace(/^\+\s*/,'');
       document.querySelectorAll('.ovp-grid .ovp-card').forEach(function(el,i){{ var dv=el.querySelector('div:last-child'); if(dv && o.cards[i]!==undefined) dv.textContent=o.cards[i]; }});
       var lh=document.querySelector('.ovp-list-head'); if(lh) lh.textContent=o.listHead;
       var opt = ({{ko:'옵션', en:'Option', sl:'Možnosti'}})[code] || 'Option';
       var om=document.querySelector('.set-mi-tx[data-set="option"]'); if(om) om.textContent=opt;
+      // 사이드바 Menu 인라인 아코디언 항목 i18n (#menu-dropdown .mi 와 동일 라벨, 닫기 제외)
+      var MI = {{
+        ko: ['새 문서','불러오기','저장','다른 이름으로 저장 ...','워크플로우 정보'],
+        en: ['New','Open','Save','Save As ...','Workflow Info'],
+        sl: ['Nov','Odpri','Shrani','Shrani kot ...','Informacije o poteku']
+      }};
+      var mi = MI[code] || MI.en;
+      document.querySelectorAll('#an-menu-acc .an-subitem').forEach(function(el,i){{ if(mi[i]!==undefined) el.textContent=mi[i]; }});
+      // 위젯 검색 placeholder i18n
+      var srchT = ({{ko:'위젯 검색...', en:'Search widgets...', sl:'Iskanje gradnikov...'}})[code] || 'Search widgets...';
+      var srch = document.getElementById('hwd-panel-search'); if(srch) srch.setAttribute('placeholder', srchT);
     }}
     async function setLang(code) {{
       closeLang();
@@ -14675,6 +14727,7 @@ def _admin_nav_html(active: str) -> str:
         f'<a href="/admin/widgets"{cls("widgets")}>위젯 설정</a>'
         f'<a href="/admin/language"{cls("language")}>언어 설정</a>'
         f'<a href="/admin/splash"{cls("splash")}>로딩 이미지 설정</a>'
+        f'<a href="/admin/firstpage"{cls("firstpage")}>첫 페이지 지정</a>'
         f'<a href="/admin/sessions"{cls("sessions")}>활성 세션</a>'
         f'<a href="/admin/usage"{cls("usage")}>이용 현황</a>'
         '</nav>'
@@ -15276,19 +15329,6 @@ async def admin_splash_page():
     </div>
   </div>
 
-  <div class="card">
-    <h2>첫 페이지 지정</h2>
-    <div class="section-desc">사용자가 접속했을 때 처음 보여줄 페이지를 지정합니다. 지정하면 오렌지3 캔버스 대신 <b>WorkSpaces</b> 페이지로 시작합니다 — 새 세션부터 적용.</div>
-    <div class="splash-toggle">
-      <input type="checkbox" id="first-page-ws">
-      <label for="first-page-ws">접속 시 <b>WorkSpaces 페이지</b>로 시작 (미지정 시 캔버스)</label>
-    </div>
-    <div class="wcat-actions">
-      <button onclick="resetFirstPage()">되돌리기</button>
-      <button id="save-firstpage-btn" onclick="saveFirstPage()">저장</button>
-    </div>
-  </div>
-
   <div class="meta" id="meta"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -15432,7 +15472,6 @@ async function initLoad(){{
     _settings = d.settings;
     applyLoading();
     applyReady();
-    applyFirstPage();
     refreshSplashInfo();
     _wireSplashDrop();
     updateMeta();
@@ -15441,17 +15480,6 @@ async function initLoad(){{
 
 function resetLoading(){{ applyLoading(); toast('변경 사항 되돌림 (Loading)'); }}
 function resetReady(){{ applyReady(); toast('변경 사항 되돌림 (Ready)'); }}
-function applyFirstPage(){{
-  document.getElementById('first-page-ws').checked = !!(_settings && _settings.first_page === 'workspaces');
-}}
-function resetFirstPage(){{ applyFirstPage(); toast('변경 사항 되돌림 (첫 페이지)'); }}
-function saveFirstPage(){{
-  _putSplashPartial(
-    {{first_page: document.getElementById('first-page-ws').checked ? 'workspaces' : 'canvas'}},
-    'save-firstpage-btn',
-    '첫 페이지 설정 저장 완료'
-  );
-}}
 
 async function _putSplashPartial(payload, btnId, okMsg){{
   const btn = document.getElementById(btnId);
@@ -15712,6 +15740,391 @@ loadLang();
 </body></html>""")
 
 
+@app.get("/admin/firstpage", response_class=HTMLResponse)
+async def admin_firstpage_page():
+    """첫 페이지 지정 — 접속 시 시작 화면(canvas | workspaces) 선택. 전체 사용자 적용."""
+    nav = _admin_nav_html("firstpage")
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<title>첫 페이지 지정 — 관리자</title>
+<style>{_ADMIN_BASE_CSS}
+.fp-row{{display:flex;align-items:center;gap:14px;padding:16px 4px;cursor:pointer}}
+.fp-row + .fp-row{{border-top:1px solid #eee}}
+.fp-row input{{margin-top:1px;flex-shrink:0}}
+.fp-text{{flex:1;min-width:0}}
+.fp-desc{{color:#9ca3af;font-size:12px;margin-top:3px}}
+.fp-thumb{{width:120px;height:auto;border:1px solid #e5e7eb;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.10);flex-shrink:0;background:#fff}}
+</style></head><body>
+<div class="wrap">
+  <h1>첫 페이지 지정</h1>
+  <div class="sub">사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</div>
+  {nav}
+
+  <div class="card">
+    <h2>접속 시 첫 페이지</h2>
+    <div class="section-desc">신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</div>
+    <div class="fp-list" id="fp-list">
+      <label class="fp-row">
+        <input type="radio" name="first-page" value="canvas">
+        <img class="fp-thumb" src="/admin/firstpage-thumb/canvas" alt="캔버스 미리보기" loading="lazy">
+        <span class="fp-text"><b>캔버스 (기본)</b><div class="fp-desc">접속 시 바로 워크플로우 편집 캔버스로 시작합니다.</div></span>
+      </label>
+      <label class="fp-row">
+        <input type="radio" name="first-page" value="workspaces">
+        <img class="fp-thumb" src="/admin/firstpage-thumb/workspaces" alt="WorkSpaces 미리보기" loading="lazy">
+        <span class="fp-text"><b>WorkSpaces</b><div class="fp-desc">접속 시 WorkSpaces 홈(최근 작업·템플릿)으로 시작합니다.</div></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button onclick="loadFp()">되돌리기</button>
+    <button id="save-btn" onclick="saveFp()">저장</button>
+  </div>
+  <div class="meta" id="meta"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let _settings = null;
+function toast(msg, ms){{
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove('show'), ms||2200);
+}}
+async function loadFp(){{
+  try {{
+    const r = await fetch('/api/admin/settings', {{cache:'no-store'}});
+    const d = await r.json();
+    if (!d.ok) {{ toast('로드 실패'); return; }}
+    _settings = d.settings;
+    const fp = (_settings.first_page === 'workspaces') ? 'workspaces' : 'canvas';
+    const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
+    if (el) el.checked = true;
+    document.getElementById('meta').textContent = _settings.updated_at
+      ? 'updated_at: ' + _settings.updated_at : '(저장 전)';
+  }} catch(e) {{ toast('로드 오류: ' + e.message); }}
+}}
+async function saveFp(){{
+  const r = document.querySelector('input[name="first-page"]:checked');
+  const val = r ? r.value : 'canvas';
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {{
+    const resp = await fetch('/api/admin/settings', {{
+      method:'PUT', headers:{{'Content-Type':'application/json'}},
+      body: JSON.stringify({{first_page: val}}),
+    }});
+    const d = await resp.json();
+    if (d.ok) {{
+      _settings = d.settings;
+      document.getElementById('meta').textContent = 'updated_at: ' + _settings.updated_at;
+      toast('첫 페이지 설정 저장 완료');
+    }} else {{
+      toast('저장 실패: ' + (d.error || 'unknown'));
+    }}
+  }} catch(e) {{ toast('저장 오류: ' + e.message); }}
+  finally {{ btn.disabled = false; btn.textContent = '저장'; }}
+}}
+loadFp();
+</script>
+</body></html>""")
+
+
+@app.get("/admin/firstpage-thumb/{which}")
+async def admin_firstpage_thumb(which: str):
+    """첫 페이지 지정 페이지의 미리보기 썸네일(canvas | workspaces). /app/html 마운트에서 서빙."""
+    fname = {"canvas": "firstpage_canvas.png",
+             "workspaces": "firstpage_workspaces.png"}.get(which)
+    if fname:
+        path = "/app/html/" + fname
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
+                data = f.read()
+            return Response(content=data, media_type="image/png",
+                            headers={"Cache-Control": "public, max-age=3600"})
+    return Response(status_code=404)
+
+
+# ── 위젯 소개 페이지 (전체 위젯 리스트 — 아이콘·이름·설명, 2026-06-12) ──────────
+@app.get("/api/widget-guide")
+async def api_widget_guide():
+    """위젯 소개 데이터 — 디스크 캐시 카탈로그(en 이름/설명/아이콘 + ko 한글명) 결합."""
+    import json as _json
+
+    def _load(lang):
+        p = _wcat_disk_path(lang)
+        try:
+            if os.path.isfile(p):
+                with open(p, "r", encoding="utf-8") as f:
+                    return _json.load(f)
+        except Exception:
+            pass
+        return None
+
+    en = _load("en") or _load_admin_widget_catalog()
+    ko = _load("ko")
+    if not en:
+        return JSONResponse(
+            {"ok": False,
+             "error": "위젯 카탈로그가 아직 없습니다 — 관리자 '위젯 설정'에서 메뉴 불러오기 후 다시 시도하세요."},
+            status_code=503)
+    ko_name = {}
+    if ko:
+        for c in ko.get("categories", []):
+            for w in (c.get("widgets") or []):
+                qn = w.get("qualified_name")
+                if qn:
+                    ko_name[qn] = w.get("name", "")
+    _HIDE = {"Orange Obsolete", "Orange 사용 중단됨", "Zastarelo"}
+    cats_out = []
+    for c in en.get("categories", []):
+        cname = c.get("name", "")
+        if cname in _HIDE:
+            continue
+        ws = []
+        for w in (c.get("widgets") or []):
+            qn = w.get("qualified_name", "")
+            ws.append({
+                "qualified_name": qn,
+                "name": w.get("name", ""),
+                "name_ko": ko_name.get(qn, ""),
+                "description": w.get("description", ""),
+                "icon_b64": w.get("icon_b64", ""),
+            })
+        if ws:
+            cats_out.append({"category": cname, "widgets": ws})
+    total = sum(len(c["widgets"]) for c in cats_out)
+    return JSONResponse({"ok": True, "total": total, "categories": cats_out})
+
+
+@app.get("/widget-guide", response_class=HTMLResponse)
+async def widget_guide_page():
+    """위젯 소개 — 전체 위젯 리스트(아이콘·이름·설명) 페이지."""
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위젯 소개 — Orange3</title>
+<style>
+  * {box-sizing:border-box;}
+  body {margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",sans-serif; background:#f7f8fa; color:#1a1a2e;}
+  .wg-wrap {max-width:980px; margin:0 auto; padding:32px 20px 60px;}
+  h1 {font-size:24px; margin:0 0 6px;}
+  .wg-sub {color:#6b7280; font-size:14px; margin-bottom:20px;}
+  .wg-search {width:100%; padding:11px 14px; font-size:14px; border:1px solid #d1d5db; border-radius:9px; margin-bottom:8px; outline:none;}
+  .wg-search:focus {border-color:#F47B20;}
+  .wg-meta {color:#9ca3af; font-size:12.5px; margin-bottom:22px;}
+  .wg-cat-head {font-size:15px; font-weight:700; color:#1a1a2e; margin:26px 0 12px; display:flex; align-items:center; gap:8px;}
+  .wg-cat-n {color:#9ca3af; font-weight:500; font-size:13px;}
+  .wg-grid {display:grid; grid-template-columns:repeat(auto-fill, minmax(186px,1fr)); gap:16px; margin-bottom:8px;}
+  .wg-card {display:flex; flex-direction:column; align-items:center; text-align:center; gap:11px; background:#fff; border:1px solid #c7d2e0; border-radius:10px; padding:22px 16px 20px; text-decoration:none; color:inherit; cursor:pointer; transition:border-color .12s, box-shadow .12s;}
+  .wg-card:hover {border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.08);}
+  .wg-ic {width:52px; height:52px; border-radius:50%; background:radial-gradient(circle at 45% 40%, #ffe9d3, #ffdcb8); border:1.6px dashed #f0a868; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .wg-ic img {width:28px; height:28px; object-fit:contain;}
+  .wg-name {font-size:15px; font-weight:700; color:#1a1a2e;}
+  .wg-desc {font-size:13px; color:#475569; line-height:1.4;}
+  .wg-empty {color:#9ca3af; padding:40px; text-align:center;}
+</style></head><body>
+<div class="wg-wrap">
+  <h1>위젯 소개</h1>
+  <div class="wg-sub">Orange3 위젯 전체 목록 — 아이콘 · 이름 · 설명</div>
+  <input class="wg-search" id="wg-search" type="text" placeholder="위젯 이름·설명 검색..." autocomplete="off">
+  <div class="wg-meta" id="wg-meta">불러오는 중…</div>
+  <div id="wg-list"></div>
+</div>
+<script>
+var _DATA = null;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function render(filter){
+  var host=document.getElementById('wg-list'); if(!_DATA) return;
+  var f=(filter||'').trim().toLowerCase(); var html='', shown=0;
+  _DATA.categories.forEach(function(cat){
+    var ws=cat.widgets.filter(function(w){
+      if(!f) return true;
+      return (w.name||'').toLowerCase().indexOf(f)>=0 || (w.name_ko||'').toLowerCase().indexOf(f)>=0 || (w.description||'').toLowerCase().indexOf(f)>=0;
+    });
+    if(!ws.length) return;
+    html+='<div class="wg-cat-head">'+esc(cat.category)+' <span class="wg-cat-n">('+ws.length+')</span></div>';
+    html+='<div class="wg-grid">';
+    ws.forEach(function(w){
+      shown++;
+      var img=w.icon_b64?'<img src="data:image/png;base64,'+w.icon_b64+'" alt="">':'';
+      html+='<a class="wg-card" href="/widget-guide/'+encodeURIComponent(w.qualified_name)+'?lang=ko" title="'+esc(w.name_ko||w.name)+'">'
+        +'<div class="wg-ic">'+img+'</div>'
+        +'<div class="wg-name">'+esc(w.name)+'</div>'
+        +'<div class="wg-desc">'+esc(w.description)+'</div></a>';
+    });
+    html+='</div>';
+  });
+  host.innerHTML=html||'<div class="wg-empty">검색 결과가 없습니다.</div>';
+  document.getElementById('wg-meta').textContent='전체 '+_DATA.total+'개 위젯'+(f?(' · 검색 결과 '+shown+'개'):'');
+}
+fetch('/api/widget-guide').then(function(r){return r.json();}).then(function(d){
+  if(!d.ok){document.getElementById('wg-meta').textContent=d.error||'불러오기 실패'; return;}
+  _DATA=d; render('');
+}).catch(function(e){document.getElementById('wg-meta').textContent='오류: '+e.message;});
+var _t; document.getElementById('wg-search').addEventListener('input', function(e){
+  clearTimeout(_t); var v=e.target.value; _t=setTimeout(function(){render(v);},150);
+});
+</script>
+</body></html>""")
+
+
+def _wg_load_cat(lang):
+    """위젯 카탈로그 디스크 캐시 1개 로드(없으면 None)."""
+    import json as _json
+    p = _wcat_disk_path(lang)
+    try:
+        if os.path.isfile(p):
+            with open(p, "r", encoding="utf-8") as f:
+                return _json.load(f)
+    except Exception:
+        pass
+    return None
+
+
+@app.get("/widget-shot/{name}")
+async def widget_shot(name: str):
+    """위젯 GUI 캡쳐 이미지 서빙 (/app/html/widget-shots/)."""
+    if "/" in name or ".." in name or not name.endswith(".png"):
+        return Response(status_code=404)
+    path = "/app/html/widget-shots/" + name
+    if os.path.isfile(path):
+        with open(path, "rb") as f:
+            data = f.read()
+        return Response(content=data, media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=3600"})
+    return Response(status_code=404)
+
+
+@app.get("/api/widget-detail/{qn}")
+async def api_widget_detail(qn: str):
+    """단일 위젯 상세 데이터 — en/ko/sl 이름·설명 + 입출력·키워드·아이콘·캡쳐 유무."""
+    cats = {lg: _wg_load_cat(lg) for lg in ("en", "ko", "sl")}
+    en = cats["en"] or _load_admin_widget_catalog()
+    if not en:
+        return JSONResponse({"ok": False, "error": "위젯 카탈로그가 없습니다."}, status_code=503)
+
+    def _find(cat):
+        if not cat:
+            return None, ""
+        for c in cat.get("categories", []):
+            for w in (c.get("widgets") or []):
+                if w.get("qualified_name") == qn:
+                    return w, c.get("name", "")
+        return None, ""
+
+    w_en, cat_en = _find(en)
+    if not w_en:
+        return JSONResponse({"ok": False, "error": "해당 위젯을 찾을 수 없습니다."}, status_code=404)
+    names, descs = {}, {}
+    for lg in ("en", "ko", "sl"):
+        wl, _ = _find(cats.get(lg))
+        if wl:
+            names[lg] = wl.get("name", "")
+            descs[lg] = wl.get("description", "")
+    safe = qn.replace(".", "_")
+    has_shot = os.path.isfile("/app/html/widget-shots/" + safe + ".png")
+    # 위젯별 상세 본문(en/ko) — html/widget_content.json (orangedatamining 참조 + 번역)
+    body = {}
+    try:
+        import json as _json
+        _cp = "/app/html/widget_content.json"
+        if os.path.isfile(_cp):
+            with open(_cp, "r", encoding="utf-8") as f:
+                body = (_json.load(f) or {}).get(qn, {}) or {}
+    except Exception:
+        body = {}
+    return JSONResponse({
+        "ok": True, "qualified_name": qn, "category": cat_en,
+        "names": names, "descs": descs,
+        "name": w_en.get("name", ""), "description": w_en.get("description", ""),
+        "icon_b64": w_en.get("icon_b64", ""),
+        "inputs": w_en.get("inputs", []), "outputs": w_en.get("outputs", []),
+        "keywords": w_en.get("keywords", []),
+        "body": {"en": body.get("en", ""), "ko": body.get("ko", "")},
+        "shot": ("/widget-shot/" + safe + ".png") if has_shot else None,
+    })
+
+
+@app.get("/widget-guide/{qn}", response_class=HTMLResponse)
+async def widget_detail_page(qn: str):
+    """위젯 상세 페이지 — 언어별(ko/en) 이름·설명 + 입출력 + GUI 캡쳐 + 공식문서 링크.
+       (orangedatamining.com/widget-catalog 구조 참조)"""
+    return HTMLResponse("""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>위젯 상세 — Orange3</title>
+<style>
+ *{box-sizing:border-box;}
+ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;background:#f7f8fa;color:#1a1a2e;}
+ .wd-wrap{max-width:860px;margin:0 auto;padding:28px 20px 70px;}
+ .wd-back{display:inline-block;color:#6b7280;text-decoration:none;font-size:13px;margin-bottom:18px;}
+ .wd-back:hover{color:#F47B20;}
+ .wd-head{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+ .wd-ic{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 45% 40%,#ffe9d3,#ffdcb8);border:1.6px dashed #f0a868;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+ .wd-ic img{width:32px;height:32px;object-fit:contain;}
+ .wd-title{font-size:26px;font-weight:800;}
+ .wd-cat{display:inline-block;font-size:12px;color:#9a6a36;background:#fff1e3;padding:2px 9px;border-radius:20px;margin-top:4px;}
+ .wd-langs{margin-left:auto;display:flex;gap:6px;}
+ .wd-lang{font-size:12px;padding:4px 11px;border:1px solid #d1d5db;border-radius:7px;background:#fff;color:#6b7280;cursor:pointer;text-decoration:none;}
+ .wd-lang.active{background:#F47B20;border-color:#F47B20;color:#fff;font-weight:600;}
+ .wd-desc{font-size:15px;color:#475569;line-height:1.6;margin:14px 0 24px;}
+ .wd-sec{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin-bottom:16px;}
+ .wd-sec h2{font-size:15px;margin:0 0 12px;}
+ .wd-io{display:flex;flex-direction:column;gap:7px;}
+ .wd-io-row{font-size:13.5px;color:#374151;}
+ .wd-io-empty{color:#9ca3af;font-size:13px;}
+ .wd-shot{max-width:100%;height:auto;border:1px solid #e5e7eb;border-radius:10px;display:block;background:#fff;}
+ .wd-p{font-size:14.5px;color:#374151;line-height:1.7;margin:0 0 10px;}
+ .wd-p:last-child{margin-bottom:0;}
+ .wd-kw{display:flex;flex-wrap:wrap;gap:6px;}
+ .wd-kw span{font-size:12px;color:#6b7280;background:#f1f3f5;padding:3px 9px;border-radius:6px;}
+ .wd-official{display:inline-block;margin-top:6px;font-size:13px;color:#F47B20;text-decoration:none;}
+ .wd-official:hover{text-decoration:underline;}
+ .wd-loading{color:#9ca3af;padding:40px;text-align:center;}
+</style></head><body>
+<div class="wd-wrap" id="wd-root"><div class="wd-loading">불러오는 중…</div></div>
+<script>
+(function(){
+ var qn=decodeURIComponent((location.pathname.split('/widget-guide/')[1]||''));
+ var lang=new URLSearchParams(location.search).get('lang')||'ko';
+ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+ function io(arr){if(!arr||!arr.length)return '<div class="wd-io-empty">없음</div>';return '<div class="wd-io">'+arr.map(function(x){return '<div class="wd-io-row"><b>'+esc(x.name)+'</b> — '+esc(x.type||'')+'</div>';}).join('')+'</div>';}
+ fetch('/api/widget-detail/'+encodeURIComponent(qn)).then(function(r){return r.json();}).then(function(d){
+   var root=document.getElementById('wd-root');
+   if(!d.ok){root.innerHTML='<div class="wd-loading">'+esc(d.error||'불러오기 실패')+'</div>';return;}
+   var name=(d.names&&d.names[lang])||d.name;
+   var desc=(d.descs&&d.descs[lang])||d.description;
+   var img=d.icon_b64?'<img src="data:image/png;base64,'+d.icon_b64+'" alt="">':'';
+   function lb(code,label){return '<a class="wd-lang'+(code===lang?' active':'')+'" href="?lang='+code+'">'+label+'</a>';}
+   var oc=(d.category||'').toLowerCase().replace(/\\s+/g,'-');
+   var on=(d.name||'').toLowerCase().replace(/\\s+/g,'-');
+   var officialUrl='https://orangedatamining.com/widget-catalog/'+oc+'/'+on+'/';
+   var shot=d.shot?('<div class="wd-sec"><h2>위젯 화면</h2><img class="wd-shot" src="'+d.shot+'" alt="'+esc(name)+'"></div>'):'';
+   var kw=(d.keywords&&d.keywords.length)?('<div class="wd-sec"><h2>키워드</h2><div class="wd-kw">'+d.keywords.map(function(k){return '<span>'+esc(k)+'</span>';}).join('')+'</div></div>'):'';
+   var body=(d.body&&(d.body[lang]||d.body.en||d.body.ko))||'';
+   var bodyHtml=body?('<div class="wd-sec"><h2>상세 설명</h2>'+body.split('\\n').filter(function(x){return x.trim();}).map(function(pp){return '<p class="wd-p">'+esc(pp)+'</p>';}).join('')+'</div>'):'';
+   document.title=name+' — 위젯 상세';
+   root.innerHTML=
+     '<a class="wd-back" href="/widget-guide">← 위젯 목록</a>'
+    +'<div class="wd-head"><div class="wd-ic">'+img+'</div>'
+    +'<div><div class="wd-title">'+esc(name)+'</div><span class="wd-cat">'+esc(d.category)+'</span></div>'
+    +'<div class="wd-langs">'+lb('ko','한국어')+lb('en','EN')+'</div></div>'
+    +'<div class="wd-desc">'+esc(desc)+'</div>'
+    +bodyHtml
+    +'<div class="wd-sec"><h2>입력 / 출력</h2><div style="display:flex;gap:32px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:200px"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Inputs</div>'+io(d.inputs)+'</div>'
+      +'<div style="flex:1;min-width:200px"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Outputs</div>'+io(d.outputs)+'</div>'
+    +'</div></div>'+shot+kw
+    +'<a class="wd-official" href="'+officialUrl+'" target="_blank" rel="noopener">공식 문서에서 자세히 보기 ↗</a>';
+ }).catch(function(e){document.getElementById('wd-root').innerHTML='<div class="wd-loading">오류: '+esc(e.message)+'</div>';});
+})();
+</script>
+</body></html>""")
+
+
 @app.get("/api/admin/sessions")
 async def api_admin_sessions(request: Request):
     """활성 세션 + xpra 세션 + 워밍풀 스냅샷 — admin/sessions 페이지가 폴링.
@@ -15867,6 +16280,7 @@ tbody tr.admin-row:hover{background:#fef3c7}
     <a href="/admin/widgets">위젯 설정</a>
     <a href="/admin/language">언어 설정</a>
     <a href="/admin/splash">로딩 이미지 설정</a>
+    <a href="/admin/firstpage">첫 페이지 지정</a>
     <a href="/admin/sessions" class="active">활성 세션</a>
     <a href="/admin/usage">이용 현황</a>
   </nav>
