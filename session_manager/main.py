@@ -3392,10 +3392,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <div id="overview-page" aria-hidden="true">
     <div class="ovp-inner">
       <div class="ovp-top">
-        <h1 class="ovp-title">작업 공간</h1>
+        <h1 class="ovp-title">WorkSpaces</h1>
         <button class="ovp-new" onclick="hideOverview(); wfAddTab();">+ New Workflow</button>
       </div>
-      <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다. <b>(임시 페이지)</b></div>
+      <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
       <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span></div>
       <!-- Workflows 패널 -->
       <div id="ovp-pane-wf">
@@ -6119,9 +6119,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 새 사이드바·Overview 라벨 i18n (2026-06-11) — 언어 전환 시 함께 갱신 */
     function applyNewUILang(code) {{
       var NAV = {{
-        ko: ['새 문서','열기','메뉴','펼치기','작업 공간','분석 데이터셋','템플릿','도움말','설정'],
+        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','분석 데이터셋','템플릿','도움말','설정'],
         en: ['New','Open','Menu','Expand','WorkSpaces','Analysis-Datasets','Templates','Help','Settings'],
-        sl: ['Nova','Odpri','Meni','Razširi','Delovni prostori','Zbirke podatkov','Predloge','Pomoč','Nastavitve']
+        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Zbirke podatkov','Predloge','Pomoč','Nastavitve']
       }};
       var arr = NAV[code] || NAV.en;
       document.querySelectorAll('#app-nav .an-item .an-label').forEach(function(el, i) {{
@@ -6133,9 +6133,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var topT = ({{ko:'펼치기 / 접기', en:'Expand / Collapse', sl:'Razširi / Skrči'}})[code] || 'Expand / Collapse';
       var top=document.querySelector('#app-nav .an-top'); if(top) top.setAttribute('title', topT);
       var OV = {{
-        ko: {{ title:'작업 공간', sub:'워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다. <b>(임시 페이지)</b>', tabs:['워크플로우','템플릿'], newBtn:'+ 새 워크플로우', cards:['새 워크플로우','워크플로우 열기','템플릿 둘러보기'], listHead:'열린 워크플로우' }},
-        en: {{ title:'WorkSpaces', sub:'Workflow home — recent work and templates at a glance. <b>(preview)</b>', tabs:['Workflows','Templates'], newBtn:'+ New Workflow', cards:['New Workflow','Open Workflow','Browse Templates'], listHead:'Open Workflows' }},
-        sl: {{ title:'Delovni prostori', sub:'Domov delotokov — nedavno delo in predloge na enem mestu. <b>(predogled)</b>', tabs:['Delotoki','Predloge'], newBtn:'+ Nov delotok', cards:['Nov delotok','Odpri delotok','Prebrskaj predloge'], listHead:'Odprti delotoki' }}
+        ko: {{ title:'WorkSpaces', sub:'워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.', tabs:['워크플로우','템플릿'], newBtn:'+ 새 워크플로우', cards:['새 워크플로우','워크플로우 열기','템플릿 둘러보기'], listHead:'열린 워크플로우' }},
+        en: {{ title:'WorkSpaces', sub:'Workflow home — recent work and templates at a glance.', tabs:['Workflows','Templates'], newBtn:'+ New Workflow', cards:['New Workflow','Open Workflow','Browse Templates'], listHead:'Open Workflows' }},
+        sl: {{ title:'WorkSpaces', sub:'Domov delotokov — nedavno delo in predloge na enem mestu.', tabs:['Delotoki','Predloge'], newBtn:'+ Nov delotok', cards:['Nov delotok','Odpri delotok','Prebrskaj predloge'], listHead:'Odprti delotoki' }}
       }};
       var o = OV[code] || OV.en;
       var t=document.querySelector('.ovp-title'); if(t) t.textContent=o.title;
@@ -6170,6 +6170,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 서버가 HTML 생성 시 언어 코드를 직접 삽입 — dropdown 은 스크립트 블록 이후에 위치하므로 DOM 완성 후 호출 */
     const INIT_LANG = '{init_lang}';
     document.addEventListener('DOMContentLoaded', function() {{ applyLangUI(INIT_LANG); try {{ applyLcLang(); }} catch(e) {{}} }});
+    /* 첫 페이지 지정(admin) — 'workspaces' 면 접속 시 캔버스 대신 WorkSpaces(Overview) 로 시작.
+       실제 표시는 위젯 카탈로그 준비 콜백에서 패널 자동오픈과 '택일'로 처리(레이스 방지). */
+    const FIRST_PAGE = '{first_page}';
     /* 방안 C(2026-06-12): 언어 재시작 완료(.app_ready 재생성)를 폴링해 즉시 reload.
        기존 9초 고정 대기 대체 — 재시작이 빨리 끝나면 그만큼 빨리 reload. 60s 안전
        타임아웃 후엔 1회 강제 reload. xpra 는 /ready 가 컨테이너 생존만 보므로(=즉시 true)
@@ -6245,8 +6248,20 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           try {{ _buildSidebarWidgets(); }} catch(_e) {{}}
           if (!_wAutoOpened) {{
             _wAutoOpened = true;
-            // 위젯 메뉴(패널)를 바로 노출 — 첫 카테고리 자동 열기
-            try {{ _toggleWidgetPanel((window._hwdCats[0] && window._hwdCats[0].name) || 'Data'); }} catch(_e) {{}}
+            // 첫 페이지 지정(admin) 에 따라 택일 — 패널 자동오픈과 Overview 가 동시에 뜨지 않게
+            // 결정적으로 분기 (2026-06-12 레이아웃 깨짐 수정).
+            if (typeof FIRST_PAGE !== 'undefined' && FIRST_PAGE === 'workspaces') {{
+              // 첫 페이지 = WorkSpaces: 패널은 열지 않고 WorkSpaces 페이지 표시.
+              // (패널은 사용자가 Overview 를 떠날 때 _ensureWidgetPanel 로 열림)
+              try {{
+                var _ws = document.querySelector('#app-nav .an-item[title="WorkSpaces"]');
+                if (_ws && typeof appNavSelect === 'function') appNavSelect(_ws);
+                if (typeof showOverview === 'function') showOverview();
+              }} catch(_e) {{}}
+            }} else {{
+              // 위젯 메뉴(패널)를 바로 노출 — 첫 카테고리 자동 열기
+              try {{ _toggleWidgetPanel((window._hwdCats[0] && window._hwdCats[0].name) || 'Data'); }} catch(_e) {{}}
+            }}
           }}
           if (box && box.children.length) {{ clearInterval(_wiv); }}
         }}
@@ -9378,7 +9393,8 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         novnc_url = f"{_base}/?resize=remote&scaling=local&quality=6&compression=6&logging=warn&reconnect=true&reconnect_delay=2000"
         log.info(f"[{s8(sid)}] 래퍼 페이지(fast) → 포트 {info['port']} lang={lang}")
         try:
-            _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang, web_version=WEB_APP_VERSION)
+            _first_page = _admin_load_settings().get("first_page", "canvas")
+            _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang, web_version=WEB_APP_VERSION, first_page=_first_page)
             # ready splash(로딩 완료 후 환영 카드) + loading splash 숨김 주입 —
             # xpra 와 동일하게 noVNC 에도 적용 (2026-05-31 버그 수정: 기존엔 xpra 만
             # 적용돼 Basic 모드에서 노출 토글이 안 먹던 문제)
@@ -12189,7 +12205,8 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
         _init_lang = _default
     else:
         _init_lang = _avail[0] if _avail else "en"
-    html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=xpra_sid, init_lang=_init_lang, web_version=WEB_APP_VERSION)
+    _first_page = _admin_load_settings().get("first_page", "canvas")
+    html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=xpra_sid, init_lang=_init_lang, web_version=WEB_APP_VERSION, first_page=_first_page)
     # admin available 언어 외 드롭다운 항목 제거 (단순 문자열 치환 — 라인 단위)
     _ALL_LANG_LINES = {
         "ko": "    <div class=\"li\" onclick=\"setLang('ko')\">한국어</div>",
@@ -13622,6 +13639,8 @@ def _admin_default_settings() -> dict:
             "loading_source": "default",   # default=Orange 기본 이미지 / custom=업로드 이미지
             "ready": {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS},
         },
+        # 접속 시 첫 페이지 (2026-06-12): "canvas"(기본) | "workspaces"(WorkSpaces)
+        "first_page": "canvas",
         "updated_at": "",
     }
 
@@ -13686,6 +13705,9 @@ def _admin_load_settings() -> dict:
             ready_v = {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS}
         splashes["ready"] = ready_v
         data["splashes"] = splashes
+        # 첫 페이지 지정 (2026-06-12) — 유효값 외엔 canvas 로 정규화
+        fp = data.get("first_page")
+        data["first_page"] = fp if fp in ("canvas", "workspaces") else "canvas"
         return data
     except Exception as e:
         log.warning(f"[admin-settings] load failed: {e}; fallback default")
@@ -13788,6 +13810,10 @@ async def admin_settings_put(request: Request):
                 if isinstance(wname, str)
             }
         cur["widgets"] = cur_w
+    # first_page: "canvas" | "workspaces" — 접속 시 첫 페이지 지정 (2026-06-12)
+    fp_in = body.get("first_page")
+    if isinstance(fp_in, str) and fp_in in ("canvas", "workspaces"):
+        cur["first_page"] = fp_in
     try:
         _admin_save_settings(cur)
     except Exception as e:
@@ -15250,6 +15276,19 @@ async def admin_splash_page():
     </div>
   </div>
 
+  <div class="card">
+    <h2>첫 페이지 지정</h2>
+    <div class="section-desc">사용자가 접속했을 때 처음 보여줄 페이지를 지정합니다. 지정하면 오렌지3 캔버스 대신 <b>WorkSpaces</b> 페이지로 시작합니다 — 새 세션부터 적용.</div>
+    <div class="splash-toggle">
+      <input type="checkbox" id="first-page-ws">
+      <label for="first-page-ws">접속 시 <b>WorkSpaces 페이지</b>로 시작 (미지정 시 캔버스)</label>
+    </div>
+    <div class="wcat-actions">
+      <button onclick="resetFirstPage()">되돌리기</button>
+      <button id="save-firstpage-btn" onclick="saveFirstPage()">저장</button>
+    </div>
+  </div>
+
   <div class="meta" id="meta"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -15393,6 +15432,7 @@ async function initLoad(){{
     _settings = d.settings;
     applyLoading();
     applyReady();
+    applyFirstPage();
     refreshSplashInfo();
     _wireSplashDrop();
     updateMeta();
@@ -15401,6 +15441,17 @@ async function initLoad(){{
 
 function resetLoading(){{ applyLoading(); toast('변경 사항 되돌림 (Loading)'); }}
 function resetReady(){{ applyReady(); toast('변경 사항 되돌림 (Ready)'); }}
+function applyFirstPage(){{
+  document.getElementById('first-page-ws').checked = !!(_settings && _settings.first_page === 'workspaces');
+}}
+function resetFirstPage(){{ applyFirstPage(); toast('변경 사항 되돌림 (첫 페이지)'); }}
+function saveFirstPage(){{
+  _putSplashPartial(
+    {{first_page: document.getElementById('first-page-ws').checked ? 'workspaces' : 'canvas'}},
+    'save-firstpage-btn',
+    '첫 페이지 설정 저장 완료'
+  );
+}}
 
 async function _putSplashPartial(payload, btnId, okMsg){{
   const btn = document.getElementById(btnId);
