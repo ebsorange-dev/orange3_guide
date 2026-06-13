@@ -1762,6 +1762,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     #hwd-panel-footer img:not([src]),
     #hwd-panel-footer img[src=""] {{ display:none; }}
+    /* 푸터 로고 행 + Orange 3 브랜드 (옆 로고와 사이즈 맞춤·회색, 2026-06-13) */
+    .hwd-footer-logos {{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }}
+    .hwd-orange-brand {{ display:inline-flex; align-items:center; gap:5px; filter:grayscale(1); opacity:0.55; }}
+    #hwd-panel-footer .hwd-orange-brand img {{ height:24px; width:auto; opacity:1; }}
+    .hwd-orange-brand > span {{ font-size:13px; font-weight:700; color:#777; letter-spacing:0.2px; white-space:nowrap; }}
 
     /* ── 워크플로우 탭 바 ── */
     /* ── 워크플로우 탭 바 ── */
@@ -2216,14 +2221,81 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        Example 는 top:0 풀높이 컬럼이라 nav 펼침과 동일하게 상단 바를 밀어낸다. */
     body.example-open #header-bar, body.example-open #wf-tabbar {{ left:403px; }}
     body.nav-expanded.example-open #header-bar, body.nav-expanded.example-open #wf-tabbar {{ left:556px; }}
+    /* ── Menu 작업 공간 패널 (Example 패널과 동일 사이즈/푸시, 빈 페이지, 2026-06-13) ── */
+    #menu-panel {{
+      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
+      transition:left .16s ease; display:none; flex-direction:column;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+    }}
+    #menu-panel.open {{ display:flex; }}
+    body.nav-expanded #menu-panel {{ left:196px; }}
+    body.menu-open #hwd-panel {{ left:403px; }}
+    body.nav-expanded.menu-open #hwd-panel {{ left:556px; }}
+    body.menu-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.nav-expanded.menu-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
+    body.menu-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.nav-expanded.menu-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
+    body.menu-open #header-bar, body.menu-open #wf-tabbar {{ left:403px; }}
+    body.nav-expanded.menu-open #header-bar, body.nav-expanded.menu-open #wf-tabbar {{ left:556px; }}
+    /* ── Menu 패널 "Work Flow Open" 페이지 (시안 기반 신규, 2026-06-13) ── */
+    .mp-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 18px 16px; flex-shrink:0; }}
+    .mp-title {{ flex:1; min-width:0; font-size:16px; font-weight:400; color:#6b7280; }}
+    .mp-sub {{ padding:0 16px 12px; font-size:12px; color:#6b7280; line-height:1.5; flex-shrink:0; }}
+    .mp-divider {{ height:1px; background:#e5e7eb; margin:12px 16px 14px; flex-shrink:0; }}
+    .mp-tabs {{ display:flex; gap:18px; padding:0 16px; border-bottom:1px solid #e5e7eb; flex-shrink:0; }}
+    .mp-tab {{ padding:8px 2px; font-size:14px; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; }}
+    .mp-tab.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#1a1a2e; }}
+    .mp-body {{ flex:1; display:flex; flex-direction:column; min-height:0; padding:16px; }}
+    .mp-pane {{ flex:1; display:flex; flex-direction:column; min-height:0; }}
+    .mp-pane-title {{ font-size:15px; font-weight:700; color:#1a1a1c; margin-bottom:10px; }}
+    .mp-pane-sub {{ font-size:11.5px; color:#6b7280; margin-bottom:12px; }}
+    .mp-drop {{ flex:0 0 auto; height:160px; border:2px dashed #d0d0d4; border-radius:12px; display:flex; align-items:center; justify-content:center;
+      color:#666; cursor:pointer; text-align:center; padding:20px; user-select:none; font-size:13px; line-height:1.6;
+      transition:border-color .15s, background .15s; }}
+    .mp-drop:hover {{ border-color:#2563eb; background:#f8faff; }}
+    .mp-droplink {{ color:#2563eb; text-decoration:underline; margin:0 3px; }}
+    /* Examples 카테고리 버튼 (Templates 그룹핑, 2026-06-13) */
+    .mp-ex-cats {{ display:flex; flex-wrap:wrap; gap:10px 7px; margin:8px 0 16px; flex-shrink:0; }}
+    .mp-ex-cat {{ padding:5px 11px; font-size:12px; border:1px solid #d8d8de; border-radius:999px;
+      background:#fff; color:#4b5563; cursor:pointer; white-space:nowrap; transition:background .12s, border-color .12s, color .12s; }}
+    .mp-ex-cat:hover {{ border-color:#F47B20; color:#1a1a1c; }}
+    .mp-ex-cat.active {{ background:#6b7280; border-color:#6b7280; color:#fff; font-weight:600; }}
+    /* Examples 섹션 제목 + 출처 문구 (2026-06-13) */
+    .mp-ex-head {{ font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; flex-shrink:0; }}
+    .mp-ex-src {{ font-size:11px; color:#9ca3af; margin-bottom:10px; word-break:break-all; flex-shrink:0; }}
+    .mp-ex-src a {{ color:#6b7280; text-decoration:underline; }}
+    .mp-ex-src a:hover {{ color:#F47B20; }}
+    /* Examples 스크롤 — 검은 기본 스크롤바 대신 흰 배경/회색 thumb (2026-06-13) */
+    .mp-ex-scroll {{ flex:1; min-height:0; overflow:auto; scrollbar-width:thin; scrollbar-color:#e5e7eb #ffffff; }}
+    .mp-ex-scroll::-webkit-scrollbar {{ width:10px; background:#ffffff; }}
+    .mp-ex-scroll::-webkit-scrollbar-track {{ background:#ffffff; }}
+    .mp-ex-scroll::-webkit-scrollbar-thumb {{ background:#e5e7eb; border-radius:6px; border:2px solid #ffffff; }}
+    .mp-ex-scroll::-webkit-scrollbar-thumb:hover {{ background:#d1d5db; }}
+    .mp-ex-list {{ display:flex; flex-direction:column; gap:9px; }}
+    .menu-ex-card {{ display:flex; gap:11px; align-items:flex-start; border:1px solid #e5e7eb; border-radius:10px; padding:11px; cursor:pointer; transition:border-color .12s, box-shadow .12s; }}
+    .menu-ex-card:hover {{ border-color:#F47B20; box-shadow:0 2px 8px rgba(0,0,0,.06); }}
+    .menu-ex-thumb {{ width:92px; height:64px; flex-shrink:0; object-fit:contain; border:1px solid #f0f0f2; border-radius:6px; background:#fafafa; }}
+    .menu-ex-thumb-ph {{ display:flex; align-items:center; justify-content:center; color:#c4c4ca; }}
+    .menu-ex-meta {{ flex:1; min-width:0; }}
+    .menu-ex-title {{ font-weight:600; color:#1a1a1c; font-size:13px; margin-bottom:4px; }}
+    .menu-ex-desc {{ color:#6b7280; font-size:11.5px; line-height:1.45;
+      display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }}
+    /* 작업 공간 패널 공통 닫기 버튼 — 위젯 검색바 닫기(X) 버튼과 동일 스타일 (이미지 빨간 영역 참조, 2026-06-13) */
+    .wsp-head {{ display:flex; justify-content:flex-end; padding:6px 8px 0; flex-shrink:0; }}
+    .wsp-close {{ width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      border:none; background:transparent; cursor:pointer; color:#888; border-radius:5px; font-size:15px;
+      transition:background .12s, color .12s; }}
+    .wsp-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
     /* Example 열림 → 캔버스 푸시 (위젯 패널 열림/닫힘 분기) */
     body.example-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
     body.nav-expanded.example-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
     body.example-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
     body.nav-expanded.example-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     /* 실습 선택기 (이미지 4 — 노란 탭 드롭다운) */
-    #example-sel-wrap {{ flex-shrink:0; position:relative; padding:10px 12px; border-bottom:1px solid #eee; }}
-    #example-sel-btn {{ width:100%; position:relative; display:flex; align-items:center; justify-content:center;
+    #example-sel-wrap {{ flex-shrink:0; position:relative; padding:10px 12px; border-bottom:1px solid #eee;
+      display:flex; align-items:center; gap:6px; }}
+    #example-sel-btn {{ flex:1; min-width:0; position:relative; display:flex; align-items:center; justify-content:center;
       background:#fff; color:#1a1a2e; border:1px solid #c7d2e0; border-radius:10px; padding:11px 34px;
       min-height:42px; line-height:1.3; box-sizing:border-box;
       font-size:14px; font-weight:700; cursor:pointer; transition:border-color .12s, box-shadow .12s; }}
@@ -2261,6 +2333,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ex-hint {{ margin-top:12px; border:1px solid #e5e7eb; border-radius:8px; padding:9px 12px;
       font-size:13px; color:#6b7280; cursor:pointer; background:#fafafa; }}
     .ex-kw {{ color:#0891b2; font-weight:600; }}
+    .ex-empty {{ color:#9ca3af; font-size:13px; text-align:center; padding:48px 24px; line-height:1.6; }}
     .ex-img {{ width:100%; display:block; margin:8px 0 14px; border:1px solid #e5e7eb;
       border-radius:8px; background:#fff; }}
     .an-top {{ display:flex; align-items:center; justify-content:center; height:46px; padding:0 9px 0 12px; margin-bottom:4px; flex-shrink:0; cursor:pointer; }}
@@ -2325,11 +2398,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-inner {{ max-width:1080px; margin:0 auto; padding:34px 40px; }}
     .ovp-top {{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }}
     .ovp-title {{ font-size:25px; font-weight:800; color:#1a1a2e; }}
-    .ovp-new {{ display:inline-flex; align-items:center; gap:7px; background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:7px; padding:3px 16px;
+    .ovp-new {{ display:inline-flex; align-items:center; gap:8px; background:#fff; color:#6b7280; border:1px solid #d1d5db; border-radius:8px; padding:5px 14px;
       font-size:13px; font-weight:400; cursor:pointer; transition:background .12s, border-color .12s; }}
-    /* 우상단 버튼 '+' — 인라인 라벨과 균형 위해 작게 (2026-06-12) */
-    .ovp-new-plus {{ font-size:18px; color:#F47B20; font-weight:300; line-height:1; }}
-    /* 우상단 버튼 'New Workflow' 글자도 카드(.ovp-card) 라벨과 동일 스타일로 (2026-06-12) */
+    /* 우상단 버튼 '+' — 라벨(카드 글자)과 균형 위해 작게 (2026-06-13) */
+    .ovp-new-plus {{ font-size:15px; color:#F47B20; font-weight:300; line-height:1; }}
+    /* 우상단 버튼 'New Workflow' 글자 — 파란 영역(카드 .ovp-card 라벨) 폰트 그대로 (2026-06-13) */
     .ovp-new-label {{ font-size:13.5px; color:#4b5563; font-weight:600; }}
     .ovp-new:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
     .ovp-sub {{ color:#6b7280; font-size:13.5px; margin-bottom:18px; }}
@@ -3433,13 +3506,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <span class="an-label">New</span>
     </div>
     <div class="an-item" title="Open" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); openOwsDialog()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       <span class="an-label">Open</span>
     </div>
-    <div class="an-item" id="an-menu-btn" title="메뉴 (파일)" onclick="event.stopPropagation(); hideOverview(); _anToggleMenuAcc(this)">
+    <div class="an-item" id="an-menu-btn" title="메뉴 (파일)" onclick="event.stopPropagation(); toggleMenuPanel(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12.5" x2="17" y2="12.5"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
       <span class="an-label">Menu</span>
-      <span class="an-chev">›</span>
     </div>
     <!-- 사이드바 Menu 인라인 아코디언 (팝업 플라이아웃 대체 — 아래로 펼침) -->
     <div id="an-menu-acc" class="an-acc">
@@ -3452,7 +3524,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       <span class="an-label">펼치기</span>
     </div>
-    <div class="an-item" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); showOverview()">
+    <div class="an-item" id="an-ws-btn" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); showOverview()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span class="an-label">WorkSpaces</span>
     </div>
@@ -3466,17 +3538,17 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <span class="an-label">Analysis-Datasets</span>
     </div>
     <div class="an-item" title="Templates" onclick="appNavSelect(this); hideOverview(); openLessonTemplates()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
       <span class="an-label">Templates</span>
     </div>
-    <div class="an-item" id="an-example-btn" title="Example" onclick="event.stopPropagation(); _anToggleExampleAcc(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h7A1.5 1.5 0 0 1 19 4.5v11A1.5 1.5 0 0 1 17.5 17H16"/><rect x="5" y="7" width="11" height="14" rx="1.5"/><line x1="8" y1="11" x2="13" y2="11"/><line x1="8" y1="14" x2="13" y2="14"/><line x1="8" y1="17" x2="11" y2="17"/></svg>
+    <div class="an-item" id="an-example-btn" title="Example" onclick="event.stopPropagation(); toggleExamplesRoot(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5V3.6A1.6 1.6 0 0 1 10.1 2h8.3A1.6 1.6 0 0 1 20 3.6v12.8A1.6 1.6 0 0 1 18.4 18H17"/><rect x="4" y="6" width="13" height="15" rx="1.6"/><line x1="7" y1="10.5" x2="14" y2="10.5"/><line x1="7" y1="13.5" x2="14" y2="13.5"/><line x1="7" y1="16.5" x2="11.5" y2="16.5"/></svg>
       <span class="an-label">Examples</span>
       <span class="an-chev">›</span>
     </div>
     <div id="an-example-acc" class="an-acc">
-      <div class="an-subitem" onclick="event.stopPropagation(); _anCloseExampleAcc(); toggleExamplePanel(document.getElementById('an-example-btn'))">Example 01</div>
-      <div class="an-subitem" onclick="event.stopPropagation(); _anCloseExampleAcc(); toggleExamplePanel(document.getElementById('an-example-btn'))">Example 02</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('elem')">Example 01</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('mid')">Example 02</div>
     </div>
     <div class="an-sep"></div>
     <div class="an-spacer"></div>
@@ -3567,14 +3639,44 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <!-- 패널 하단 footer 로고 (Phase 5, 2026-05-24) — EBS / 교육부 -->
     <div id="hwd-panel-footer">
       <div id="hwd-footer-caption">Web-based machine learning &amp; data analysis platform powered by Orange3</div>
-      <img src="/footer-logo" alt="" onerror="this.parentNode.style.display='none'"/>
+      <div class="hwd-footer-logos">
+        <img src="/footer-logo" alt="" onerror="this.style.display='none'"/>
+        <span class="hwd-orange-brand" title="Orange 3"><img src="/logo" alt="" onerror="this.style.display='none'"/><span>Orange 3</span></span>
+      </div>
     </div>
   </div>
 
   <!-- ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ── -->
+  <!-- ── Menu 작업 공간 패널 (빈 페이지, Example 사이즈, 2026-06-13) ── -->
+  <div id="menu-panel" aria-hidden="true">
+    <div class="mp-head"><span id="menu-title" class="mp-title">Workflow file Open</span><span class="wsp-close" onclick="_closeMenuPanel()" title="닫기">✕</span></div>
+    <div class="mp-tabs">
+      <span id="mtab-local" class="mp-tab active" onclick="_menuSwitchTab('local')">Local file</span>
+      <span id="mtab-examples" class="mp-tab" onclick="_menuSwitchTab('examples')">Examples</span>
+    </div>
+    <div class="mp-body">
+      <div id="mpanel-local" class="mp-pane">
+        <div id="menu-local-sub" class="mp-pane-sub">ows 파일을 직접 열어보세요</div>
+        <div id="menu-drop-zone" class="mp-drop">.ows 파일을 드래그 하거나 <span class="mp-droplink">여기를 클릭</span>해 선택하세요.</div>
+      </div>
+      <div id="mpanel-examples" class="mp-pane" style="display:none;">
+        <div id="menu-ex-head" class="mp-ex-head">Built-in Orange3 example workflows</div>
+        <div class="mp-ex-src"><span id="menu-src-label">[출처]</span> <a href="https://orangedatamining.com/examples/" target="_blank" rel="noopener">https://orangedatamining.com/examples/</a></div>
+        <div id="menu-ex-cats" class="mp-ex-cats"></div>
+        <div class="mp-ex-scroll">
+          <div id="menu-examples-list" class="mp-ex-list">
+            <div style="padding:24px;color:#888;text-align:center;font-size:12.5px;">로딩 중...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="example-panel" aria-hidden="true">
+    <div id="example-empty-head" class="wsp-head" style="display:none;"><span class="wsp-close" onclick="_closeExamplePanel()" title="닫기">✕</span></div>
     <div id="example-sel-wrap">
       <button id="example-sel-btn" onclick="toggleExampleSel()"><span id="example-sel-label">Orange3로 해보는 데이터 분석</span><svg class="ex-chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
+      <span class="wsp-close ex-close" onclick="_closeExamplePanel()" title="닫기">✕</span>
       <div id="example-sel-list">
         <div class="ex-sel-item active" onclick="loadExample(1)">Orange3로 해보는 데이터 분석</div>
         <div class="ex-sel-item" onclick="loadExample(2)">실습 2</div>
@@ -3778,8 +3880,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid #ececef;flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:10px;font-size:17px;font-weight:600;color:#1a1a1c;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
           Open
         </div>
@@ -3818,9 +3921,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           <!-- Example Workflow 패널 -->
           <div id="openpanel-examples" class="openpanel" style="flex:1;display:none;flex-direction:column;min-height:0;">
             <div style="font-size:20px;font-weight:700;color:#1a1a1c;margin-bottom:6px;">Example Workflow</div>
-            <div id="open-ex-subtitle" style="font-size:12.5px;color:#6b7280;margin-bottom:14px;">Orange3 내장 예제 워크플로우 목록</div>
+            <div id="open-ex-subtitle" style="font-size:12.5px;color:#6b7280;margin-bottom:8px;">Orange3 내장 예제 워크플로우 목록</div>
+            <div class="open-ex-src"><span id="open-src-label">[출처]</span> <a href="https://orangedatamining.com/examples/" target="_blank" rel="noopener">https://orangedatamining.com/examples/</a></div>
+            <div id="open-ex-cats" class="open-ex-cats"></div>
             <div style="flex:1;min-height:0;overflow:auto;">
-              <div id="open-examples-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
+              <div id="open-examples-list" style="display:flex;flex-direction:column;gap:10px;">
                 <div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">로딩 중...</div>
               </div>
             </div>
@@ -3855,8 +3960,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
               도메인 확정 및 정식 서비스 오픈 후 구글 드라이브 연결 설정을 제공 예정입니다.
             </div>
           </div>
-          <div style="margin-top:14px;display:flex;justify-content:flex-end;">
-            <button id="open-cancel-btn" onclick="closeOpenOwsModal()" style="background:#f4f4f6;color:#444;border:1px solid #e5e5ea;padding:8px 18px;border-radius:8px;font-weight:500;cursor:pointer;font-size:13px;">취소</button>
+          <!-- 하단 취소 버튼 -->
+          <div style="margin-top:16px;display:flex;justify-content:flex-end;flex-shrink:0;">
+            <button id="open-cancel-btn" onclick="closeOpenOwsModal()" style="padding:9px 22px;border:1px solid #d1d5db;background:#fff;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;font-weight:500;">취소</button>
           </div>
         </div>
       </div>
@@ -3867,8 +3973,21 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #open-modal .om-cat:hover {{ background:#ececef !important; }}
     #open-modal .om-cat.om-active {{ background:#1a1a1c !important; color:#fff !important; font-weight:500; }}
     #open-modal #open-drop-zone:hover {{ border-color:#2563eb; background:#f8faff; }}
-    #open-modal .open-ex-card {{ border:1px solid #ececef; border-radius:10px; padding:14px; cursor:pointer; background:#fff; transition:border-color .12s, box-shadow .12s; }}
+    #open-modal .open-ex-card {{ display:flex; gap:13px; align-items:flex-start; border:1px solid #ececef; border-radius:10px; padding:12px; cursor:pointer; background:#fff; transition:border-color .12s, box-shadow .12s; }}
     #open-modal .open-ex-card:hover {{ border-color:#2563eb; box-shadow:0 2px 8px rgba(37,99,235,0.12); }}
+    #open-modal .open-ex-meta {{ flex:1; min-width:0; }}
+    #open-modal .open-ex-title {{ font-weight:600; color:#1a1a1c; font-size:13.5px; margin-bottom:4px; }}
+    #open-modal .open-ex-desc {{ color:#6b7280; font-size:12px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }}
+    /* Example Workflow 카테고리 선택 버튼 (이미지2 Menu 패널 참조, 활성=회색, 2026-06-13) */
+    #open-modal .open-ex-cats {{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }}
+    #open-modal .open-ex-cat {{ padding:5px 12px; font-size:12.5px; border:1px solid #d8d8de; border-radius:999px; background:#fff; color:#4b5563; cursor:pointer; white-space:nowrap; transition:background .12s, border-color .12s, color .12s; }}
+    #open-modal .open-ex-cat:hover {{ border-color:#F47B20; color:#1a1a1c; }}
+    #open-modal .open-ex-cat.active {{ background:#6b7280; border-color:#6b7280; color:#fff; font-weight:600; }}
+    #open-modal .open-ex-thumb {{ width:112px; height:78px; flex-shrink:0; object-fit:contain; border:1px solid #f0f0f2; border-radius:6px; background:#fafafa; }}
+    #open-modal .open-ex-thumb-ph {{ display:flex; align-items:center; justify-content:center; color:#c4c4ca; }}
+    #open-modal .open-ex-src {{ font-size:11.5px; color:#9ca3af; margin-bottom:14px; word-break:break-all; }}
+    #open-modal .open-ex-src a {{ color:#6b7280; text-decoration:underline; }}
+    #open-modal .open-ex-src a:hover {{ color:#F47B20; }}
     #open-gdrive-login-btn:hover {{ background:#5db5b5 !important; }}
     #open-gdrive-login-btn:active {{ background:#4ca0a0 !important; }}
   </style>
@@ -3878,11 +3997,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div id="lesson-modal-box">
       <div id="lesson-header">
         <div id="lesson-title">
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/>
-            <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/>
-            <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/>
-            <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <line x1="15" y1="3" x2="15" y2="21"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="3" y1="15" x2="21" y2="15"/>
           </svg>
           <span>Templates</span>
         </div>
@@ -5243,6 +5363,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     function showOverview() {{
       var p=document.getElementById('overview-page'); if(!p) return;
       try {{ _closeExamplePanel(); }} catch(_e) {{}}
+      try {{ _closeMenuPanel(); }} catch(_e) {{}}
+      try {{ closeOpenOwsModal(); }} catch(_e) {{}}
       _ovWfPage = 0;
       try {{ ovpSwitchTab('wf'); }} catch(_e) {{}}   // 항상 Workflows 탭으로 초기화
       try {{ _ovRenderWfList(); }} catch(_e) {{}}
@@ -5572,17 +5694,35 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        + '<img class="ex-img" src="/widget-shot/Orange_widgets_model_owlinearregression_OWLinearRegression.png" alt="Linear Regression 위젯" loading="lazy">'
        + '<div class="ex-hint">▶ 출처: paullab Korea — 제주 머신러닝 스터디(머신러닝 야학)</div>'
     }};
-    function _exPlaceholder(n) {{
-      return '<span class="ex-badge mission">⭐ 미션</span>'
-           + '<h1 class="ex-title">실습 ' + n + '</h1>'
-           + '<p class="ex-desc">실습 ' + n + ' 콘텐츠가 준비 중입니다. 내용을 추가하면 이 영역에 표시됩니다.</p>';
+    /* Example 레벨: elem=초등(기존 튜토리얼), mid=중등(빈 페이지) (2026-06-13) */
+    var _exLevel = 'elem';
+    var _EX_LABELS = {{ elem: '초등', mid: '중등' }};
+    var _EX_T1 = {{ elem: 'Orange3로 해보는 데이터 분석', mid: null }};   // n=1 커스텀 제목(없으면 'N 실습 1')
+    function _exEsc(s) {{ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }}
+    function _exItemLabel(n) {{
+      return (n === 1 && _EX_T1[_exLevel]) ? _EX_T1[_exLevel] : (_EX_LABELS[_exLevel] + ' 실습 ' + n);
     }}
-    var EX_TITLES = {{ 1: 'Orange3로 해보는 데이터 분석' }};
+    function _exRenderSelector() {{
+      var list = document.getElementById('example-sel-list');
+      if (!list) return;
+      var html = '';
+      for (var n = 1; n <= 10; n++) {{
+        html += '<div class="ex-sel-item" onclick="loadExample(' + n + ')">' + _exEsc(_exItemLabel(n)) + '</div>';
+      }}
+      list.innerHTML = html;
+    }}
+    function _exPlaceholder(n) {{
+      if (_exLevel === 'mid') return '';   // 중등 = 빈 페이지
+      return '<span class="ex-badge mission">⭐ 미션</span>'
+           + '<h1 class="ex-title">' + _exEsc(_exItemLabel(n)) + '</h1>'
+           + '<p class="ex-desc">' + _EX_LABELS[_exLevel] + ' 실습 ' + n + ' 콘텐츠가 준비 중입니다. 내용을 추가하면 이 영역에 표시됩니다.</p>';
+    }}
     function loadExample(n) {{
+      var src = (_exLevel === 'elem') ? EXAMPLES[n] : null;
       var c = document.getElementById('example-content');
-      if (c) c.innerHTML = EXAMPLES[n] || _exPlaceholder(n);
+      if (c) c.innerHTML = src || _exPlaceholder(n);
       var lbl = document.getElementById('example-sel-label');
-      if (lbl) lbl.textContent = (EX_TITLES[n] || ('실습 ' + n));
+      if (lbl) lbl.textContent = _exItemLabel(n);
       document.querySelectorAll('#example-sel-list .ex-sel-item').forEach(function(it, i) {{
         it.classList.toggle('active', i === n - 1);
       }});
@@ -5595,23 +5735,48 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (lst) lst.classList.toggle('open');
       if (btn) btn.classList.toggle('open');
     }}
-    function toggleExamplePanel(el) {{
+    function _exOpenPanel(level) {{
       var p = document.getElementById('example-panel');
       if (!p) return;
-      var willOpen = !p.classList.contains('open');
-      if (willOpen) {{
-        var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
-        p.classList.add('open');
-        document.body.classList.add('example-open');
-        p.setAttribute('aria-hidden', 'false');
-        appNavSelect(el);
-        if (!p.dataset.loaded) {{ loadExample(1); p.dataset.loaded = '1'; }}
+      _exLevel = level;
+      var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
+      try {{ _closeMenuPanel(); }} catch(_e) {{}}
+      try {{ closeOpenOwsModal(); }} catch(_e) {{}}
+      var wrap = document.getElementById('example-sel-wrap');
+      var eh = document.getElementById('example-empty-head');
+      if (level === 'empty') {{   // Examples 부모: 선택기 숨김 + 빈 페이지 (닫기 버튼만 노출)
+        if (wrap) wrap.style.display = 'none';
+        if (eh) eh.style.display = 'flex';
+        var c0 = document.getElementById('example-content');
+        if (c0) c0.innerHTML = '<div class="ex-empty">빈 페이지 — Examples 작업 공간<br>(콘텐츠 준비 중)</div>';
       }} else {{
-        p.classList.remove('open');
-        document.body.classList.remove('example-open');
-        p.setAttribute('aria-hidden', 'true');
-        if (el) el.classList.remove('active');
+        if (wrap) wrap.style.display = '';
+        if (eh) eh.style.display = 'none';
+        _exRenderSelector();
       }}
+      p.classList.add('open');
+      document.body.classList.add('example-open');
+      p.setAttribute('aria-hidden', 'false');
+      var eb = document.getElementById('an-example-btn'); if (eb) appNavSelect(eb);
+      if (level !== 'empty') {{   // 리스트 먼저: 선택기 펼침 + 콘텐츠 비움 (실습 클릭 시 로드)
+        var l2 = document.getElementById('example-sel-list'); if (l2) l2.classList.add('open');
+        var b2 = document.getElementById('example-sel-btn'); if (b2) b2.classList.add('open');
+        var lbl = document.getElementById('example-sel-label'); if (lbl) lbl.textContent = _EX_LABELS[level] + ' 실습';
+        var c2 = document.getElementById('example-content'); if (c2) c2.innerHTML = '';
+      }}
+    }}
+    function openExampleLevel(level) {{
+      var p = document.getElementById('example-panel');
+      if (!p) return;
+      if (p.classList.contains('open') && _exLevel === level) {{ _closeExamplePanel(); return; }}
+      _exOpenPanel(level);
+    }}
+    /* Examples 부모 클릭: 아코디언(01/02) 펼침 + 빈 페이지 노출 (2026-06-13) */
+    function toggleExamplesRoot(btn) {{
+      _anToggleExampleAcc(btn);
+      var acc = document.getElementById('an-example-acc');
+      if (acc && acc.classList.contains('open')) {{ _exOpenPanel('empty'); }}
+      else {{ _closeExamplePanel(); }}
     }}
     function _closeExamplePanel() {{
       var p = document.getElementById('example-panel');
@@ -5619,8 +5784,38 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       p.classList.remove('open');
       document.body.classList.remove('example-open');
       p.setAttribute('aria-hidden', 'true');
-      var ex = document.querySelector('#app-nav .an-item[title="Example"]');
+      var ex = document.getElementById('an-example-btn');
       if (ex) ex.classList.remove('active');
+    }}
+    /* Menu 작업 공간 패널 (빈 페이지, Example 와 상호 배타, 2026-06-13) */
+    function toggleMenuPanel(el) {{
+      var p = document.getElementById('menu-panel');
+      if (!p) return;
+      var willOpen = !p.classList.contains('open');
+      if (willOpen) {{
+        var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
+        try {{ _closeExamplePanel(); }} catch(_e) {{}}
+        try {{ closeOpenOwsModal(); }} catch(_e) {{}}
+        try {{ _anCloseMenuAcc(); }} catch(_e) {{}}
+        p.classList.add('open');
+        document.body.classList.add('menu-open');
+        p.setAttribute('aria-hidden', 'false');
+        appNavSelect(el);
+        try {{ _menuSwitchTab('local'); }} catch(_e) {{}}   // 기본 Local file 탭
+      }} else {{
+        p.classList.remove('open');
+        document.body.classList.remove('menu-open');
+        p.setAttribute('aria-hidden', 'true');
+        if (el) el.classList.remove('active');
+      }}
+    }}
+    function _closeMenuPanel() {{
+      var p = document.getElementById('menu-panel');
+      if (!p || !p.classList.contains('open')) return;
+      p.classList.remove('open');
+      document.body.classList.remove('menu-open');
+      p.setAttribute('aria-hidden', 'true');
+      var mb = document.getElementById('an-menu-btn'); if (mb) mb.classList.remove('active');
     }}
 
     function showToast(msg, duration) {{
@@ -5747,10 +5942,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     function openOwsDialog() {{
       closeMenu();
       var m = document.getElementById('open-modal');
+      if (!m) return;
       m.style.display = 'flex';
-      _openOwsSwitchTab('local');  // 기본 Local File 탭
-      _openOwsLoadExamples();      // 백그라운드로 Examples 채우기
-      _openOwsPrecheckGDrive();    // Google Drive 설정 여부 사전 확인
+      _openOwsSwitchTab('local');   // 기본 Local File 탭
+      _openOwsLoadExamples();       // Examples 채우기
+      _openOwsPrecheckGDrive();     // Google Drive 설정 사전 확인
     }}
     /* Google Drive OAuth 설정 사전 확인 — 모달 열릴 때 1회, 미설정 시 버튼 비활성 + 안내 표시. */
     var _gdriveChecked = false;
@@ -5825,21 +6021,14 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         var panel = document.getElementById('openpanel-' + k);
         var active = (k === name);
         if (tab) {{
-          // Templates 모달과 동일한 활성/비활성 톤 (CSS .om-active 클래스로 위임)
-          if (active) {{
-            tab.classList.add('om-active');
-            tab.style.background = '#1a1a1c';
-            tab.style.color = '#fff';
-            tab.style.fontWeight = '500';
-          }} else {{
-            tab.classList.remove('om-active');
-            tab.style.background = '';
-            tab.style.color = '#444';
-            tab.style.fontWeight = '';
-          }}
+          tab.classList.toggle('om-active', active);
+          tab.style.background = active ? '#1a1a1c' : 'transparent';
+          tab.style.color = active ? '#fff' : '#444';
+          tab.style.fontWeight = active ? '500' : '400';
         }}
         if (panel) panel.style.display = active ? 'flex' : 'none';
       }});
+      if (name === 'gdrive') {{ try {{ _openOwsPrecheckGDrive(); }} catch(_e) {{}} }}
     }}
     /* Local File 탭: 드롭/클릭 → ows-file-input 트리거 */
     (function() {{
@@ -5880,50 +6069,232 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         _wireOpenLocal();
       }}
     }})();
-    /* Example Documents 탭: /basic_templates 결과를 그리드로 표시 */
-    var _openExamplesLoaded = false;
-    async function _openOwsLoadExamples() {{
-      if (_openExamplesLoaded) return;
+    /* Example Workflow 탭: 카테고리 버튼 그룹핑 → 선택 시 카드 그리드 (이미지2 Menu 패널 참조, 2026-06-13).
+       카테고리 목록/캐시는 Menu 패널과 공유 (_MENU_EX_CATS / _menuFetchCat). */
+    var _openExCatsRendered = false;
+    var _openExActiveCat = null;
+    var _openExamplesInit = false;
+    function _openRenderCards(items) {{
       var list = document.getElementById('open-examples-list');
-      try {{
-        var r = await fetch('/basic_templates?sid=' + SID);
-        var d = await r.json();
-        if (!d.ok || !Array.isArray(d.items) || !d.items.length) {{
-          list.innerHTML = '<div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">예제가 없습니다</div>';
-          return;
-        }}
-        var html = '';
-        d.items.forEach(function(it) {{
-          var t = (it.title || it.filename || '').replace(/[<>]/g,'');
-          var p = encodeURIComponent(it.path || '');
-          html += '<div class="open-ex-card" data-path="' + p + '" data-title="' + t + '" data-filename="' + encodeURIComponent(it.filename || '') + '">'
-               +  '<div style="font-weight:600;margin-bottom:4px;color:#1a1a1c;font-size:13px;">' + t + '</div>'
-               +  '<div style="color:#6b7280;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (it.filename || '') + '</div>'
-               +  '</div>';
-        }});
-        list.innerHTML = html;
-        list.querySelectorAll('.open-ex-card').forEach(function(el) {{
-          el.addEventListener('click', function() {{
-            var path = decodeURIComponent(el.getAttribute('data-path'));
-            var title = el.getAttribute('data-title');
-            var fn = decodeURIComponent(el.getAttribute('data-filename'));
-            closeOpenOwsModal();
-            if (typeof window.wfAddTemplateTab === 'function') {{
-              window.wfAddTemplateTab(path, title, fn);
-            }}
-          }});
-        }});
-        _openExamplesLoaded = true;
-      }} catch (e) {{
-        list.innerHTML = '<div style="grid-column:1/-1;padding:30px;color:#c66;text-align:center;">로드 실패: ' + (e.message || e) + '</div>';
+      if (!list) return;
+      if (!items || !items.length) {{
+        list.innerHTML = '<div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">예제가 없습니다</div>';
+        return;
       }}
+      var html = '';
+      items.forEach(function(it) {{
+        var t = (it.title || it.filename || '').replace(/[<>]/g,'');
+        var desc = (it.desc || it.filename || '').replace(/[<>]/g,'');
+        var p = encodeURIComponent(it.path || '');
+        var thumb = it.thumbnail
+          ? '<img class="open-ex-thumb" src="' + it.thumbnail + '" alt="" loading="lazy" decoding="async">'
+          : '<div class="open-ex-thumb open-ex-thumb-ph"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+        html += '<div class="open-ex-card" data-path="' + p + '" data-title="' + t + '" data-filename="' + encodeURIComponent(it.filename || '') + '">'
+             +  thumb
+             +  '<div class="open-ex-meta"><div class="open-ex-title">' + t + '</div><div class="open-ex-desc">' + desc + '</div></div>'
+             +  '</div>';
+      }});
+      list.innerHTML = html;
+      list.querySelectorAll('.open-ex-card').forEach(function(el) {{
+        el.addEventListener('click', function() {{
+          var path = decodeURIComponent(el.getAttribute('data-path'));
+          var title = el.getAttribute('data-title');
+          var fn = decodeURIComponent(el.getAttribute('data-filename'));
+          closeOpenOwsModal();
+          if (typeof window.wfAddTemplateTab === 'function') window.wfAddTemplateTab(path, title, fn);
+        }});
+      }});
     }}
+    async function _openSelectCat(key) {{
+      _openExActiveCat = key;
+      var cont = document.getElementById('open-ex-cats');
+      if (cont) cont.querySelectorAll('.open-ex-cat').forEach(function(b) {{ b.classList.toggle('active', b.getAttribute('data-cat') === key); }});
+      var list = document.getElementById('open-examples-list');
+      if (list) list.innerHTML = '<div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">로딩 중...</div>';
+      var items = await _menuFetchCat(key);   // Menu 패널과 캐시 공유
+      if (_openExActiveCat !== key) return;
+      _openRenderCards(items);
+    }}
+    function _openRenderCatButtons() {{
+      if (_openExCatsRendered) return;
+      var cont = document.getElementById('open-ex-cats');
+      if (!cont) return;
+      var html = '';
+      _MENU_EX_CATS.forEach(function(c, i) {{
+        html += '<span class="open-ex-cat' + (i===0?' active':'') + '" data-cat="' + c.key + '">' + c.label + '</span>';
+      }});
+      cont.innerHTML = html;
+      cont.querySelectorAll('.open-ex-cat').forEach(function(b) {{
+        b.addEventListener('click', function() {{ _openSelectCat(b.getAttribute('data-cat')); }});
+      }});
+      _openExCatsRendered = true;
+    }}
+    function _openOwsLoadExamples() {{
+      _openRenderCatButtons();
+      if (!_openExamplesInit) {{ _openExamplesInit = true; _openSelectCat('basic'); }}   // 기본: Example Workflow
+    }}
+    /* ── Menu 패널 "Work Flow Open" 페이지 동작 (Open 모달과 별개, 전용 ID 사용, 2026-06-13) ── */
+    function _menuSwitchTab(name) {{
+      ['local','examples'].forEach(function(k) {{
+        var tab = document.getElementById('mtab-' + k);
+        var pane = document.getElementById('mpanel-' + k);
+        var active = (k === name);
+        if (tab) tab.classList.toggle('active', active);
+        if (pane) pane.style.display = active ? 'flex' : 'none';
+      }});
+      if (name === 'examples') _menuLoadExamples();
+    }}
+    /* Menu Examples: Templates 데이터를 카테고리 버튼으로 그룹핑 → 선택 시 카드 리스트 (2026-06-13) */
+    var _MENU_EX_CATS = [
+      {{ key:'basic',                    label:'Example Workflow' }},
+      {{ key:'Classification',           label:'Classification' }},
+      {{ key:'Clustering',               label:'Clustering' }},
+      {{ key:'Bioinformatics',           label:'Bioinformatics' }},
+      {{ key:'Fairness',                 label:'Fairness' }},
+      {{ key:'Hierarchical Clustering',  label:'Hierarchical Clustering' }},
+      {{ key:'Scatter Plot',             label:'Scatter Plot' }},
+      {{ key:'Survival Analysis',        label:'Survival Analysis' }},
+      {{ key:'Text Mining',              label:'Text Mining' }}
+    ];
+    var _menuExCache = {{}};            // {{ '<cat>': [items...] }}
+    var _menuExCatsRendered = false;
+    var _menuExActiveCat = null;
+    var _menuExInit = false;
+    async function _menuFetchJson(url) {{
+      // 비-JSON(서버 재시작 중 nginx 502 등) 대비: content-type 확인 + 1회 재시도
+      var r = await fetch(url, {{ cache:'no-store' }});
+      var ct = (r.headers.get('content-type') || '');
+      if (!r.ok || ct.indexOf('application/json') < 0) {{
+        await new Promise(function(res) {{ setTimeout(res, 900); }});
+        r = await fetch(url, {{ cache:'no-store' }});
+        ct = (r.headers.get('content-type') || '');
+        if (!r.ok || ct.indexOf('application/json') < 0) return null;
+      }}
+      return await r.json();
+    }}
+    async function _menuFetchCat(key) {{
+      if (_menuExCache[key]) return _menuExCache[key];
+      if (key === 'basic') {{
+        var d = await _menuFetchJson('/basic_templates?sid=' + SID);
+        _menuExCache['basic'] = (d && d.ok && Array.isArray(d.items)) ? d.items : [];
+      }} else {{
+        // 8개 Sample 카테고리를 한 번에 (단일 호출로 전체 캐시)
+        var d = await _menuFetchJson('/orange3_templates_all?sid=' + SID);
+        if (d && d.ok && d.by_cat) {{
+          Object.keys(d.by_cat).forEach(function(c) {{ _menuExCache[c] = d.by_cat[c] || []; }});
+        }}
+      }}
+      return _menuExCache[key] || [];
+    }}
+    function _menuRenderCards(items) {{
+      var list = document.getElementById('menu-examples-list');
+      if (!list) return;
+      if (!items || !items.length) {{
+        list.innerHTML = '<div style="padding:24px;color:#888;text-align:center;font-size:12.5px;">예제가 없습니다</div>';
+        return;
+      }}
+      var html = '';
+      items.forEach(function(it) {{
+        var t = (it.title || it.filename || '').replace(/[<>]/g,'');
+        var desc = (it.desc || it.filename || '').replace(/[<>]/g,'');
+        var p = encodeURIComponent(it.path || '');
+        var thumb = it.thumbnail
+          ? '<img class="menu-ex-thumb" src="' + it.thumbnail + '" alt="" loading="lazy" decoding="async">'
+          : '<div class="menu-ex-thumb menu-ex-thumb-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+        html += '<div class="menu-ex-card" data-path="' + p + '" data-title="' + t + '" data-filename="' + encodeURIComponent(it.filename || '') + '">'
+             +    thumb
+             +    '<div class="menu-ex-meta"><div class="menu-ex-title">' + t + '</div><div class="menu-ex-desc">' + desc + '</div></div>'
+             +  '</div>';
+      }});
+      list.innerHTML = html;
+      list.querySelectorAll('.menu-ex-card').forEach(function(el) {{
+        el.addEventListener('click', function() {{
+          var path = decodeURIComponent(el.getAttribute('data-path'));
+          var title = el.getAttribute('data-title');
+          var fn = decodeURIComponent(el.getAttribute('data-filename'));
+          try {{ _closeMenuPanel(); }} catch(_e) {{}}
+          if (typeof window.wfAddTemplateTab === 'function') window.wfAddTemplateTab(path, title, fn);
+        }});
+      }});
+    }}
+    async function _menuSelectCat(key) {{
+      _menuExActiveCat = key;
+      var cont = document.getElementById('menu-ex-cats');
+      if (cont) cont.querySelectorAll('.mp-ex-cat').forEach(function(b) {{ b.classList.toggle('active', b.getAttribute('data-cat') === key); }});
+      var list = document.getElementById('menu-examples-list');
+      if (list) list.innerHTML = '<div style="padding:24px;color:#888;text-align:center;font-size:12.5px;">로딩 중...</div>';
+      var items = await _menuFetchCat(key);
+      if (_menuExActiveCat !== key) return;   // 빠른 전환 대비 (가장 최근 선택만 반영)
+      _menuRenderCards(items);
+    }}
+    function _menuRenderCatButtons() {{
+      if (_menuExCatsRendered) return;
+      var cont = document.getElementById('menu-ex-cats');
+      if (!cont) return;
+      var html = '';
+      _MENU_EX_CATS.forEach(function(c, i) {{
+        html += '<span class="mp-ex-cat' + (i===0?' active':'') + '" data-cat="' + c.key + '">' + c.label + '</span>';
+      }});
+      cont.innerHTML = html;
+      cont.querySelectorAll('.mp-ex-cat').forEach(function(b) {{
+        b.addEventListener('click', function() {{ _menuSelectCat(b.getAttribute('data-cat')); }});
+      }});
+      _menuExCatsRendered = true;
+    }}
+    function _menuLoadExamples() {{
+      _menuRenderCatButtons();
+      _menuSelectCat('basic');   // Examples 탭 선택 시마다 초기화 → 기본 카테고리(Example Workflow)
+    }}
+    /* Menu Local file 드롭존: 클릭 → 공유 ows-file-input, 드롭 → wfAddFileTab */
+    (function() {{
+      function _wireMenuLocal() {{
+        var zone = document.getElementById('menu-drop-zone');
+        if (!zone || zone._wired) return;
+        zone._wired = true;
+        zone.addEventListener('click', function() {{
+          var inp = document.getElementById('ows-file-input'); if (inp) inp.click();
+        }});
+        zone.addEventListener('dragover', function(ev) {{
+          ev.preventDefault();
+          zone.style.background = '#f0f8f7';
+          zone.style.borderColor = '#1aaaa0';
+        }});
+        zone.addEventListener('dragleave', function() {{
+          zone.style.background = '';
+          zone.style.borderColor = '';
+        }});
+        zone.addEventListener('drop', async function(ev) {{
+          ev.preventDefault();
+          zone.style.background = '';
+          zone.style.borderColor = '';
+          var files = ev.dataTransfer && ev.dataTransfer.files;
+          if (!files || !files.length) return;
+          var f = files[0];
+          if (!f.name.toLowerCase().endsWith('.ows')) {{
+            showToast('.ows 파일만 지원합니다', 3000);
+            return;
+          }}
+          try {{ _closeMenuPanel(); }} catch(_e) {{}}
+          if (typeof window.wfAddFileTab === 'function') await window.wfAddFileTab(f);
+        }});
+      }}
+      if (document.readyState === 'loading') {{
+        document.addEventListener('DOMContentLoaded', _wireMenuLocal);
+      }} else {{
+        _wireMenuLocal();
+      }}
+    }})();
     document.getElementById('ows-file-input').addEventListener('change', async function() {{
       const file = this.files[0];
       if (!file) return;
       this.value = '';
-      // OPEN 모달이 열려있으면 닫기 (Local File 탭 클릭 경로)
+      if (!file.name.toLowerCase().endsWith('.ows')) {{   // .ows 파일만 허용 (2026-06-13)
+        showToast('.ows 파일만 첨부할 수 있습니다', 3000);
+        return;
+      }}
+      // OPEN 모달 / Menu 패널이 열려있으면 닫기 (Local File 탭 클릭 경로)
       try {{ closeOpenOwsModal(); }} catch(_) {{}}
+      try {{ _closeMenuPanel(); }} catch(_) {{}}
       // 기존 캔버스 덮어쓰기 X → 새 탭으로 추가 (Templates 의 wfAddTemplateTab 패턴과 동일)
       if (typeof window.wfAddFileTab === 'function') {{
         await window.wfAddFileTab(file);
@@ -5976,6 +6347,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       ko: {{ openSub:'왼쪽 탭에서 소스를 선택하고, .ows 워크플로우 파일을 불러옵니다.',
              dropPre:'.ows 파일을 드래그 하거나 ', dropLink:'여기를 클릭', dropPost:'해 선택하세요.',
              exSub:'Orange3 내장 예제 워크플로우 목록',
+             wfTitle:'워크플로우 파일 열기', tabLocal:'로컬 파일', tabExamples:'예제',
+             localSub:'ows 파일을 직접 열어보세요', srcLabel:'[출처]',
              gdriveNote:'도메인 확정 및 정식 서비스 오픈 후 구글 드라이브 연결 설정을 제공 예정입니다.',
              cancel:'취소', scTitle:'변경 내용을 저장하시겠습니까?',
              scPre:'', scPost:'의 변경 내용을 저장하시겠습니까?',
@@ -5983,6 +6356,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       en: {{ openSub:'Select a source on the left, then open a .ows workflow file.',
              dropPre:'Drag a .ows file or ', dropLink:'click here', dropPost:' to select.',
              exSub:'Built-in Orange3 example workflows',
+             wfTitle:'Workflow file Open', tabLocal:'Local file', tabExamples:'Examples',
+             localSub:'Open a .ows file directly', srcLabel:'[Source]',
              gdriveNote:'Google Drive connection will be available after the domain is finalized and the service launches.',
              cancel:'Cancel', scTitle:'Save changes?',
              scPre:'Do you want to save changes to ', scPost:'?',
@@ -5990,6 +6365,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       sl: {{ openSub:'Izberite vir na levi in odprite datoteko poteka .ows.',
              dropPre:'Povlecite datoteko .ows ali ', dropLink:'kliknite tukaj', dropPost:' za izbiro.',
              exSub:'Vgrajeni primeri potekov Orange3',
+             wfTitle:'Odpiranje datoteke poteka', tabLocal:'Lokalna datoteka', tabExamples:'Primeri',
+             localSub:'Neposredno odprite datoteko .ows', srcLabel:'[Vir]',
              gdriveNote:'Povezava z Google Drive bo na voljo po dokončni določitvi domene in zagonu storitve.',
              cancel:'Prekliči', scTitle:'Shrani spremembe?',
              scPre:'Ali želite shraniti spremembe v ', scPost:'?',
@@ -6001,8 +6378,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var set = function(id, t) {{ var el=document.getElementById(id); if (el) el.textContent=t; }};
       set('open-subtitle', d.openSub); set('open-ex-subtitle', d.exSub);
       set('open-gdrive-note', d.gdriveNote); set('open-cancel-btn', d.cancel);
+      var koFont = (code === 'ko');   // 한글은 텍스트가 길어 드롭존 폰트 2pt 축소
       var dz = document.getElementById('open-drop-zone');
-      if (dz) dz.innerHTML = d.dropPre + '<span style="color:#2563eb;text-decoration:underline;margin:0 4px;">' + d.dropLink + '</span>' + d.dropPost;
+      if (dz) {{ dz.innerHTML = d.dropPre + '<span style="color:#2563eb;text-decoration:underline;margin:0 4px;">' + d.dropLink + '</span>' + d.dropPost; dz.style.fontSize = koFont ? '12px' : '14px'; }}
+      // Menu 패널 "Workflow file Open" 페이지 i18n (한/영/sl, 2026-06-13)
+      set('menu-subtitle', d.openSub); set('menu-ex-subtitle', d.exSub);
+      set('menu-title', d.wfTitle);
+      set('mtab-local', d.tabLocal); set('mtab-examples', d.tabExamples);
+      set('menu-local-sub', d.localSub);
+      set('menu-ex-head', d.exSub);
+      set('menu-src-label', d.srcLabel); set('open-src-label', d.srcLabel);
+      var mdz = document.getElementById('menu-drop-zone');
+      if (mdz) {{ mdz.innerHTML = d.dropPre + '<span class="mp-droplink">' + d.dropLink + '</span>' + d.dropPost; mdz.style.fontSize = koFont ? '11px' : ''; }}
       set('sc-title', d.scTitle); set('sc-warn', d.scWarn);
       set('sc-btn-cancel', d.cancel); set('sc-btn-dontsave', d.dontSave); set('sc-btn-save', d.save);
     }}
@@ -9696,12 +10083,12 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         novnc_url = f"{_base}/?resize=remote&scaling=local&quality=6&compression=6&logging=warn&reconnect=true&reconnect_delay=2000"
         log.info(f"[{s8(sid)}] 래퍼 페이지(fast) → 포트 {info['port']} lang={lang}")
         try:
-            _first_page = _admin_load_settings().get("first_page", "canvas")
+            _first_page = _effective_first_page()
             _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang, web_version=WEB_APP_VERSION, first_page=_first_page)
             # ready splash(로딩 완료 후 환영 카드) + loading splash 숨김 주입 —
             # xpra 와 동일하게 noVNC 에도 적용 (2026-05-31 버그 수정: 기존엔 xpra 만
             # 적용돼 Basic 모드에서 노출 토글이 안 먹던 문제)
-            _inject = _loading_cover_hide_css() + _ready_splash_html(lang)
+            _inject = _loading_cover_hide_css() + _nav_hide_style() + _ready_splash_html(lang)
             if _inject:
                 _html = _html.replace("</head>", _inject + "</head>", 1)
             return html_response(_html)
@@ -12508,7 +12895,7 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
         _init_lang = _default
     else:
         _init_lang = _avail[0] if _avail else "en"
-    _first_page = _admin_load_settings().get("first_page", "canvas")
+    _first_page = _effective_first_page()
     html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=xpra_sid, init_lang=_init_lang, web_version=WEB_APP_VERSION, first_page=_first_page)
     # admin available 언어 외 드롭다운 항목 제거 (단순 문자열 치환 — 라인 단위)
     _ALL_LANG_LINES = {
@@ -12674,7 +13061,7 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
     # ready splash 는 _ready_splash_html() 헬퍼로 일원화 (noVNC 와 동일 동작 보장,
     # ② 단순 토글 로직 한 곳에서 관리). 위 인라인 splash 계산은 미사용. (2026-05-31)
     splash = _ready_splash_html(_init_lang)
-    html = html.replace("</head>", _loading_cover_hide_css() + inject + splash + "</head>", 1)
+    html = html.replace("</head>", _loading_cover_hide_css() + _nav_hide_style() + inject + splash + "</head>", 1)
     return html_response(html)
 
 
@@ -13944,6 +14331,11 @@ def _admin_default_settings() -> dict:
         },
         # 접속 시 첫 페이지 (2026-06-12): "canvas"(기본) | "workspaces"(WorkSpaces)
         "first_page": "canvas",
+        # 좌측 사이드바 메뉴 노출 (2026-06-13): Menu·Examples·WorkSpaces 항목 표시 여부
+        # WorkSpaces 비활성 시 first_page 는 canvas 로 강제(첫 페이지 지정 의미 없음).
+        "nav": {"Menu": True, "Examples": True, "WorkSpaces": True},
+        # 위젯 패널 하단 로고(EBS·교육부·Orange3) 전체 노출 여부 (2026-06-13)
+        "footer_logo": True,
         "updated_at": "",
     }
 
@@ -14011,6 +14403,14 @@ def _admin_load_settings() -> dict:
         # 첫 페이지 지정 (2026-06-12) — 유효값 외엔 canvas 로 정규화
         fp = data.get("first_page")
         data["first_page"] = fp if fp in ("canvas", "workspaces") else "canvas"
+        # 좌측 메뉴 노출 (2026-06-13) — 누락 키 default True 보충
+        nav = data.get("nav") or {}
+        nav.setdefault("Menu", True)
+        nav.setdefault("Examples", True)
+        nav.setdefault("WorkSpaces", True)
+        data["nav"] = nav
+        # 하단 로고 노출 (2026-06-13) — 누락 시 default True
+        data["footer_logo"] = bool(data.get("footer_logo", True))
         return data
     except Exception as e:
         log.warning(f"[admin-settings] load failed: {e}; fallback default")
@@ -14027,6 +14427,40 @@ def _admin_save_settings(data: dict) -> None:
     with open(tmp, "w", encoding="utf-8") as f:
         _json.dump(data, f, ensure_ascii=False, indent=2)
     os.replace(tmp, ADMIN_SETTINGS_PATH)
+
+
+def _nav_hide_style() -> str:
+    """admin_settings.nav(Menu/Examples 노출) → 좌측 사이드바 항목 숨김 CSS.
+    비활성 항목의 nav 버튼+아코디언을 display:none. 모두 노출이면 빈 문자열.
+    WRAPPER_PAGE 의 </head> 직전에 inject (format() 플레이스홀더 불필요)."""
+    try:
+        _s = _admin_load_settings()
+        nav = (_s.get("nav") or {})
+    except Exception:
+        return ""
+    sels: list[str] = []
+    if not nav.get("Menu", True):
+        sels += ["#an-menu-btn", "#an-menu-acc"]
+    if not nav.get("Examples", True):
+        sels += ["#an-example-btn", "#an-example-acc"]
+    if not nav.get("WorkSpaces", True):
+        sels += ["#an-ws-btn"]
+    if not _s.get("footer_logo", True):   # 하단 로고 전체 숨김
+        sels += [".hwd-footer-logos"]
+    if not sels:
+        return ""
+    return ('<style id="nav-vis-style">' + ",".join(sels)
+            + "{display:none !important}</style>")
+
+
+def _effective_first_page() -> str:
+    """admin_settings.first_page — 단, nav.WorkSpaces 비활성이면 canvas 로 강제.
+    (WorkSpaces 항목을 숨겼는데 첫 페이지가 workspaces 면 모순이므로 canvas fallback.)"""
+    s = _admin_load_settings()
+    fp = s.get("first_page", "canvas")
+    if fp == "workspaces" and not (s.get("nav") or {}).get("WorkSpaces", True):
+        return "canvas"
+    return fp
 
 
 @app.get("/api/admin/settings")
@@ -14117,6 +14551,24 @@ async def admin_settings_put(request: Request):
     fp_in = body.get("first_page")
     if isinstance(fp_in, str) and fp_in in ("canvas", "workspaces"):
         cur["first_page"] = fp_in
+    # nav: 좌측 사이드바 메뉴 노출 (2026-06-13) — Menu/Examples bool 만 화이트리스트
+    nav_in = body.get("nav")
+    if isinstance(nav_in, dict):
+        cur_nav = cur.get("nav") or {}
+        for key in ("Menu", "Examples", "WorkSpaces"):
+            if key in nav_in:
+                cur_nav[key] = bool(nav_in[key])
+        cur_nav.setdefault("Menu", True)
+        cur_nav.setdefault("Examples", True)
+        cur_nav.setdefault("WorkSpaces", True)
+        cur["nav"] = cur_nav
+        # WorkSpaces 비활성 → 첫 페이지는 캔버스로 강제 (workspaces 시작 불가)
+        if not cur_nav.get("WorkSpaces", True):
+            cur["first_page"] = "canvas"
+    # footer_logo: 위젯 패널 하단 로고 전체 노출 (2026-06-13)
+    fl_in = body.get("footer_logo")
+    if isinstance(fl_in, bool):
+        cur["footer_logo"] = fl_in
     try:
         _admin_save_settings(cur)
     except Exception as e:
@@ -14980,15 +15432,15 @@ def _admin_auth_html() -> str:
 
 
 _ADMIN_NAV_ITEMS = [
-    ("menu", "/admin/menu", "메뉴",
+    ("menu", "/admin/menu", "위젯 메뉴",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>'),
-    ("widgets", "/admin/widgets", "위젯",
+    ("widgets", "/admin/widgets", "위젯 활성화",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'),
     ("language", "/admin/language", "언어",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg>'),
     ("splash", "/admin/splash", "로딩이미지",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>'),
-    ("firstpage", "/admin/firstpage", "첫페이지",
+    ("firstpage", "/admin/firstpage", "메뉴",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>'),
     ("sessions", "/admin/sessions", "활성화 세션",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.2a3 3 0 0 1 0 5.6"/><path d="M21.5 20a6 6 0 0 0-4.5-5.8"/></svg>'),
@@ -15153,13 +15605,13 @@ async def admin_menu_page():
     nav = _admin_nav_html("menu")
     return HTMLResponse(f"""<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
-<title>메뉴 설정 — 관리자</title>
+<title>위젯 메뉴 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}</style></head><body>
 <div class="wrap">
   {nav}
   <div class="card">
-    <h1>메뉴 설정</h1>
-    <ul class="sub sub-bullets"><li>위젯 사이드바·패널에 노출할 메뉴를 선택합니다.</li></ul>
+    <h1>위젯 메뉴</h1>
+    <ul class="sub sub-bullets"><li>위젯 메뉴 패널 노출 설정하는 단계입니다.</li></ul>
     <div class="menu-head">
       <div></div>
       <div class="quick-bar">
@@ -15287,12 +15739,12 @@ async def admin_widgets_page():
     nav = _admin_nav_html("widgets")
     return HTMLResponse(f"""<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
-<title>위젯 설정 — 관리자</title>
+<title>위젯 활성화 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}</style></head><body>
 <div class="wrap">
   {nav}
   <div class="card">
-    <h1>위젯 설정</h1>
+    <h1>위젯 활성화</h1>
     <ul class="sub sub-bullets">
       <li>위젯 비활성화 처리 메뉴</li>
       <li>위젯을 삭제하는 기능이 아니며, 비활성화(미선택) 기능</li>
@@ -16012,7 +16464,7 @@ async def admin_firstpage_page():
     nav = _admin_nav_html("firstpage")
     return HTMLResponse(f"""<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
-<title>첫 페이지 지정 — 관리자</title>
+<title>메뉴 설정 — 관리자</title>
 <style>{_ADMIN_BASE_CSS}
 .fp-row{{display:flex;align-items:center;gap:14px;padding:16px 4px;cursor:pointer}}
 .fp-row + .fp-row{{border-top:1px solid #eee}}
@@ -16020,12 +16472,29 @@ async def admin_firstpage_page():
 .fp-text{{flex:1;min-width:0}}
 .fp-desc{{color:#9ca3af;font-size:12px;margin-top:3px}}
 .fp-thumb{{width:120px;height:auto;border:1px solid #e5e7eb;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.10);flex-shrink:0;background:#fff}}
+#fp-card.disabled-card .fp-list, #fp-card.disabled-card .actions{{opacity:0.5;}}
+.nav-mock-wrap{{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:4px}}
+.nav-mock{{width:162px;flex-shrink:0;border:1px solid #e5e7eb;border-radius:10px;padding:9px 7px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.06)}}
+.nav-mock-logo{{color:#F47B20;font-weight:800;font-size:12px;padding:2px 6px 9px}}
+.nav-mock-item{{display:flex;align-items:center;gap:7px;padding:4px 6px;font-size:10.5px;color:#6b7280;border-radius:5px}}
+.nav-mock-item svg{{width:12px;height:12px;flex-shrink:0}}
+.nav-mock-item.on{{background:#eef4ff;color:#1a1a2e;font-weight:600}}
+.nav-mock-chev{{margin-left:auto;color:#bbb;font-size:11px}}
+.nav-mock-sub{{padding:2px 6px 2px 25px;font-size:10px;color:#9ca3af}}
+.nav-grid-col{{flex:1;min-width:200px}}
+.flp-wrap{{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:4px}}
+.footer-logo-preview{{display:flex;align-items:center;gap:12px;padding:9px 14px;background:#fafafa;border:1px solid #ececef;border-radius:8px}}
+.footer-logo-preview img{{height:24px;width:auto}}
+.footer-logo-preview .flp-orange{{display:inline-flex;align-items:center;gap:5px;filter:grayscale(1);opacity:0.55}}
+.footer-logo-preview .flp-orange > span{{font-size:13px;font-weight:700;color:#777}}
 </style></head><body>
 <div class="wrap">
   {nav}
-  <div class="card">
-    <h1>첫 페이지 지정</h1>
+  <div class="card" id="fp-card">
+    <h1>메뉴 설정</h1>
+    <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin:2px 0 6px;">첫 페이지 지정</div>
     <ul class="sub sub-bullets"><li>사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</li><li>신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
+    <div id="fp-gate-note" style="display:none;margin:0 0 14px;padding:9px 13px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a6b3f;font-size:12.5px;line-height:1.5;">WorkSpaces 메뉴가 비활성화되어 있습니다. 아래 "왼쪽 메뉴 노출"에서 WorkSpaces 를 활성화하면 첫 페이지를 지정할 수 있습니다.</div>
     <div class="fp-list" id="fp-list">
       <label class="fp-row">
         <img class="fp-thumb" src="/admin/firstpage-thumb/canvas" alt="캔버스 미리보기" loading="lazy">
@@ -16039,8 +16508,51 @@ async def admin_firstpage_page():
       </label>
     </div>
     <div class="actions">
-      <button onclick="loadFp()">취소</button>
-      <button id="save-btn" onclick="saveFp()">저장</button>
+      <button onclick="resetFp()">취소</button>
+      <button id="save-fp-btn" onclick="saveFp()">저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <h1>왼쪽 메뉴 노출</h1>
+    <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces·Examples 메뉴 노출 여부를 설정합니다.</li></ul>
+    <div class="nav-mock-wrap">
+      <div class="nav-mock" aria-hidden="true">
+        <div class="nav-mock-logo">Orange3</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Open</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>Menu</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>WorkSpaces</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Widget</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Analysis-Datasets</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>Templates</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5V3.6A1.6 1.6 0 0 1 10.1 2h8.3A1.6 1.6 0 0 1 20 3.6v12.8A1.6 1.6 0 0 1 18.4 18H17"/><rect x="4" y="6" width="13" height="15" rx="1.6"/></svg>Examples<span class="nav-mock-chev">›</span></div>
+        <div class="nav-mock-sub">Example 01</div>
+        <div class="nav-mock-sub">Example 02</div>
+      </div>
+      <div class="nav-grid-col">
+        <div class="grid" id="nav-grid"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="renderNav()">취소</button>
+      <button id="save-nav-btn" onclick="saveNav()">저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <h1>하단 로고 노출</h1>
+    <ul class="sub sub-bullets"><li>위젯 패널 하단의 로고(EBS·교육부·Orange 3)를 한 번에 표시/숨김 설정합니다.</li></ul>
+    <div class="flp-wrap">
+      <div class="footer-logo-preview">
+        <img src="/footer-logo" alt="" onerror="this.style.display='none'">
+        <span class="flp-orange"><img src="/logo" alt="" onerror="this.style.display='none'"><span>Orange 3</span></span>
+      </div>
+      <div class="grid" id="footer-logo-grid">
+        <div class="row"><input type="checkbox" id="footer-logo-cb"><label for="footer-logo-cb">하단 로고 표시</label></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="resetFooterLogo()">취소</button>
+      <button id="save-footer-btn" onclick="saveFooterLogo()">저장</button>
     </div>
   </div>
   <div class="meta" id="meta"></div>
@@ -16064,30 +16576,78 @@ async function loadFp(){{
     const fp = (_settings.first_page === 'workspaces') ? 'workspaces' : 'canvas';
     const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
     if (el) el.checked = true;
+    renderNav();
+    var fl = document.getElementById('footer-logo-cb');
+    if (fl) fl.checked = (_settings.footer_logo !== false);
     document.getElementById('meta').textContent = _settings.updated_at
       ? 'updated_at: ' + _settings.updated_at : '(저장 전)';
   }} catch(e) {{ toast('로드 오류: ' + e.message); }}
 }}
-async function saveFp(){{
-  const r = document.querySelector('input[name="first-page"]:checked');
-  const val = r ? r.value : 'canvas';
-  const btn = document.getElementById('save-btn');
+function renderNav(){{
+  const g = document.getElementById('nav-grid');
+  if (!g || !_settings) return;
+  const nav = _settings.nav || {{}};
+  const items = [['Menu','Menu'], ['WorkSpaces','WorkSpaces'], ['Examples','Examples']];
+  let html = '';
+  items.forEach(([key,label]) => {{
+    const on = (nav[key] !== false);   // 미정의는 노출(true) 취급
+    html += '<div class="row"><input type="checkbox" id="nav-' + key + '" ' + (on ? 'checked' : '') + ' onchange="applyWsGate()"><label for="nav-' + key + '">' + label + '</label></div>';
+  }});
+  g.innerHTML = html;
+  applyWsGate();
+}}
+/* WorkSpaces 노출 여부가 '첫 페이지 지정' 카드 활성/비활성을 제어 (2026-06-13) */
+function applyWsGate(){{
+  const ws = document.getElementById('nav-WorkSpaces');
+  const wsOn = ws ? ws.checked : true;
+  document.querySelectorAll('input[name="first-page"]').forEach(r => {{ r.disabled = !wsOn; }});
+  const fpBtn = document.getElementById('save-fp-btn'); if (fpBtn) fpBtn.disabled = !wsOn;
+  const card = document.getElementById('fp-card'); if (card) card.classList.toggle('disabled-card', !wsOn);
+  const note = document.getElementById('fp-gate-note'); if (note) note.style.display = wsOn ? 'none' : 'block';
+  if (!wsOn) {{ const cv = document.querySelector('input[name="first-page"][value="canvas"]'); if (cv) cv.checked = true; }}
+}}
+function resetFp(){{
+  if (!_settings) {{ loadFp(); return; }}
+  const fp = (_settings.first_page === 'workspaces') ? 'workspaces' : 'canvas';
+  const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
+  if (el) el.checked = true;
+}}
+async function _putSettings(body, btnId, okMsg){{
+  const btn = document.getElementById(btnId);
   btn.disabled = true; btn.textContent = '저장 중...';
   try {{
     const resp = await fetch('/api/admin/settings', {{
       method:'PUT', headers:{{'Content-Type':'application/json'}},
-      body: JSON.stringify({{first_page: val}}),
+      body: JSON.stringify(body),
     }});
     const d = await resp.json();
     if (d.ok) {{
       _settings = d.settings;
       document.getElementById('meta').textContent = 'updated_at: ' + _settings.updated_at;
-      toast('첫 페이지 설정 저장 완료');
+      toast(okMsg);
     }} else {{
       toast('저장 실패: ' + (d.error || 'unknown'));
     }}
   }} catch(e) {{ toast('저장 오류: ' + e.message); }}
   finally {{ btn.disabled = false; btn.textContent = '저장'; }}
+}}
+async function saveFp(){{
+  const r = document.querySelector('input[name="first-page"]:checked');
+  const val = r ? r.value : 'canvas';
+  await _putSettings({{first_page: val}}, 'save-fp-btn', '첫 페이지 설정 저장 완료');
+}}
+async function saveNav(){{
+  const nav = {{}};
+  ['Menu','WorkSpaces','Examples'].forEach(k => {{ const cb = document.getElementById('nav-' + k); nav[k] = cb ? cb.checked : true; }});
+  await _putSettings({{nav}}, 'save-nav-btn', '왼쪽 메뉴 노출 저장 완료');
+}}
+function resetFooterLogo(){{
+  var fl = document.getElementById('footer-logo-cb');
+  if (fl && _settings) fl.checked = (_settings.footer_logo !== false);
+}}
+async function saveFooterLogo(){{
+  var fl = document.getElementById('footer-logo-cb');
+  await _putSettings({{footer_logo: fl ? fl.checked : true}}, 'save-footer-btn', '하단 로고 설정 저장 완료');
 }}
 loadFp();
 </script>
