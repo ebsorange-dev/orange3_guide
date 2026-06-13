@@ -2068,10 +2068,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       font-size:13px; color:#4b5563; line-height:1.5;
     }}
     #lesson-book-info .bi-meta-row {{
-      display:flex; gap:8px; align-items:baseline;
+      display:flex; gap:10px; align-items:center;
     }}
     #lesson-book-info .bi-meta-row b {{
-      color:#1a1a1c; font-weight:600; min-width:42px; flex-shrink:0;
+      color:#9ca3af; font-weight:600; min-width:76px; flex-shrink:0; white-space:nowrap;
     }}
     #lesson-book-info .bi-meta-row span {{ color:#4b5563; }}
     /* URL 과 다운로드 버튼 줄 (4-line 중 마지막) */
@@ -2079,18 +2079,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       margin-top:6px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;
     }}
     #lesson-book-info .bi-url {{
-      flex:0 1 auto;
-      max-width:540px;
-      padding:8px 14px;
-      background:#fff; border:1px solid #d1d5db; border-radius:6px;
-      color:#1d4ed8; text-decoration:none; font-size:12.5px;
-      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      display:inline-flex; align-items:center; gap:8px;
-      transition:background .12s, border-color .12s;
+      color:#2563eb; text-decoration:none; font-size:12.5px;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;
     }}
-    #lesson-book-info .bi-url:hover {{
-      background:#eff6ff; border-color:#93c5fd;
-    }}
+    #lesson-book-info .bi-url:hover {{ text-decoration:underline; }}
     #lesson-book-info .bi-download {{
       flex:0 0 auto;
       padding:8px 16px;
@@ -2238,6 +2230,27 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     body.nav-expanded.menu-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     body.menu-open #header-bar, body.menu-open #wf-tabbar {{ left:403px; }}
     body.nav-expanded.menu-open #header-bar, body.nav-expanded.menu-open #wf-tabbar {{ left:556px; }}
+    /* ── DataSet Des 패널 (Examples 와 동일 구조/푸시, 2026-06-13) ── */
+    #dsd-panel {{
+      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
+      transition:left .16s ease; display:none; flex-direction:column;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
+    }}
+    #dsd-panel.open {{ display:flex; }}
+    body.nav-expanded #dsd-panel {{ left:196px; }}
+    body.dsd-open #hwd-panel {{ left:403px; }}
+    body.nav-expanded.dsd-open #hwd-panel {{ left:556px; }}
+    body.dsd-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.nav-expanded.dsd-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
+    body.dsd-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.nav-expanded.dsd-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
+    body.dsd-open #header-bar, body.dsd-open #wf-tabbar {{ left:403px; }}
+    body.nav-expanded.dsd-open #header-bar, body.nav-expanded.dsd-open #wf-tabbar {{ left:556px; }}
+    .dsd-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 4px 16px; flex-shrink:0; }}
+    .dsd-title {{ flex:1; min-width:0; font-size:18px; font-weight:800; color:#1a1a2e; }}
+    .dsd-content {{ flex:1; display:flex; align-items:center; justify-content:center; color:#9ca3af;
+      font-size:13px; padding:24px; text-align:center; line-height:1.6; }}
     /* ── Menu 패널 "Work Flow Open" 페이지 (시안 기반 신규, 2026-06-13) ── */
     .mp-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 18px 16px; flex-shrink:0; }}
     .mp-title {{ flex:1; min-width:0; font-size:16px; font-weight:400; color:#6b7280; }}
@@ -2281,6 +2294,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .menu-ex-title {{ font-weight:600; color:#1a1a1c; font-size:13px; margin-bottom:4px; }}
     .menu-ex-desc {{ color:#6b7280; font-size:11.5px; line-height:1.45;
       display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }}
+    /* 카드 하단 배지 (Workflow / .ows) — 개요 Templates 카드 참조 (2026-06-13) */
+    .menu-ex-badges {{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }}
+    .menu-ex-badge {{ font-size:10px; font-weight:600; color:#fff; background:#1a1a1c; border-radius:4px; padding:1px 7px; }}
     /* 작업 공간 패널 공통 닫기 버튼 — 위젯 검색바 닫기(X) 버튼과 동일 스타일 (이미지 빨간 영역 참조, 2026-06-13) */
     .wsp-head {{ display:flex; justify-content:flex-end; padding:6px 8px 0; flex-shrink:0; }}
     .wsp-close {{ width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
@@ -2368,8 +2384,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 사이드바 Menu 인라인 아코디언 (별도 팝업 대신 아래로 펼침) ── */
     .an-item.an-acc-open .an-chev {{ transform:rotate(90deg); }}
     /* 아코디언(Menu/Example) 화살표: 닫힘=아래, 펼침=위 (2026-06-13) */
-    #an-menu-btn .an-chev, #an-example-btn .an-chev {{ transform:rotate(90deg); }}
-    #an-menu-btn.an-acc-open .an-chev, #an-example-btn.an-acc-open .an-chev {{ transform:rotate(-90deg); }}
+    #an-menu-btn .an-chev, #an-example-btn .an-chev, #an-dsd-btn .an-chev {{ transform:rotate(90deg); }}
+    #an-menu-btn.an-acc-open .an-chev, #an-example-btn.an-acc-open .an-chev, #an-dsd-btn.an-acc-open .an-chev {{ transform:rotate(-90deg); }}
     .an-acc {{ max-height:0; overflow:hidden; flex-shrink:0; transition:max-height .2s ease; }}
     .an-acc.open {{ max-height:220px; }}
     .an-subitem {{ display:flex; align-items:center; height:30px; margin:0 6px; padding:0 8px 0 39px;
@@ -2409,6 +2425,20 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-tabs {{ display:flex; gap:18px; border-bottom:1px solid #e5e7eb; margin-bottom:20px; }}
     .ovp-tab {{ padding:8px 2px; font-size:13.5px; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; }}
     .ovp-tab.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#F47B20; }}
+    /* DataSet 탭 — 카드 버튼 (Widget Guide 형식, 2026-06-13) */
+    .ovp-ds-head {{ font-size:20px; font-weight:800; color:#1a1a2e; margin-bottom:4px; }}
+    .ovp-ds-sub {{ font-size:13px; color:#6b7280; margin-bottom:18px; }}
+    .ovp-ds-grid {{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }}
+    .ovp-ds-card {{ display:flex; align-items:center; gap:13px; padding:16px; border:1px solid #e5e7eb; border-radius:12px;
+      background:#fff; cursor:pointer; text-align:left; font-family:inherit; transition:border-color .12s, box-shadow .12s; }}
+    .ovp-ds-card:hover:not(:disabled) {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.06); }}
+    .ovp-ds-ic {{ width:44px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      border-radius:10px; background:#fff4ec; color:#F47B20; }}
+    .ovp-ds-meta {{ display:flex; flex-direction:column; min-width:0; }}
+    .ovp-ds-name {{ font-size:14px; font-weight:700; color:#1a1a2e; }}
+    .ovp-ds-desc {{ font-size:12px; color:#9ca3af; margin-top:3px; }}
+    .ovp-ds-ph {{ opacity:0.5; cursor:default; }}
+    .ovp-ds-ph .ovp-ds-ic {{ background:#f3f4f6; color:#9ca3af; }}
     .ovp-grid {{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:16px; }}
     .ovp-card {{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; min-height:116px;
       display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
@@ -2473,8 +2503,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovt-bi-cover img {{ width:64px; height:auto; border-radius:6px; display:block; border:1px solid #eee; }}
     .ovt-bi-detail {{ flex:1; min-width:0; }}
     .ovt-bi-title {{ font-size:14px; font-weight:700; color:#1a1a2e; margin-bottom:8px; }}
-    .ovt-bi-row {{ display:flex; gap:10px; font-size:12.5px; margin-bottom:3px; }}
-    .ovt-bi-row b {{ width:52px; flex-shrink:0; color:#9ca3af; font-weight:600; }}
+    .ovt-bi-row {{ display:flex; gap:10px; align-items:center; font-size:12.5px; margin-bottom:6px; }}
+    .ovt-bi-row b {{ width:80px; flex-shrink:0; color:#9ca3af; font-weight:600; white-space:nowrap; }}
     .ovt-bi-row span {{ color:#4b5563; }}
     .ovt-bi-actions {{ margin-top:10px; display:flex; align-items:center; gap:10px; }}
     .ovt-bi-url {{ font-size:12px; color:#2563eb; text-decoration:none; }}
@@ -2482,18 +2512,42 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovt-bi-dl {{ font-size:12px; color:#4b5563; background:#fff; border:1px solid #d1d5db; border-radius:7px;
       padding:5px 12px; cursor:pointer; transition:border-color .12s, background .12s; }}
     .ovt-bi-dl:hover {{ border-color:#F47B20; background:#fff7f1; }}
-    .ovt-list {{ display:flex; flex-direction:column; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; }}
-    .ovt-row {{ display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid #f1f3f5; cursor:pointer; transition:background .1s; }}
-    .ovt-row:last-child {{ border-bottom:none; }}
-    .ovt-row:hover {{ background:#f7f8fa; }}
+    /* TextBook Workflow 전용 2단 레이아웃 — 좌측 책 리스트(세로) + 우측 책 정보 (2026-06-13) */
+    .tpl-textbook {{ display:grid; grid-template-columns:360px minmax(0,1fr); column-gap:22px; align-items:start;
+      grid-template-areas:"cats cats" "notice notice" "subs info" "list list"; }}
+    .tpl-textbook #ovt-cats {{ grid-area:cats; }}
+    .tpl-textbook #ovt-notice {{ grid-area:notice; }}
+    .tpl-textbook #ovt-subs {{ grid-area:subs; display:flex; flex-direction:column; flex-wrap:nowrap; gap:8px;
+      border-bottom:none; margin-bottom:0; align-items:stretch; }}
+    .tpl-textbook #ovt-info {{ grid-area:info; margin-bottom:0; }}
+    .tpl-textbook #ovt-list {{ grid-area:list; margin-top:18px; }}
+    /* 책 리스트 — 제목 한 줄(nowrap) + 박스 + 넓은 간격 */
+    .tpl-textbook .ovt-sub-btn {{ text-align:left; padding:11px 14px; border:1px solid #e5e7eb; border-radius:9px; background:#fff;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+    .tpl-textbook .ovt-sub-btn:hover {{ background:#f7f8fa; border-color:#d1d5db; }}
+    .tpl-textbook .ovt-sub-btn.active {{ background:#fff7f1; border-color:#F47B20; color:#1a1a2e; font-weight:700; }}
+    /* 표지 이미지 2배 */
+    .tpl-textbook .ovt-bi-cover {{ width:128px; }}
+    .tpl-textbook .ovt-bi-cover img {{ width:128px; }}
+    /* Templates 카드 리스트 — 2~3열 반응형 그리드 (2026-06-13) */
+    .ovt-list {{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; }}
+    .ovt-list.ovt-2col {{ grid-template-columns:repeat(2, minmax(0, 1fr)); }}
+    .ovt-row {{ display:flex; align-items:flex-start; gap:12px; padding:12px 14px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; cursor:pointer; transition:border-color .12s, box-shadow .12s; }}
+    .ovt-row:hover {{ border-color:#F47B20; box-shadow:0 2px 8px rgba(0,0,0,.06); }}
     .ovt-thumb {{ width:84px; height:56px; flex-shrink:0; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden;
       background:#fff; display:flex; align-items:center; justify-content:center; }}
     .ovt-thumb-img {{ width:100%; height:100%; object-fit:contain; }}
     .ovt-thumb-ph {{ width:100%; height:100%; display:block; }}
     .ovt-row-body {{ flex:1 1 auto; min-width:0; }}
     .ovt-row-title {{ font-size:13.5px; font-weight:600; color:#1a1a2e; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
-    .ovt-row-desc {{ font-size:12.5px; color:#9ca3af; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
-    .ovt-loading, .ovt-empty {{ padding:34px; text-align:center; color:#9ca3af; font-size:13px; }}
+    .ovt-row-desc {{ font-size:12.5px; color:#9ca3af; margin-top:3px; line-height:1.45;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }}
+    /* 카드 아이콘 정보 — 벤더 칩(컬러 점+이름) + Workflow/.ows 배지 (모달 참조, 2026-06-13) */
+    .ovt-row-vendor {{ display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:600; color:#374151; background:#f3f4f6; border-radius:10px; padding:2px 8px; margin-bottom:5px; }}
+    .ovt-dot {{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }}
+    .ovt-row-badges {{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }}
+    .ovt-badge {{ font-size:10px; font-weight:600; color:#fff; background:#1a1a1c; border-radius:4px; padding:1px 7px; }}
+    .ovt-loading, .ovt-empty {{ grid-column:1/-1; padding:34px; text-align:center; color:#9ca3af; font-size:13px; }}
     .ovp-list-empty {{ padding:18px 16px; color:#9ca3af; font-size:13px; text-align:center; }}
     .hwd-cat {{
       width:28px; height:33px; flex-shrink:0;
@@ -3524,7 +3578,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       <span class="an-label">펼치기</span>
     </div>
-    <div class="an-item" id="an-ws-btn" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); showOverview()">
+    <div class="an-item" id="an-ws-btn" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); _closeDsdPanel(); showOverview()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span class="an-label">WorkSpaces</span>
     </div>
@@ -3550,6 +3604,15 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('elem')">Example 01</div>
       <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('mid')">Example 02</div>
     </div>
+    <div class="an-item" id="an-dsd-btn" title="DataSet Des" onclick="event.stopPropagation(); toggleDsdRoot(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      <span class="an-label">DataSet Des</span>
+      <span class="an-chev">›</span>
+    </div>
+    <div id="an-dsd-acc" class="an-acc">
+      <div class="an-subitem" onclick="event.stopPropagation(); openDsdLevel('01')">DataSet Des 01</div>
+      <div class="an-subitem" onclick="event.stopPropagation(); openDsdLevel('02')">DataSet Des 02</div>
+    </div>
     <div class="an-sep"></div>
     <div class="an-spacer"></div>
     <div class="an-sep"></div>
@@ -3573,9 +3636,32 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <button class="ovp-new" onclick="hideOverview(); _ensureWidgetPanel(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
       </div>
       <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
-      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span><span class="ovp-tab" onclick="ovpSwitchTab('widgets')">Widget</span></div>
+      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span><span class="ovp-tab" onclick="ovpSwitchTab('widgets')">Widget</span><span class="ovp-tab" onclick="ovpSwitchTab('dataset')">DataSet</span></div>
       <div id="ovp-pane-widgets" style="display:none;">
         <iframe id="ovp-wg-frame" title="Widget Introduce" style="width:100%;height:calc(100vh - 240px);min-height:420px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;"></iframe>
+      </div>
+      <!-- DataSet 패널 (Widget Guide 형식, 카드 버튼 4개, 2026-06-13) -->
+      <div id="ovp-pane-dataset" style="display:none;">
+        <div class="ovp-ds-head">DataSet</div>
+        <div class="ovp-ds-sub">분석용 샘플 데이터셋 — 카드를 선택해 적용합니다.</div>
+        <div class="ovp-ds-grid">
+          <button class="ovp-ds-card" onclick="ovpDatasetApply('iris','IRIS 분석 데이터')">
+            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
+            <span class="ovp-ds-meta"><span class="ovp-ds-name">IRIS 분석 데이터</span><span class="ovp-ds-desc">붓꽃 3품종 분류용 대표 샘플 (150행 × 4특성)</span></span>
+          </button>
+          <button class="ovp-ds-card ovp-ds-ph" disabled>
+            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
+            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 02</span><span class="ovp-ds-desc">준비 중</span></span>
+          </button>
+          <button class="ovp-ds-card ovp-ds-ph" disabled>
+            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
+            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 03</span><span class="ovp-ds-desc">준비 중</span></span>
+          </button>
+          <button class="ovp-ds-card ovp-ds-ph" disabled>
+            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
+            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 04</span><span class="ovp-ds-desc">준비 중</span></span>
+          </button>
+        </div>
       </div>
       <!-- Workflows 패널 -->
       <div id="ovp-pane-wf">
@@ -3670,6 +3756,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── DataSet Des 패널 (Examples 와 동일 구조, 빈 페이지, 2026-06-13) ── -->
+  <div id="dsd-panel" aria-hidden="true">
+    <div class="wsp-head"><span class="wsp-close" onclick="_closeDsdPanel()" title="닫기">✕</span></div>
+    <div class="dsd-head"><span id="dsd-title" class="dsd-title">DataSet Des</span></div>
+    <div id="dsd-content" class="dsd-content">빈 페이지 — DataSet Des 작업 공간<br>(콘텐츠 준비 중)</div>
   </div>
 
   <div id="example-panel" aria-hidden="true">
@@ -4027,10 +4120,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
             <span>공통 Workflow</span>
           </div>
-          <div class="lc-cat" data-cat="Getting Started">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M5 8h6M8 5v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>Getting Started</span>
-          </div>
+          <!-- Getting Started 카테고리 삭제됨 (2026-06-13) -->
           <!-- Example Workflow 그룹 (v7, 2026-05-27): 2-level hierarchy 재구성
                Example Workflow (부모) — 통합 보기: Basic + 8개 카테고리 카드 전체
                  ↳ Basic — Orange3 내장 examples (이전 부모 자리)
@@ -4098,13 +4188,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             <div class="bi-detail">
               <div class="bi-title" id="lesson-book-title"></div>
               <div class="bi-meta" id="lesson-book-meta"></div>
-              <div class="bi-actions">
-                <a class="bi-url" id="lesson-book-url" href="#" target="_blank" rel="noopener noreferrer">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 4H4a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2v-2M10 2h4v4M7 9l7-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span id="lesson-book-url-text">출판사 페이지</span>
-                </a>
-                <button class="bi-download" id="lesson-book-download" onclick="downloadBookZip()">다운로드</button>
-              </div>
             </div>
           </div>
           <div id="lesson-grid"></div>
@@ -5372,14 +5455,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       p.classList.add('show');
     }}
     /* ── Workflows ↔ Templates 탭 전환 (2026-06-11) ── */
+    /* DataSet 카드 적용 — 추후 IRIS 등 샘플 워크플로우 로드 연결 예정 (2026-06-13) */
+    function ovpDatasetApply(key, name) {{
+      try {{ showToast((name || '데이터셋') + ' 적용 (준비 중)', 2500); }} catch(_e) {{}}
+    }}
     function ovpSwitchTab(which) {{
       var tabs=document.querySelectorAll('#overview-page .ovp-tab');
       tabs.forEach(function(t){{ t.classList.remove('active'); }});
       var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl'),
-          wg=document.getElementById('ovp-pane-widgets');
+          wg=document.getElementById('ovp-pane-widgets'), ds=document.getElementById('ovp-pane-dataset');
       if (wf) wf.style.display='none';
       if (tpl) tpl.style.display='none';
       if (wg) wg.style.display='none';
+      if (ds) ds.style.display='none';
       if (which==='tpl') {{
         if (tabs[1]) tabs[1].classList.add('active');
         if (tpl) tpl.style.display='';
@@ -5394,6 +5482,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             f.setAttribute('src', '/widget-guide?lang='+_lg);  // 래퍼 언어 전달, 최초 진입 시에만 로드
           }}
         }}
+      }} else if (which==='dataset') {{
+        if (tabs[3]) tabs[3].classList.add('active');
+        if (ds) ds.style.display='';
       }} else {{
         if (tabs[0]) tabs[0].classList.add('active');
         if (wf) wf.style.display='';
@@ -5516,9 +5607,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       return T[INIT_LANG]||T.en;
     }}
     function _ovtBookLbl(k) {{
-      var T={{ ko:{{publisher:'출판사', author:'저자', download:'다운로드'}},
-               en:{{publisher:'Publisher', author:'Author', download:'Download'}},
-               sl:{{publisher:'Založnik', author:'Avtor', download:'Prenesi'}} }};
+      var T={{ ko:{{publisher:'출판사', author:'저자', download:'다운로드', homepage:'홈페이지', archive:'자료실'}},
+               en:{{publisher:'Publisher', author:'Author', download:'Download', homepage:'Homepage', archive:'Resources'}},
+               sl:{{publisher:'Založnik', author:'Avtor', download:'Prenesi', homepage:'Domača stran', archive:'Gradiva'}} }};
       return (T[INIT_LANG]||T.en)[k];
     }}
     function _ovtBookCardHtml(meta) {{
@@ -5526,16 +5617,15 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var rows='';
       if (meta.publisher) rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('publisher')+'</b><span>'+_ovEsc(meta.publisher)+'</span></div>';
       if (meta.author)    rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('author')+'</b><span>'+_ovEsc(meta.author)+'</span></div>';
-      var acts='';
       if (meta.url) {{
         var short=String(meta.url).replace(/^https?:\/\//,'').slice(0,50);
-        acts += '<a class="ovt-bi-url" href="'+_ovEsc(meta.url).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener noreferrer">'+_ovEsc(short)+'</a>';
+        rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('homepage')+'</b><span><a class="ovt-bi-url" href="'+_ovEsc(meta.url).replace(/"/g,'&quot;')+'" target="_blank" rel="noopener noreferrer">'+_ovEsc(short)+'</a></span></div>';
       }}
       if (meta.download_url || meta.url)
-        acts += '<button class="ovt-bi-dl" onclick="downloadBookZip()">'+_ovtBookLbl('download')+'</button>';
+        rows += '<div class="ovt-bi-row"><b>'+_ovtBookLbl('archive')+'</b><span><button class="ovt-bi-dl" onclick="downloadBookZip()">'+_ovtBookLbl('download')+'</button></span></div>';
       return '<div class="ovt-bi">'+cover+'<div class="ovt-bi-detail">'
            + '<div class="ovt-bi-title">'+_ovEsc(meta.title||'')+'</div>'
-           + rows + (acts?('<div class="ovt-bi-actions">'+acts+'</div>'):'')
+           + rows
            + '</div></div>';
     }}
     /* Example=출처 줄 / TextBook=활성 책 정보 카드. 그 외 카테고리는 숨김. */
@@ -5555,6 +5645,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     function _ovtSelectCat(key) {{
       _ovtActiveCat=key; _ovtActiveSub=null;
+      var _ovList=document.getElementById('ovt-list');
+      if (_ovList) _ovList.classList.toggle('ovt-2col', key==='Example Workflow');   // Example Workflow=2열, 그 외=3열
+      var _ovPane=document.getElementById('ovp-pane-tpl');
+      if (_ovPane) _ovPane.classList.toggle('tpl-textbook', key==='교재 BOOK');   // TextBook=좌측 책리스트+우측 정보 2단
       document.querySelectorAll('#ovt-cats .ovt-cat-btn').forEach(function(b) {{
         b.classList.toggle('active', b.getAttribute('data-cat')===key);
       }});
@@ -5592,13 +5686,23 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         var _Li=(t.i18n && INIT_LANG!=='ko') ? (t.i18n[INIT_LANG]||t.i18n.en) : null;
         var title=((_Li&&_Li.title)||t.title||'');
         var desc=((_Li&&_Li.desc)||t.desc||'');
+        var vendor=((_Li&&_Li.vendor)||t.vendor||'');
+        var badges=((_Li&&_Li.badges)||t.badges||[]);
         var thumb = t.thumbnail
           ? '<img class="ovt-thumb-img" src="'+t.thumbnail+'" alt="" loading="lazy" decoding="async">'
           : '<span class="ovt-thumb-ph" style="background:'+(t.color||'#e5e7eb')+'"></span>';
+        var vendorHtml = vendor
+          ? '<div class="ovt-row-vendor"><span class="ovt-dot" style="background:'+(t.color||'#9ca3af')+'"></span>'+_ovEsc(vendor)+'</div>'
+          : '';
+        var badgeHtml = (badges||[]).map(function(b) {{ return '<span class="ovt-badge">'+_ovEsc(b)+'</span>'; }}).join('');
         html+='<div class="ovt-row" data-idx="'+idx+'">'
             + '<div class="ovt-thumb">'+thumb+'</div>'
-            + '<div class="ovt-row-body"><div class="ovt-row-title">'+_ovEsc(title)+'</div>'
-            + '<div class="ovt-row-desc">'+_ovEsc(desc)+'</div></div>'
+            + '<div class="ovt-row-body">'
+            +   vendorHtml
+            +   '<div class="ovt-row-title">'+_ovEsc(title)+'</div>'
+            +   '<div class="ovt-row-desc">'+_ovEsc(desc)+'</div>'
+            +   (badgeHtml ? '<div class="ovt-row-badges">'+badgeHtml+'</div>' : '')
+            + '</div>'
             + '</div>';
       }});
       list.innerHTML=html;
@@ -5741,6 +5845,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       _exLevel = level;
       var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
       try {{ _closeMenuPanel(); }} catch(_e) {{}}
+      try {{ _closeDsdPanel(); }} catch(_e) {{}}
       try {{ closeOpenOwsModal(); }} catch(_e) {{}}
       var wrap = document.getElementById('example-sel-wrap');
       var eh = document.getElementById('example-empty-head');
@@ -5787,6 +5892,46 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var ex = document.getElementById('an-example-btn');
       if (ex) ex.classList.remove('active');
     }}
+    /* ── DataSet Des 패널 (Examples 와 동일 구조, 빈 페이지, 2026-06-13) ── */
+    var _dsdLevel = null;
+    function _dsdOpenPanel(level) {{
+      var p = document.getElementById('dsd-panel');
+      if (!p) return;
+      var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
+      try {{ _closeMenuPanel(); }} catch(_e) {{}}
+      try {{ _closeExamplePanel(); }} catch(_e) {{}}
+      try {{ closeOpenOwsModal(); }} catch(_e) {{}}
+      var titleEl = document.getElementById('dsd-title');
+      var contentEl = document.getElementById('dsd-content');
+      var nm = (level === 'empty') ? 'DataSet Des' : ('DataSet Des ' + level);
+      if (titleEl) titleEl.textContent = nm;
+      if (contentEl) contentEl.innerHTML = '빈 페이지 — ' + nm + ' 작업 공간<br>(콘텐츠 준비 중)';
+      p.classList.add('open');
+      document.body.classList.add('dsd-open');
+      p.setAttribute('aria-hidden', 'false');
+      var db = document.getElementById('an-dsd-btn'); if (db) appNavSelect(db);
+      _dsdLevel = level;
+    }}
+    function openDsdLevel(level) {{
+      var p = document.getElementById('dsd-panel');
+      if (!p) return;
+      if (p.classList.contains('open') && _dsdLevel === level) {{ _closeDsdPanel(); return; }}
+      _dsdOpenPanel(level);
+    }}
+    function toggleDsdRoot(btn) {{
+      _anToggleDsdAcc(btn);
+      var acc = document.getElementById('an-dsd-acc');
+      if (acc && acc.classList.contains('open')) {{ _dsdOpenPanel('empty'); }}
+      else {{ _closeDsdPanel(); }}
+    }}
+    function _closeDsdPanel() {{
+      var p = document.getElementById('dsd-panel');
+      if (!p || !p.classList.contains('open')) return;
+      p.classList.remove('open');
+      document.body.classList.remove('dsd-open');
+      p.setAttribute('aria-hidden', 'true');
+      var db = document.getElementById('an-dsd-btn'); if (db) db.classList.remove('active');
+    }}
     /* Menu 작업 공간 패널 (빈 페이지, Example 와 상호 배타, 2026-06-13) */
     function toggleMenuPanel(el) {{
       var p = document.getElementById('menu-panel');
@@ -5795,6 +5940,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (willOpen) {{
         var ov = document.getElementById('overview-page'); if (ov) ov.classList.remove('show');
         try {{ _closeExamplePanel(); }} catch(_e) {{}}
+        try {{ _closeDsdPanel(); }} catch(_e) {{}}
         try {{ closeOpenOwsModal(); }} catch(_e) {{}}
         try {{ _anCloseMenuAcc(); }} catch(_e) {{}}
         p.classList.add('open');
@@ -5900,6 +6046,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       btn.classList.toggle('an-acc-open', willOpen);
       // 다른 플라이아웃/드롭다운 닫기 (중복 노출 방지)
       try {{ _anCloseExampleAcc(); }} catch(_e) {{}}
+      try {{ _anCloseDsdAcc(); }} catch(_e) {{}}
       try {{ closeMenu(); }} catch(_e) {{}}
       try {{ closeSettingsMenu(); }} catch(_e) {{}}
       try {{ closeHelpMenu(); }} catch(_e) {{}}
@@ -5920,6 +6067,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       acc.classList.toggle('open', willOpen);
       btn.classList.toggle('an-acc-open', willOpen);
       try {{ _anCloseMenuAcc(); }} catch(_e) {{}}
+      try {{ _anCloseDsdAcc(); }} catch(_e) {{}}
       try {{ closeMenu(); }} catch(_e) {{}}
       try {{ closeSettingsMenu(); }} catch(_e) {{}}
       try {{ closeHelpMenu(); }} catch(_e) {{}}
@@ -5928,6 +6076,26 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var acc = document.getElementById('an-example-acc');
       if (acc) acc.classList.remove('open');
       var btn = document.getElementById('an-example-btn');
+      if (btn) btn.classList.remove('an-acc-open');
+    }}
+    function _anToggleDsdAcc(btn) {{
+      var nav = document.getElementById('app-nav');
+      var acc = document.getElementById('an-dsd-acc');
+      if (!acc || !btn) return;
+      if (nav && !nav.classList.contains('expanded')) {{ try {{ toggleAppNav(); }} catch(_e) {{}} }}
+      var willOpen = !acc.classList.contains('open');
+      acc.classList.toggle('open', willOpen);
+      btn.classList.toggle('an-acc-open', willOpen);
+      try {{ _anCloseMenuAcc(); }} catch(_e) {{}}
+      try {{ _anCloseExampleAcc(); }} catch(_e) {{}}
+      try {{ closeMenu(); }} catch(_e) {{}}
+      try {{ closeSettingsMenu(); }} catch(_e) {{}}
+      try {{ closeHelpMenu(); }} catch(_e) {{}}
+    }}
+    function _anCloseDsdAcc() {{
+      var acc = document.getElementById('an-dsd-acc');
+      if (acc) acc.classList.remove('open');
+      var btn = document.getElementById('an-dsd-btn');
       if (btn) btn.classList.remove('an-acc-open');
     }}
 
@@ -6203,7 +6371,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           : '<div class="menu-ex-thumb menu-ex-thumb-ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
         html += '<div class="menu-ex-card" data-path="' + p + '" data-title="' + t + '" data-filename="' + encodeURIComponent(it.filename || '') + '">'
              +    thumb
-             +    '<div class="menu-ex-meta"><div class="menu-ex-title">' + t + '</div><div class="menu-ex-desc">' + desc + '</div></div>'
+             +    '<div class="menu-ex-meta"><div class="menu-ex-title">' + t + '</div><div class="menu-ex-desc">' + desc + '</div>'
+             +    '<div class="menu-ex-badges"><span class="menu-ex-badge">Workflow</span><span class="menu-ex-badge">.ows</span></div></div>'
              +  '</div>';
       }});
       list.innerHTML = html;
@@ -6784,9 +6953,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 새 사이드바·Overview 라벨 i18n (2026-06-11) — 언어 전환 시 함께 갱신 */
     function applyNewUILang(code) {{
       var NAV = {{
-        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','예제','도움말','설정'],
-        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Examples','Help','Settings'],
-        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Primer','Pomoč','Nastavitve']
+        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','예제','DataSet Des','도움말','설정'],
+        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Examples','DataSet Des','Help','Settings'],
+        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Primer','DataSet Des','Pomoč','Nastavitve']
       }};
       var arr = NAV[code] || NAV.en;
       document.querySelectorAll('#app-nav .an-item .an-label').forEach(function(el, i) {{
@@ -7050,6 +7219,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       // Example Workflow 아래 9개 sub: Basic / Bioinformatics / Classification / Clustering /
       // Fairness / Hierarchical Clustering / Scatter Plot / Survival Analysis / Text Mining (v6, 2026-05-27).
     ];
+    /* 중등(Secondary)·공통(Common) = 0건 빈 상태로 초기화 + Getting Started = 삭제 (2026-06-13).
+       정적 항목을 런타임에 제거 — 중등/공통 카테고리 버튼은 유지(클릭 시 "템플릿이 없습니다"),
+       Getting Started 는 사이드바 버튼도 함께 제거. 초등은 기존 동적 로드 유지. */
+    _lcTemplates = _lcTemplates.filter(function(t) {{
+      return t.category !== '중등 Workflow' && t.category !== '공통 Workflow' && t.category !== 'Getting Started';
+    }});
 
     /* "베이직" 카테고리 — Orange3 내장 example workflows (lazy fetch, 2026-05-27 v5 원복) */
     var _lcBasicLoaded = false;
@@ -7276,20 +7451,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
            3줄: 저자
            4줄: URL + 다운로드 (bi-actions) */
         var html = '';
-        if (meta.publisher) html += '<div class="bi-meta-row"><b>출판사</b><span>' + meta.publisher.replace(/[<>]/g,'') + '</span></div>';
-        if (meta.author) html += '<div class="bi-meta-row"><b>저자</b><span>' + meta.author.replace(/[<>]/g,'') + '</span></div>';
-        metaEl.innerHTML = html;
-      }}
-      var urlEl = document.getElementById('lesson-book-url');
-      if (urlEl) {{
+        if (meta.publisher) html += '<div class="bi-meta-row"><b>' + _ovtBookLbl('publisher') + '</b><span>' + meta.publisher.replace(/[<>]/g,'') + '</span></div>';
+        if (meta.author) html += '<div class="bi-meta-row"><b>' + _ovtBookLbl('author') + '</b><span>' + meta.author.replace(/[<>]/g,'') + '</span></div>';
         if (meta.url) {{
-          urlEl.href = meta.url;
-          urlEl.style.display = '';
-          var urlText = document.getElementById('lesson-book-url-text');
-          if (urlText) urlText.textContent = meta.url.replace(/^https?:\\/\\//, '').slice(0, 50);
-        }} else {{
-          urlEl.style.display = 'none';
+          var _short = meta.url.replace(/^https?:\\/\\//, '').slice(0, 50).replace(/[<>]/g,'');
+          html += '<div class="bi-meta-row"><b>' + _ovtBookLbl('homepage') + '</b><span><a class="bi-url" href="' + meta.url.replace(/"/g,'&quot;') + '" target="_blank" rel="noopener noreferrer">' + _short + '</a></span></div>';
         }}
+        if (meta.download_url || meta.url) {{
+          html += '<div class="bi-meta-row"><b>' + _ovtBookLbl('archive') + '</b><span><button class="bi-download" onclick="downloadBookZip()">' + _ovtBookLbl('download') + '</button></span></div>';
+        }}
+        metaEl.innerHTML = html;
       }}
     }}
     function _hideBookInfo() {{
@@ -13647,6 +13818,26 @@ ORANGE3_BOOKS = [
         "download_url": "https://cmassedumall.com/product/%eb%82%98%eb%8a%94-%ec%98%a4%eb%a0%8c%ec%a7%80%eb%a1%9c-%eb%8d%b0%ec%9d%b4%ed%84%b0-%eb%b6%84%ec%84%9d%ed%95%9c%eb%8b%a4-orange3%eb%a1%9c-%eb%b0%b0%ec%9a%b0%eb%8a%94-%ec%9d%b8%ea%b3%b5%ec%a7%80%eb%8a%a5/168/category/84/display/1/",
         "cover": "book_03.jpg",
     },
+    {
+        "id": "gilbut_orange3_convergence_ds",
+        "folder": "book_04",
+        "title": "오렌지3로 시작하는 융합 데이터 과학",
+        "publisher": "길벗",
+        "author": "채상미",
+        "url": "https://product.kyobobook.co.kr/detail/S000214428194",
+        "download_url": "https://www.gilbut.co.kr/book/view?bookcode=BN004229#bookData",
+        "cover": "rn_view_BN004229.jpg",
+    },
+    {
+        "id": "rubypaper_orange3_python",
+        "folder": "book_05",
+        "title": "오렌지3 데이터 분석 with 파이썬",
+        "publisher": "루비페이퍼",
+        "author": "임선집",
+        "url": "https://product.kyobobook.co.kr/detail/S000201142248",
+        "download_url": "https://github.com/jasonyim2/book2",
+        "cover": "book_py.jpg",
+    },
 ]
 ORANGE3_BOOKS_BY_ID = {b["id"]: b for b in ORANGE3_BOOKS}
 # 호스트 경로 (호스트 마운트에서 직접 읽음 — 컨테이너 안 접근 불필요).
@@ -14333,7 +14524,7 @@ def _admin_default_settings() -> dict:
         "first_page": "canvas",
         # 좌측 사이드바 메뉴 노출 (2026-06-13): Menu·Examples·WorkSpaces 항목 표시 여부
         # WorkSpaces 비활성 시 first_page 는 canvas 로 강제(첫 페이지 지정 의미 없음).
-        "nav": {"Menu": True, "Examples": True, "WorkSpaces": True},
+        "nav": {"Menu": True, "Examples": True, "WorkSpaces": True, "DataSetDes": True},
         # 위젯 패널 하단 로고(EBS·교육부·Orange3) 전체 노출 여부 (2026-06-13)
         "footer_logo": True,
         "updated_at": "",
@@ -14408,6 +14599,7 @@ def _admin_load_settings() -> dict:
         nav.setdefault("Menu", True)
         nav.setdefault("Examples", True)
         nav.setdefault("WorkSpaces", True)
+        nav.setdefault("DataSetDes", True)
         data["nav"] = nav
         # 하단 로고 노출 (2026-06-13) — 누락 시 default True
         data["footer_logo"] = bool(data.get("footer_logo", True))
@@ -14445,6 +14637,8 @@ def _nav_hide_style() -> str:
         sels += ["#an-example-btn", "#an-example-acc"]
     if not nav.get("WorkSpaces", True):
         sels += ["#an-ws-btn"]
+    if not nav.get("DataSetDes", True):
+        sels += ["#an-dsd-btn", "#an-dsd-acc"]
     if not _s.get("footer_logo", True):   # 하단 로고 전체 숨김
         sels += [".hwd-footer-logos"]
     if not sels:
@@ -14555,12 +14749,13 @@ async def admin_settings_put(request: Request):
     nav_in = body.get("nav")
     if isinstance(nav_in, dict):
         cur_nav = cur.get("nav") or {}
-        for key in ("Menu", "Examples", "WorkSpaces"):
+        for key in ("Menu", "Examples", "WorkSpaces", "DataSetDes"):
             if key in nav_in:
                 cur_nav[key] = bool(nav_in[key])
         cur_nav.setdefault("Menu", True)
         cur_nav.setdefault("Examples", True)
         cur_nav.setdefault("WorkSpaces", True)
+        cur_nav.setdefault("DataSetDes", True)
         cur["nav"] = cur_nav
         # WorkSpaces 비활성 → 첫 페이지는 캔버스로 강제 (workspaces 시작 불가)
         if not cur_nav.get("WorkSpaces", True):
@@ -16514,7 +16709,7 @@ async def admin_firstpage_page():
   </div>
   <div class="card">
     <h1>왼쪽 메뉴 노출</h1>
-    <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces·Examples 메뉴 노출 여부를 설정합니다.</li></ul>
+    <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces·Examples·DataSet Des 메뉴 노출 여부를 설정합니다.</li></ul>
     <div class="nav-mock-wrap">
       <div class="nav-mock" aria-hidden="true">
         <div class="nav-mock-logo">Orange3</div>
@@ -16528,6 +16723,9 @@ async def admin_firstpage_page():
         <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5V3.6A1.6 1.6 0 0 1 10.1 2h8.3A1.6 1.6 0 0 1 20 3.6v12.8A1.6 1.6 0 0 1 18.4 18H17"/><rect x="4" y="6" width="13" height="15" rx="1.6"/></svg>Examples<span class="nav-mock-chev">›</span></div>
         <div class="nav-mock-sub">Example 01</div>
         <div class="nav-mock-sub">Example 02</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>DataSet Des<span class="nav-mock-chev">›</span></div>
+        <div class="nav-mock-sub">DataSet Des 01</div>
+        <div class="nav-mock-sub">DataSet Des 02</div>
       </div>
       <div class="nav-grid-col">
         <div class="grid" id="nav-grid"></div>
@@ -16587,7 +16785,7 @@ function renderNav(){{
   const g = document.getElementById('nav-grid');
   if (!g || !_settings) return;
   const nav = _settings.nav || {{}};
-  const items = [['Menu','Menu'], ['WorkSpaces','WorkSpaces'], ['Examples','Examples']];
+  const items = [['Menu','Menu'], ['WorkSpaces','WorkSpaces'], ['Examples','Examples'], ['DataSetDes','DataSet Des']];
   let html = '';
   items.forEach(([key,label]) => {{
     const on = (nav[key] !== false);   // 미정의는 노출(true) 취급
@@ -16638,7 +16836,7 @@ async function saveFp(){{
 }}
 async function saveNav(){{
   const nav = {{}};
-  ['Menu','WorkSpaces','Examples'].forEach(k => {{ const cb = document.getElementById('nav-' + k); nav[k] = cb ? cb.checked : true; }});
+  ['Menu','WorkSpaces','Examples','DataSetDes'].forEach(k => {{ const cb = document.getElementById('nav-' + k); nav[k] = cb ? cb.checked : true; }});
   await _putSettings({{nav}}, 'save-nav-btn', '왼쪽 메뉴 노출 저장 완료');
 }}
 function resetFooterLogo(){{
@@ -16736,7 +16934,7 @@ async def api_widget_guide():
         if canon in _by_canon:
             _by_canon[canon]["widgets"].extend(ws)
         else:
-            _by_canon[canon] = {"category": canon, "widgets": ws}
+            _by_canon[canon] = {"category": canon, "color": c.get("color"), "widgets": ws}
     # 관리자 '메뉴 설정/위젯 설정'과 동일한 시범단계(1~4차) 순서·그룹으로 정렬.
     cats_out = []
     seen = set()
@@ -16779,7 +16977,7 @@ async def widget_guide_page():
   .wg-grid {display:grid; grid-template-columns:repeat(auto-fill, minmax(186px,1fr)); gap:16px; margin-bottom:8px;}
   .wg-card {display:flex; flex-direction:column; align-items:center; text-align:center; gap:11px; background:#fff; border:1px solid #c7d2e0; border-radius:10px; padding:22px 16px 20px; text-decoration:none; color:inherit; cursor:pointer; transition:border-color .12s, box-shadow .12s;}
   .wg-card:hover {border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.08);}
-  .wg-ic {width:52px; height:52px; border-radius:50%; background:radial-gradient(circle at 45% 40%, #ffe9d3, #ffdcb8); border:1.6px dashed #f0a868; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .wg-ic {width:52px; height:52px; border-radius:50%; background:#e8e8eb; border:1px solid rgba(0,0,0,0.08); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
   .wg-ic img {width:28px; height:28px; object-fit:contain;}
   .wg-name {font-size:15px; font-weight:700; color:#1a1a2e;}
   .wg-desc {font-size:13px; color:#475569; line-height:1.4;}
@@ -16812,6 +17010,8 @@ document.getElementById('wg-meta').textContent=T.loading;
 var _DATA=null;
 function dispName(w){ return (LANG==='ko' && w.name_ko) ? w.name_ko : w.name; }
 function dispDesc(w){ return (LANG==='ko' && w.desc_ko) ? w.desc_ko : w.description; }
+/* 카테고리 색 정규화 (시스템 _hwdNormalizeColor 와 동일): #hex 그대로, 명명색은 dash 제거+소문자 */
+function wgColor(c){ if(!c) return '#e8e8eb'; if(String(c).charAt(0)==='#') return c; return String(c).replace(/-/g,'').toLowerCase(); }
 function render(filter){
   var host=document.getElementById('wg-list'); if(!_DATA) return;
   var f=(filter||'').trim().toLowerCase(); var html='', shown=0;
@@ -16822,13 +17022,14 @@ function render(filter){
           || (w.description||'').toLowerCase().indexOf(f)>=0 || (w.desc_ko||'').toLowerCase().indexOf(f)>=0;
     });
     if(!ws.length) return;
+    var _wc=wgColor(cat.color);
     html+='<div class="wg-cat-head">'+esc(cat.category)+' <span class="wg-cat-n">('+ws.length+')</span></div>';
     html+='<div class="wg-grid">';
     ws.forEach(function(w){
       shown++;
       var img=w.icon_b64?'<img src="data:image/png;base64,'+w.icon_b64+'" alt="">':'';
       html+='<a class="wg-card" href="/widget-guide/'+encodeURIComponent(w.qualified_name)+'?lang='+LANG+'" title="'+esc(w.name)+'">'
-        +'<div class="wg-ic">'+img+'</div>'
+        +'<div class="wg-ic" style="background:'+_wc+'">'+img+'</div>'
         +'<div class="wg-name">'+esc(dispName(w))+'</div>'
         +'<div class="wg-desc">'+esc(dispDesc(w))+'</div></a>';
     });
