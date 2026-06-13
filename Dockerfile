@@ -178,6 +178,18 @@ RUN printf '%s\n' \
     '#noVNC_screen, #noVNC_container, #noVNC_canvas, #noVNC_container canvas { border: 0 !important; outline: 0 !important; box-shadow: none !important; }' \
     >> /opt/noVNC/app/styles/base.css
 
+# ── 이중/잔상 커서 수정 (2026-06-13) ──────────────────────────────────────────
+# 터치 지원 Windows 기기는 isTouchDevice=true → noVNC 가 fallback 커서 모드 사용.
+# fallback 커서는 document.body 의 position:fixed 캔버스라, 마우스가 iframe(canvas) 밖
+# 래퍼 패널로 나가면 신뢰할 leave 이벤트가 안 와 마지막 위치에 잔상으로 남는다
+# ("움직이기 전까지 계속 살아 있음"). 게다가 위 'cursor: default !important' 규칙이
+# fallback 의 style.cursor='none'(네이티브 숨김)을 덮어써 네이티브 화살표까지 공존.
+# → cursor URI 를 지원하는 데스크톱은 fallback 을 끄고 CSS 커서 모드만 쓰게 강제.
+# 그러면 별도 캔버스 커서가 없어지고, 브라우저가 canvas hover 시 네이티브 화살표 1개만
+# 그려 iframe 을 벗어나면 즉시 사라진다(잔상 제거).
+RUN sed -i 's/const useFallback = !supportsCursorURIs || isTouchDevice;/const useFallback = !supportsCursorURIs;/' \
+    /opt/noVNC/core/util/cursor.js
+
 
 # ── shap numpy 2.x 호환 패치 (Orange3-Explain 위젯 복구) ──────────────────────
 # shap 0.42.1(orange3-explain 0.6.10 이 shap==0.42.1 로 핀)이 numpy 2.0 에서 제거된
