@@ -1,0 +1,9 @@
+제목 : 오렌지3 데이터 분석 with 파이썬
+
+url : https://product.kyobobook.co.kr/detail/S000201142248
+
+출판사 : 루비페이퍼
+
+저자 : 임선집
+
+다운로드 url : https://github.com/jasonyim2/book2
