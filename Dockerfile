@@ -227,6 +227,24 @@ RUN sed -i \
     -e 's/layout\.addWidget(self\.toolbar)/pass  # toolbar hidden/' \
     /usr/local/lib/python3.10/dist-packages/orangecanvas/application/canvastooldock.py
 
+# ── 위젯 우클릭 컨텍스트 메뉴에서 Help(F1) 항목 제거 (2026-06-14) ──────────────
+# __widgetMenu(노드 우클릭 메뉴)에서만 Help + 그 앞 구분선을 삭제. 메뉴바의
+# __menuBarWidgetMenu Help 는 그대로 유지(문자열에 __widgetMenu. 만 매칭).
+RUN python3 - <<'PYEOF'
+p = "/usr/local/lib/python3.10/dist-packages/orangecanvas/document/schemeedit.py"
+with open(p, encoding="utf-8") as f:
+    s = f.read()
+target = ("        self.__widgetMenu.addSeparator()\n"
+          "        self.__widgetMenu.addAction(self.__helpAction)\n")
+if target in s:
+    s = s.replace(target, "")
+    with open(p, "w", encoding="utf-8") as f:
+        f.write(s)
+    print("[patch] widget context menu Help removed")
+else:
+    print("[patch] target not found (schemeedit.py layout changed?)")
+PYEOF
+
 # ── noVNC 기본 배경색 흰색으로 변경 (리사이즈 시 검은 배경 제거) ──────────────
 # rfb.js가 _screen div에 인라인 스타일로 어두운 배경을 설정하므로 소스에서 직접 수정
 RUN sed -i "s/const DEFAULT_BACKGROUND = 'rgb(40, 40, 40)'/const DEFAULT_BACKGROUND = 'rgb(255, 255, 255)'/" \

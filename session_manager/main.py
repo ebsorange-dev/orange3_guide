@@ -1574,7 +1574,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* ── 헤더 바 ── */
     #header-bar {{
-      position:fixed; top:0; left:43px; right:0; height:42px;
+      position:fixed; top:0; left:48px; right:0; height:42px;
       background:#fff; border-bottom:none;
       display:flex; align-items:center; padding:0 5px; gap:0;
       z-index:9500; box-shadow:none;
@@ -1628,8 +1628,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* 헤더 가운데 안내 문구 (Phase 5, 2026-05-24) */
     #header-caption {{
-      margin-left:0;
-      color:#1a1a2e; font-size:16px; font-weight:700;
+      margin-left:0; position:relative; top:7px; left:2px;  /* 사이드바 O 로고 세로 중심에 맞춤 + 좌측 2px */
+      color:#6b7280; font-size:16px; font-weight:700;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
       letter-spacing:0.1px; white-space:nowrap;
       overflow:hidden; text-overflow:ellipsis;
@@ -1685,6 +1685,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:170px; padding:4px 0; z-index:9700;
     }}
     #help-menu.open {{ display:block; }}
+    /* File 플라이아웃 서브메뉴 (설정 Option › 플라이아웃과 동일 패턴, 2026-06-14) */
+    #file-submenu {{
+      display:none; position:fixed; background:#fff; border:1px solid #e5e5ea; border-radius:10px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:172px; padding:4px 0; z-index:99999;
+    }}
+    #file-submenu.open {{ display:block; }}
     /* About 모달 (2026-06-12) */
     #about-modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45);
       z-index:9800; align-items:center; justify-content:center; }}
@@ -1709,9 +1715,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .about-ok:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
     .set-mi {{ display:flex; align-items:center; gap:10px; padding:8px 14px; font-size:13px; color:#222; cursor:pointer; }}
     .set-mi:hover {{ background:#f3f4f6; }}
-    .set-mi-ic {{ font-size:14px; display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; }}
-    .set-mi-ic svg {{ display:block; }}
+    .set-mi-ic {{ font-size:14px; display:inline-flex; align-items:center; justify-content:center; width:21px; height:21px; flex-shrink:0; }}
+    .set-mi-ic svg {{ display:block; width:21px; height:21px; }}
     .set-mi-chev {{ margin-left:auto; color:#9ca3af; font-size:15px; line-height:1; padding-left:14px; }}
+    /* 메뉴 그룹 헤더 / 구분선 / 하위 들여쓰기 (2026-06-14) */
+    .set-mi-head {{ padding:7px 14px 3px; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; }}
+    .set-sep {{ height:1px; background:#eee; margin:4px 0; }}
+    .set-mi.set-sub {{ padding-left:24px; }}
     /* 언어 드롭다운 바깥(캔버스) 클릭 감지용 투명 백드롭. top 은 toggleLang 에서
        헤더 바로 아래로 동적 설정 → 헤더 버튼 영역은 덮지 않음. z-index 는 드롭다운
        (99999)보다 아래라 항목 선택은 그대로 가능. */
@@ -1729,7 +1739,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
     /* ── VNC iframe ── */
     #vnc-frame {{
-      position:fixed; top:73px; left:43px; right:0; border:none;
+      position:fixed; top:73px; left:48px; right:0; border:none;
       width:calc(100vw - 43px); height:calc(100vh - 73px);
       transition:left .16s ease, width .16s ease;
       border:none; display:block;
@@ -1744,7 +1754,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        기존 canvas 좌하단 footer-info 를 위젯 패널 하단으로 이동.
        패널이 열린 동안만 노출, 닫히면 자연스럽게 사라짐. */
     #hwd-panel-footer {{
-      flex-shrink:0; padding:10px 12px;
+      flex-shrink:0; padding:22px 12px 10px;
       border-top:1px solid #ececef; background:#fafafa;
       display:flex; flex-direction:column; align-items:flex-start; gap:8px;
       justify-content:flex-start;
@@ -1771,7 +1781,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 워크플로우 탭 바 ── */
     /* ── 워크플로우 탭 바 ── */
     #wf-tabbar {{
-      position:fixed; top:42px; left:43px; right:0; height:31px;
+      position:fixed; top:42px; left:48px; right:0; height:31px;
       display:flex; align-items:flex-end; justify-content:flex-start; padding:0 11px 0 0; gap:0;
       z-index:9001; pointer-events:none;
       background:transparent;
@@ -2156,7 +2166,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 임시 HTML 위젯 사이드바 (이미지 참조 — 컴팩트 + 충분한 여백) ──
        너비 43px, 흰 배경 + 작은 컬러 SVG 아이콘. 아이콘 간격 4px로 시각적 호흡 확보. */
     #html-widget-dock {{
-      position:fixed; top:73px; left:0; bottom:0; width:43px;
+      position:fixed; top:73px; left:0; bottom:0; width:48px;
       background:#ffffff; border-right:1px solid #e0e0e0;
       z-index:8500;
       /* overflow:visible — ::after 풍선 툴팁이 dock 우측 밖으로 확장되도록.
@@ -2168,16 +2178,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       align-items:center; padding:2px 0 0 0; gap:0;
     }}
     /* ── n8n 스타일 좌측 네비게이션 (2026-06-10) — 위젯 카테고리 레일 대체 ──
-       접힘 43px(캔버스 left:43px 정렬 유지) / 펼침 214px 오버레이. */
+       접힘 43px(캔버스 left:48px 정렬 유지) / 펼침 214px 오버레이. */
     #html-widget-dock {{ display:none !important; }}
     /* 'Widgets' 메뉴 토글(body.show-widgets) 시: 위젯 독을 n8n 레일 오른쪽(left:43)에
        플라이아웃으로 표시, 카테고리 클릭 시 패널은 그 오른쪽(left:86). */
-    body.show-widgets #html-widget-dock {{ display:flex !important; left:43px; z-index:9540; }}
-    body.show-widgets #hwd-panel {{ left:86px; z-index:9530; }}
+    body.show-widgets #html-widget-dock {{ display:flex !important; left:48px; z-index:9540; }}
+    body.show-widgets #hwd-panel {{ left:96px; z-index:9530; }}
     #app-nav {{
-      position:fixed; top:0; left:0; bottom:0; width:43px;
+      position:fixed; top:0; left:0; bottom:0; width:48px;
       background:#ffffff; border-right:1px solid #e8e8ec; z-index:9600;
-      display:flex; flex-direction:column; padding:6px 0 17px; gap:1px;
+      display:flex; flex-direction:column; padding:6px 0 17px; gap:5px;
       overflow:hidden; transition:width .16s ease, box-shadow .16s ease;
     }}
     #app-nav.expanded {{ width:196px; box-shadow:2px 0 10px rgba(0,0,0,0.07); }}
@@ -2194,12 +2204,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     body.nav-expanded #vnc-frame {{ left:196px; width:calc(100vw - 196px); }}
     /* 위젯 패널이 열려 있으면 캔버스를 패널 오른쪽으로 푸시(닫으면 전체폭 복귀).
        좌측 메뉴 펼침(nav-expanded)과 동일한 body 클래스 방식 — :has() 미지원/타이밍 대비 (2026-06-13) */
-    body.widgets-open #vnc-frame {{ left:343px; width:calc(100vw - 343px); }}
+    body.widgets-open #vnc-frame {{ left:348px; width:calc(100vw - 343px); }}
     body.nav-expanded.widgets-open #vnc-frame {{ left:496px; width:calc(100vw - 496px); }}
     /* ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ──
        레이어: 사이드바(9600) > Example(9555) · 위젯 패널(9560)은 별도 컬럼이라 비겹침. */
     #example-panel {{
-      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      position:fixed; top:0; left:48px; bottom:0; width:360px;
       background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
       transition:left .16s ease; display:none; flex-direction:column;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
@@ -2207,48 +2217,53 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #example-panel.open {{ display:flex; }}
     body.nav-expanded #example-panel {{ left:196px; }}
     /* Example 열림 → 위젯 패널을 Example 오른쪽으로 (사이드바+360) */
-    body.example-open #hwd-panel {{ left:403px; }}
+    body.example-open #hwd-panel {{ left:408px; }}
     body.nav-expanded.example-open #hwd-panel {{ left:556px; }}
     /* Example 열림 → 상단 헤더·탭바도 오른쪽으로(오렌지3 상단이 Example 컬럼 위에 안 겹치게).
        Example 는 top:0 풀높이 컬럼이라 nav 펼침과 동일하게 상단 바를 밀어낸다. */
-    body.example-open #header-bar, body.example-open #wf-tabbar {{ left:403px; }}
+    body.example-open #header-bar, body.example-open #wf-tabbar {{ left:408px; }}
     body.nav-expanded.example-open #header-bar, body.nav-expanded.example-open #wf-tabbar {{ left:556px; }}
     /* ── Menu 작업 공간 패널 (Example 패널과 동일 사이즈/푸시, 빈 페이지, 2026-06-13) ── */
     #menu-panel {{
-      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      position:fixed; top:0; left:48px; bottom:0; width:360px;
       background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
       transition:left .16s ease; display:none; flex-direction:column;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
     }}
     #menu-panel.open {{ display:flex; }}
     body.nav-expanded #menu-panel {{ left:196px; }}
-    body.menu-open #hwd-panel {{ left:403px; }}
+    body.menu-open #hwd-panel {{ left:408px; }}
     body.nav-expanded.menu-open #hwd-panel {{ left:556px; }}
-    body.menu-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.menu-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
     body.nav-expanded.menu-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.menu-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.menu-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
     body.nav-expanded.menu-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
-    body.menu-open #header-bar, body.menu-open #wf-tabbar {{ left:403px; }}
+    body.menu-open #header-bar, body.menu-open #wf-tabbar {{ left:408px; }}
     body.nav-expanded.menu-open #header-bar, body.nav-expanded.menu-open #wf-tabbar {{ left:556px; }}
     /* ── DataSet Des 패널 (Examples 와 동일 구조/푸시, 2026-06-13) ── */
     #dsd-panel {{
-      position:fixed; top:0; left:43px; bottom:0; width:360px;
+      position:fixed; top:0; left:48px; bottom:0; width:360px;
       background:#fff; border-right:1px solid #e0e0e0; z-index:9555;
       transition:left .16s ease; display:none; flex-direction:column;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
     }}
     #dsd-panel.open {{ display:flex; }}
     body.nav-expanded #dsd-panel {{ left:196px; }}
-    body.dsd-open #hwd-panel {{ left:403px; }}
+    body.dsd-open #hwd-panel {{ left:408px; }}
     body.nav-expanded.dsd-open #hwd-panel {{ left:556px; }}
-    body.dsd-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.dsd-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
     body.nav-expanded.dsd-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.dsd-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.dsd-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
     body.nav-expanded.dsd-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
-    body.dsd-open #header-bar, body.dsd-open #wf-tabbar {{ left:403px; }}
+    body.dsd-open #header-bar, body.dsd-open #wf-tabbar {{ left:408px; }}
     body.nav-expanded.dsd-open #header-bar, body.nav-expanded.dsd-open #wf-tabbar {{ left:556px; }}
     .dsd-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 4px 16px; flex-shrink:0; }}
-    .dsd-title {{ flex:1; min-width:0; font-size:18px; font-weight:800; color:#1a1a2e; }}
+    .dsd-title {{ flex:1; min-width:0; font-size:18px; font-weight:800; color:#6b7280; }}
+    /* 패널 헤더 아이콘/제목 — 사이드바 항목(아이콘+라벨) 참조 (2026-06-14) */
+    .dsd-ic, .ex-empty-ic {{ display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; color:#1a1a2e; }}
+    .ex-empty-head {{ justify-content:flex-start !important; align-items:center; gap:8px; padding:10px 12px 4px 16px; }}
+    .ex-empty-title {{ font-size:18px; font-weight:800; color:#6b7280; }}
+    .ex-empty-head .wsp-close {{ margin-left:auto; }}
     .dsd-content {{ flex:1; display:flex; align-items:center; justify-content:center; color:#9ca3af;
       font-size:13px; padding:24px; text-align:center; line-height:1.6; }}
     /* ── Menu 패널 "Work Flow Open" 페이지 (시안 기반 신규, 2026-06-13) ── */
@@ -2304,9 +2319,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:background .12s, color .12s; }}
     .wsp-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
     /* Example 열림 → 캔버스 푸시 (위젯 패널 열림/닫힘 분기) */
-    body.example-open.widgets-open #vnc-frame {{ left:703px; width:calc(100vw - 703px); }}
+    body.example-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
     body.nav-expanded.example-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.example-open:not(.widgets-open) #vnc-frame {{ left:403px; width:calc(100vw - 403px); }}
+    body.example-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
     body.nav-expanded.example-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     /* 실습 선택기 (이미지 4 — 노란 탭 드롭다운) */
     #example-sel-wrap {{ flex-shrink:0; position:relative; padding:10px 12px; border-bottom:1px solid #eee;
@@ -2358,8 +2373,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .an-brand img {{ width:26px; height:26px; border-radius:5px; flex-shrink:0; }}
     /* 로고 마크 — 굵은 검은색. 접힘=E / 펼침=EBS */
     /* EBS = EBS English 로고 네이비(인라인 텍스트로 Orange3 와 베이스라인 정렬). Orange3 만 오렌지(em). */
-    .an-logo-e {{ flex-shrink:0; font-family:Arial,"Helvetica Neue",sans-serif; font-weight:900;
-      font-size:17px; letter-spacing:-0.3px; color:#F47B20; line-height:1; }}
+    .an-logo-e {{ flex-shrink:0; font-family:Arial,"Helvetica Neue",sans-serif; font-weight:600;
+      font-size:21px; letter-spacing:-0.3px; color:#F47B20; line-height:1; }}
     .an-logo-bs {{ display:none; }}
     #app-nav.expanded .an-logo-bs {{ display:inline; }}
     /* Orange 3 글자 — 기존 헤더 로고와 동일하게 오렌지(em) 유지 */
@@ -2374,7 +2389,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .an-item {{ display:flex; align-items:center; gap:13px; height:33px; margin:0 6px; padding:0 8px; border-radius:8px; color:#3a3a40; cursor:pointer; white-space:nowrap; transition:background .1s; flex-shrink:0; }}
     .an-item:hover {{ background:#f1f1f3; }}
     .an-item.active {{ background:#ececef; color:#1a1a2e; }}
-    .an-item > svg {{ width:18px; height:18px; flex-shrink:0; stroke-width:1.6; }}
+    .an-item > svg {{ width:21px; height:21px; flex-shrink:0; stroke-width:1.6; }}
     .an-label {{ font-size:13.5px; font-weight:500; opacity:0; transition:opacity .1s; }}
     #app-nav.expanded .an-label {{ opacity:1; }}
     .an-badge {{ font-size:9px; font-weight:700; color:#7c3aed; background:#f3e8ff; padding:1px 6px; border-radius:6px; margin-left:auto; opacity:0; transition:opacity .1s; }}
@@ -2407,7 +2422,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── Overview 임시 페이지 (n8n home/workflows 참조) ── */
     /* n8n home/workflows 처럼 캔버스/탭과 분리된 독립 페이지 — 사이드바 오른쪽 전체를
        덮음(헤더 캡션·탭바 포함). top:0 + z-index 헤더(9500) 위, 사이드바(9600) 아래. */
-    #overview-page {{ display:none; position:fixed; top:0; left:43px; right:0; bottom:0;
+    #overview-page {{ display:none; position:fixed; top:0; left:48px; right:0; bottom:0;
       background:#f7f8fa; z-index:9550; overflow:auto; }}
     body.nav-expanded #overview-page {{ left:196px; }}
     #overview-page.show {{ display:block; }}
@@ -2419,7 +2434,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 우상단 버튼 '+' — 라벨(카드 글자)과 균형 위해 작게 (2026-06-13) */
     .ovp-new-plus {{ font-size:15px; color:#F47B20; font-weight:300; line-height:1; }}
     /* 우상단 버튼 'New Workflow' 글자 — 파란 영역(카드 .ovp-card 라벨) 폰트 그대로 (2026-06-13) */
-    .ovp-new-label {{ font-size:13.5px; color:#4b5563; font-weight:600; }}
+    .ovp-new-label {{ font-size:13.5px; color:#4b5563; font-weight:400; }}
     .ovp-new:hover {{ background:#f3f4f6; border-color:#9ca3af; }}
     .ovp-sub {{ color:#6b7280; font-size:13.5px; margin-bottom:18px; }}
     .ovp-tabs {{ display:flex; gap:18px; border-bottom:1px solid #e5e7eb; margin-bottom:20px; }}
@@ -2672,7 +2687,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── 단계 2B: 카테고리 선택 시 표시되는 위젯 목록 패널 ── */
     .hwd-cat.active {{ background:rgba(0,0,0,0.10); }}
     #hwd-panel {{
-      position:fixed; top:73px; left:43px; bottom:0; width:300px;
+      position:fixed; top:73px; left:48px; bottom:0; width:300px;
       background:#ffffff; border-right:1px solid #e0e0e0;
       z-index:9560; transition:left .16s ease;
       display:none; flex-direction:column;
@@ -2935,7 +2950,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 평소엔 pointer-events:none + 투명 → 캔버스 클릭 통과
        드래그 시작 시 .active 클래스 부여 → pointer-events:auto + iframe 위에 떠서 drop 캡처 */
     #hwd-drop-zone {{
-      position:fixed; top:73px; left:43px; right:0; bottom:0;
+      position:fixed; top:73px; left:48px; right:0; bottom:0;
       pointer-events:none; z-index:8600;
       background:transparent;
     }}
@@ -2957,7 +2972,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        맞춰(60px) 마스크 vs 진짜 위젯 독의 시각 차이 최소화. */
     #resize-mask-left {{
       position:fixed;
-      top:73px; left:0; bottom:0; width:43px;  /* HTML 사이드바 너비와 일치 */
+      top:73px; left:0; bottom:0; width:48px;  /* HTML 사이드바 너비와 일치 */
       background:#ffffff;
       border-right:1px solid #e0e0e0;
       z-index:8200;
@@ -2968,7 +2983,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 상단 그라데이션 마스크 — HTML 사이드바(43px)부터 우측 끝까지 */
     #resize-mask-top {{
       position:fixed;
-      top:73px; left:43px; right:0; height:30px;
+      top:73px; left:48px; right:0; height:30px;
       background:linear-gradient(to bottom, #f7f8fa 0%, rgba(247,248,250,0) 100%);
       z-index:8200;
       opacity:0; pointer-events:none;
@@ -3080,6 +3095,47 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #canvas-toolbar .ct-btn:hover {{ background:rgba(0,0,0,0.07); }}
     #canvas-toolbar .ct-btn.sb-active {{ background:rgba(244,123,32,0.15); color:#F47B20; }}
     #canvas-toolbar .ct-sep {{ width:1px; height:20px; background:rgba(0,0,0,0.12); margin:0 3px; flex-shrink:0; }}
+
+    /* ── 우측 슬라이드 패널 (캔버스 우상단 툴바 버튼으로 토글, 가로 폭 조절 가능, 2026-06-14) ──
+       왼쪽 메뉴와 무관한 별도 패널. 내용은 추후 추가. */
+    #right-panel {{
+      position:fixed; top:73px; right:0; bottom:0;
+      width:340px; min-width:240px; max-width:70vw;
+      background:#fff; border-left:1px solid #e5e7eb;
+      box-shadow:-3px 0 14px rgba(0,0,0,0.08);
+      z-index:8450; display:flex; flex-direction:column;
+      transform:translateX(100%); transition:transform .2s ease;
+    }}
+    #right-panel.open {{ transform:translateX(0); }}
+    #right-panel-resizer {{
+      position:absolute; top:0; left:-6px; width:13px; height:100%;
+      cursor:ew-resize; z-index:5;
+    }}
+    #right-panel-resizer::after {{
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:2px; height:34px; border-radius:2px; background:rgba(0,0,0,0.18); transition:background .12s, height .12s;
+    }}
+    #right-panel-resizer:hover::after {{ background:#F47B20; height:48px; }}
+    /* 드래그 중 화면 전체를 덮어 마우스 이벤트를 안정적으로 받는 오버레이
+       — iframe 위 드래그 끊김 + mouseup 누락(드래그 스턱→폭 폭주) 방지 (2026-06-14) */
+    #rp-drag-overlay {{ position:fixed; inset:0; z-index:99998; cursor:ew-resize; display:none; }}
+    #rp-drag-overlay.on {{ display:block; }}
+    .rp-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 8px 16px;
+      border-bottom:1px solid #f1f3f5; flex-shrink:0; }}
+    .rp-title {{ flex:1; min-width:0; font-size:16px; font-weight:800; color:#1a1a2e; }}
+    .rp-close {{ width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; color:#888; border-radius:5px; font-size:15px; transition:background .12s, color .12s; }}
+    .rp-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
+    .rp-content {{ flex:1; overflow:auto; }}
+    .rp-empty {{ display:flex; align-items:center; justify-content:center; height:100%;
+      color:#9ca3af; font-size:13px; text-align:center; line-height:1.6; padding:24px; }}
+    /* 패널 열림 시 우측 플로팅 툴바(상단/하단)를 패널 폭만큼 왼쪽으로 이동해 가려짐 방지 */
+    #canvas-toolbar, #sb-wrap {{ transition:right .18s ease; }}
+    body.rpanel-open #canvas-toolbar {{ right:calc(var(--rp-w, 340px) + 12px); }}
+    body.rpanel-open #sb-wrap {{ right:calc(var(--rp-w, 340px) + 11px); }}
+    /* 드래그 중에는 전환 제거(폭 조절 크리스프하게) */
+    body.rp-dragging #canvas-toolbar, body.rp-dragging #sb-wrap, body.rp-dragging #right-panel {{ transition:none; }}
+    body.rp-dragging {{ cursor:ew-resize; }}
 
     /* ── 펜 버튼 롱프레스 색상 드롭다운 (아래쪽) ── */
     #ct-color-drop {{
@@ -3496,9 +3552,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       </div>
       <div class="h-btn" id="btn-datasets" onclick="openAnalysisDatasets()" title="분석 데이터셋 카탈로그">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <ellipse cx="12" cy="5" rx="9" ry="3"/>
-          <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
-          <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+          <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+          <polyline points="2 17 12 22 22 17"/>
+          <polyline points="2 12 12 17 22 12"/>
         </svg>
         Analysis-Datasets
       </div>
@@ -3550,9 +3606,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- ── n8n 스타일 좌측 네비게이션 (위젯 카테고리 레일 대체, 2026-06-10) ── -->
   <nav id="app-nav">
     <div class="an-top" title="펼치기 / 접기" onclick="toggleAppNav()">
-      <span class="an-brand"><span class="an-logo-e">O<span class="an-logo-bs">range3</span></span></span>
+      <span class="an-brand"><span class="an-logo-e">O<span class="an-logo-bs">range 3</span></span></span>
       <span class="an-toggle">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       </span>
     </div>
     <div class="an-item" title="새 문서" onclick="appNavSelect(this); hideOverview(); _ensureWidgetPanel(); wfAddTab()">
@@ -3564,7 +3620,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <span class="an-label">Open</span>
     </div>
     <div class="an-item" id="an-menu-btn" title="메뉴 (파일)" onclick="event.stopPropagation(); toggleMenuPanel(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="12.5" x2="17" y2="12.5"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
       <span class="an-label">Menu</span>
     </div>
     <!-- 사이드바 Menu 인라인 아코디언 (팝업 플라이아웃 대체 — 아래로 펼침) -->
@@ -3578,7 +3634,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       <span class="an-label">펼치기</span>
     </div>
-    <div class="an-item" id="an-ws-btn" title="WorkSpaces" onclick="appNavSelect(this); _closeWidgetPanel(); _closeExamplePanel(); _closeDsdPanel(); showOverview()">
+    <div class="an-item" id="an-ws-btn" title="WorkSpaces" onclick="toggleOverview(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span class="an-label">WorkSpaces</span>
     </div>
@@ -3588,15 +3644,16 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     </div>
     <div class="an-sep"></div>
     <div class="an-item" title="Analysis-Datasets" onclick="appNavSelect(this); hideOverview(); openAnalysisDatasets()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
       <span class="an-label">Analysis-Datasets</span>
     </div>
     <div class="an-item" title="Templates" onclick="appNavSelect(this); hideOverview(); openLessonTemplates()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="4.5" rx="1"/><rect x="15" y="9.5" width="6" height="4.5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
       <span class="an-label">Templates</span>
     </div>
+    <div class="an-sep"></div>
     <div class="an-item" id="an-example-btn" title="Example" onclick="event.stopPropagation(); toggleExamplesRoot(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5V3.6A1.6 1.6 0 0 1 10.1 2h8.3A1.6 1.6 0 0 1 20 3.6v12.8A1.6 1.6 0 0 1 18.4 18H17"/><rect x="4" y="6" width="13" height="15" rx="1.6"/><line x1="7" y1="10.5" x2="14" y2="10.5"/><line x1="7" y1="13.5" x2="14" y2="13.5"/><line x1="7" y1="16.5" x2="11.5" y2="16.5"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <span class="an-label">Examples</span>
       <span class="an-chev">›</span>
     </div>
@@ -3605,7 +3662,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('mid')">Example 02</div>
     </div>
     <div class="an-item" id="an-dsd-btn" title="DataSet Des" onclick="event.stopPropagation(); toggleDsdRoot(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="5" cy="14" r="3"/><path d="m9 18-1.5-1.5"/></svg>
       <span class="an-label">DataSet Des</span>
       <span class="an-chev">›</span>
     </div>
@@ -3617,7 +3674,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div class="an-spacer"></div>
     <div class="an-sep"></div>
     <div class="an-item" title="Help" onclick="toggleHelpMenu(this, event)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.6 2.5-2.6 2.5"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       <span class="an-label">Help</span>
       <span class="an-chev">›</span>
     </div>
@@ -3676,7 +3733,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           </div>
           <!-- Browse Templates (파란 영역) — 기존 모달 그대로 유지 -->
           <div class="ovp-card ovp-card-new" onclick="hideOverview(); openLessonTemplates();">
-            <div class="ovp-plus" style="font-size:20px;">▦</div>
+            <div class="ovp-plus" style="display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="4.5" rx="1"/><rect x="15" y="9.5" width="6" height="4.5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg></div>
             <div>템플릿 둘러보기</div>
           </div>
         </div>
@@ -3760,13 +3817,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 
   <!-- ── DataSet Des 패널 (Examples 와 동일 구조, 빈 페이지, 2026-06-13) ── -->
   <div id="dsd-panel" aria-hidden="true">
-    <div class="wsp-head"><span class="wsp-close" onclick="_closeDsdPanel()" title="닫기">✕</span></div>
-    <div class="dsd-head"><span id="dsd-title" class="dsd-title">DataSet Des</span></div>
+    <div class="dsd-head"><span class="dsd-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a2e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="5" cy="14" r="3"/><path d="m9 18-1.5-1.5"/></svg></span><span id="dsd-title" class="dsd-title">DataSet Des</span><span class="wsp-close" onclick="_closeDsdPanel()" title="닫기">✕</span></div>
     <div id="dsd-content" class="dsd-content">빈 페이지 — DataSet Des 작업 공간<br>(콘텐츠 준비 중)</div>
   </div>
 
   <div id="example-panel" aria-hidden="true">
-    <div id="example-empty-head" class="wsp-head" style="display:none;"><span class="wsp-close" onclick="_closeExamplePanel()" title="닫기">✕</span></div>
+    <div id="example-empty-head" class="wsp-head ex-empty-head" style="display:none;"><span class="ex-empty-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1a2e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span class="ex-empty-title">Examples</span><span class="wsp-close" onclick="_closeExamplePanel()" title="닫기">✕</span></div>
     <div id="example-sel-wrap">
       <button id="example-sel-btn" onclick="toggleExampleSel()"><span id="example-sel-label">Orange3로 해보는 데이터 분석</span><svg class="ex-chev" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></button>
       <span class="wsp-close ex-close" onclick="_closeExamplePanel()" title="닫기">✕</span>
@@ -4090,12 +4146,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <div id="lesson-modal-box">
       <div id="lesson-header">
         <div id="lesson-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="9" y1="3" x2="9" y2="21"/>
-            <line x1="15" y1="3" x2="15" y2="21"/>
-            <line x1="3" y1="9" x2="21" y2="9"/>
-            <line x1="3" y1="15" x2="21" y2="15"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="10" height="11" rx="1"/>
+            <rect x="15" y="3" width="6" height="4.5" rx="1"/>
+            <rect x="15" y="9.5" width="6" height="4.5" rx="1"/>
+            <rect x="3" y="17" width="18" height="4" rx="1"/>
           </svg>
           <span>Templates</span>
         </div>
@@ -4281,12 +4336,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       </svg>
     </button>
     <button class="ct-btn" title="새 탭 (새 워크플로우)" onclick="wfAddTab()">
-      <!-- 하단 sb-btn 톤(stroke 1.4)과 통일 (2026-05-26): 1.8 → 1.4 -->
+      <!-- 왼쪽 메뉴(사이드바) New 의 + 아이콘 참조 (2026-06-14) -->
       <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 2H9.5L13 5.5V14H4V2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-        <path d="M9.5 2V5.5H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <line x1="8" y1="8" x2="8" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        <line x1="6" y1="10" x2="10" y2="10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
     </button>
     <button class="ct-btn" id="sb-info-btn" title="도움말 / 도구 안내" onclick="ctShowInfo()">
@@ -4297,7 +4350,27 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <line x1="8" y1="7.4" x2="8" y2="11.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
     </button>
+    <!-- 우측 패널 열기/닫기 — 왼쪽 메뉴와 별개 (2026-06-14) -->
+    <button class="ct-btn" id="ct-rpanel-btn" title="패널 열기/닫기" onclick="toggleRightPanel(this)">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+        <line x1="10.5" y1="3" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.4"/>
+      </svg>
+    </button>
   </div>
+
+  <!-- 우측 슬라이드 패널 (툴바 버튼으로 토글, 좌측 가장자리 드래그로 가로 폭 조절. 내용 추후 추가) -->
+  <div id="right-panel" aria-hidden="true">
+    <div id="right-panel-resizer" title="너비 조절"></div>
+    <div class="rp-head">
+      <span class="rp-title">패널</span>
+      <span class="rp-close" onclick="toggleRightPanel()" title="닫기">✕</span>
+    </div>
+    <div class="rp-content">
+      <div class="rp-empty">빈 페이지 — 작업 공간<br>(콘텐츠 준비 중)</div>
+    </div>
+  </div>
+  <div id="rp-drag-overlay"></div>
 
   <!-- ── 좌하단 상태바 ── -->
   <div id="sb-wrap">
@@ -5711,6 +5784,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           var t=rows[+el.getAttribute('data-idx')]; if(!t) return;
           if (t.path && typeof window.wfAddTemplateTab==='function') {{
             hideOverview();
+            try {{ _ensureWidgetPanel(); }} catch(_e) {{}}   // 템플릿 로드 = 캔버스 → 위젯 메뉴 열기
             window.wfAddTemplateTab(t.path, t.title, t.filename);
           }} else {{
             try {{ showToast('템플릿 선택: '+(t.title||'')+' (준비 중)', 2500); }} catch(_e) {{}}
@@ -5751,6 +5825,68 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     function hideOverview() {{
       var p=document.getElementById('overview-page'); if(p) p.classList.remove('show');
     }}
+    /* WorkSpaces 토글 — 열려 있으면 닫고, 아니면 연다 (2026-06-14) */
+    function toggleOverview(el) {{
+      var p=document.getElementById('overview-page');
+      if (p && p.classList.contains('show')) {{
+        hideOverview();
+        try {{ _ensureWidgetPanel(); }} catch(_e) {{}}   // 캔버스 복귀 → 위젯 메뉴 항상 열기
+        if (el) el.classList.remove('active');
+      }} else {{
+        appNavSelect(el);
+        try {{ _closeWidgetPanel(); }} catch(_e) {{}}
+        try {{ _closeExamplePanel(); }} catch(_e) {{}}
+        try {{ _closeDsdPanel(); }} catch(_e) {{}}
+        showOverview();
+      }}
+    }}
+    /* ── 우측 슬라이드 패널 토글 + 가로 폭 조절 (2026-06-14) ──
+       캔버스 우상단 툴바 버튼(#ct-rpanel-btn)으로 열고 닫는다. 왼쪽 메뉴와 무관. 내용 추후 추가. */
+    function toggleRightPanel(el) {{
+      var p = document.getElementById('right-panel');
+      if (!p) return;
+      var open = !p.classList.contains('open');
+      p.classList.toggle('open', open);
+      p.setAttribute('aria-hidden', open ? 'false' : 'true');
+      document.body.classList.toggle('rpanel-open', open);
+      if (open) {{
+        var w = parseInt(p.style.width, 10) || p.offsetWidth || 340;
+        document.documentElement.style.setProperty('--rp-w', w + 'px');
+      }}
+      var btn = document.getElementById('ct-rpanel-btn');
+      if (btn) btn.classList.toggle('sb-active', open);
+    }}
+    document.addEventListener('DOMContentLoaded', function() {{
+      var rz = document.getElementById('right-panel-resizer');
+      var p  = document.getElementById('right-panel');
+      var ov = document.getElementById('rp-drag-overlay');
+      if (!rz || !p || !ov) return;
+      function onMove(e) {{
+        var min = 240, max = Math.round(window.innerWidth * 0.7);
+        var w = Math.max(min, Math.min(max, window.innerWidth - e.clientX));
+        p.style.width = w + 'px';
+        document.documentElement.style.setProperty('--rp-w', w + 'px');
+      }}
+      function endDrag() {{
+        ov.classList.remove('on');
+        document.body.classList.remove('rp-dragging');
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', endDrag);
+        window.removeEventListener('blur', endDrag);
+      }}
+      rz.addEventListener('mousedown', function(e) {{
+        e.preventDefault();
+        // 전체 화면 오버레이로 마우스 이벤트를 안정적으로 캡처 → iframe 위에서도 끊김 없고
+        // mouseup 이 항상 잡혀 드래그가 스턱되어 폭이 폭주하는 현상을 막는다.
+        ov.classList.add('on');
+        document.body.classList.add('rp-dragging');
+        document.body.style.userSelect = 'none';
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', endDrag);
+        window.addEventListener('blur', endDrag);   // 창 포커스 이탈 시에도 드래그 종료
+      }});
+    }});
     /* 위젯 메뉴 항상 노출 — 닫혀 있으면 다시 연다 */
     function _ensureWidgetPanel() {{
       var panel = document.getElementById('hwd-panel');
@@ -6750,7 +6886,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (ev) ev.stopPropagation();
       var m = document.getElementById('help-menu');
       if (!m || !el) return;
-      if (m.classList.contains('open')) {{ m.classList.remove('open'); return; }}
+      if (m.classList.contains('open')) {{ closeHelpMenu(); return; }}
       var rect = el.getBoundingClientRect();
       m.style.position = 'fixed';
       m.style.left = (rect.right + 8) + 'px';
@@ -6763,6 +6899,18 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     function closeHelpMenu() {{
       var m = document.getElementById('help-menu'); if (m) m.classList.remove('open');
+      var f = document.getElementById('file-submenu'); if (f) f.classList.remove('open');
+    }}
+    /* File 플라이아웃 토글 — 설정 Option(toggleLangNav) 과 동일 패턴 (2026-06-14) */
+    function toggleFileNav(el, ev) {{
+      if (ev) ev.stopPropagation();
+      var drop = document.getElementById('file-submenu');
+      if (!drop || !el) return;
+      var rect = el.getBoundingClientRect();
+      drop.style.top = 'auto'; drop.style.right = 'auto';
+      drop.style.left = (rect.right + 8) + 'px';
+      drop.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+      drop.classList.toggle('open');
     }}
     /* About 모달 — 버전은 좌하단 메타(#x-mi-ver)에서 가져옴 */
     function openAboutModal() {{
@@ -6786,7 +6934,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* Templates 버튼 SVG 아이콘 (모든 언어 공통) */
     const _TPL_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/></svg>';
     /* Analysis-Datasets 버튼 SVG 아이콘 (데이터베이스 원통, 모든 언어 공통) */
-    const _DS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg>';
+    const _DS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
     const LANGS = {{
       ko: {{
         docTitle: '제목없음',
@@ -7112,6 +7260,24 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         }}
         if (_wtries > 90) clearInterval(_wiv);
       }}, 1000);
+    }});
+
+    /* ── 캔버스가 노출되는 모든 경우 위젯 메뉴 자동 노출 (2026-06-14) ──
+       #overview-page 의 .show 제거(=overview 닫힘 → 캔버스 노출)될 때마다 위젯 패널을 보장.
+       · 초기 로드는 class mutation 이 없어 미트리거 → FIRST_PAGE=workspaces(overview 우선) 분기 존중.
+       · MutationObserver 콜백은 비동기(마이크로태스크)라 카테고리 클릭 등 동기 핸들러 '이후' 실행되고,
+         _ensureWidgetPanel 은 이미 열려 있으면 즉시 반환(멱등)이라 이중 열기/토글 충돌이 없다.
+       · Analysis-Datasets·Templates 처럼 hideOverview 후 모달을 띄우는 경로도 캔버스(모달 뒤)가
+         노출되므로 패널이 함께 열린다(모달 z-index 99000 이 패널을 가림). */
+    document.addEventListener('DOMContentLoaded', function() {{
+      var ov = document.getElementById('overview-page');
+      if (!ov || typeof MutationObserver === 'undefined') return;
+      var mo = new MutationObserver(function() {{
+        if (!ov.classList.contains('show')) {{
+          try {{ _ensureWidgetPanel(); }} catch(_e) {{}}
+        }}
+      }});
+      mo.observe(ov, {{ attributes: true, attributeFilter: ['class'] }});
     }});
 
 
@@ -7860,7 +8026,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (_sm && _sm.classList.contains('open') && !_sm.contains(e.target) &&
           !document.getElementById('lang-dropdown').contains(e.target)) closeSettingsMenu();
       var _hm = document.getElementById('help-menu');
-      if (_hm && _hm.classList.contains('open') && !_hm.contains(e.target)) closeHelpMenu();
+      var _fs = document.getElementById('file-submenu');
+      if (_hm && _hm.classList.contains('open') && !_hm.contains(e.target) && !(_fs && _fs.contains(e.target))) closeHelpMenu();
       if (!document.getElementById('sb-wrap').contains(e.target)) {{
         document.querySelectorAll('.sb-drop').forEach(function(d) {{ d.classList.remove('sb-open'); }});
       }}
@@ -9665,6 +9832,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           await saveCurrent();
           active = toIdx; render();
           await loadTab(tabs[active]);
+          try {{ _ensureWidgetPanel(); }} catch(_e) {{}}   // 탭 전환 = 캔버스 → 위젯 메뉴 항상 열기
         }} finally {{
           busy = false; render();
         }}
@@ -9864,9 +10032,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   </div>
   <!-- Help 드롭다운 (n8n 참조) — 항목은 아직 동작 미연결 (2026-06-12) -->
   <div id="help-menu">
-    <div class="set-mi" onclick="closeHelpMenu(); ctShowInfo()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M4 2h5l3 3v9H4z"/><line x1="6" y1="7.5" x2="10" y2="7.5"/><line x1="6" y1="10" x2="10" y2="10"/></svg></span><span class="set-mi-tx" id="help-wfinfo-tx">Workflow Info</span></div>
+    <div class="set-mi" id="file-nav-btn" onclick="toggleFileNav(this, event)"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 4.5h4.2l1.4 1.6H14v7H2z"/></svg></span><span class="set-mi-tx">File</span><span class="set-mi-chev">›</span></div>
+    <div class="set-sep"></div>
     <div class="set-mi"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="1"/><line x1="4.5" y1="6" x2="11.5" y2="6"/><line x1="4.5" y1="8.5" x2="9.5" y2="8.5"/></svg></span><span class="set-mi-tx">Documentation</span></div>
     <div class="set-mi" onclick="openAboutModal()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="8" y1="7.3" x2="8" y2="11" stroke-linecap="round"/><circle cx="8" cy="5" r="0.6" fill="currentColor" stroke="none"/></svg></span><span class="set-mi-tx">About</span></div>
+  </div>
+  <!-- File 플라이아웃 (New/Open → 구분선 → Workflow Info/Save/Save a Copy) -->
+  <div id="file-submenu">
+    <div class="set-mi" onclick="closeHelpMenu(); hideOverview(); _ensureWidgetPanel(); wfAddTab()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span class="set-mi-tx">New</span></div>
+    <div class="set-mi" onclick="closeHelpMenu(); _ensureWidgetPanel(); openOwsDialog()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Open</span></div>
+    <div class="set-mi" onclick="closeHelpMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Save</span></div>
+    <div class="set-mi" onclick="closeHelpMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M3 10.5V3.5a1 1 0 0 1 1-1h6"/></svg></span><span class="set-mi-tx">Save a Copy</span></div>
+    <div class="set-sep"></div>
+    <div class="set-mi" onclick="closeHelpMenu(); ctShowInfo()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="5" r="0.85" fill="currentColor" stroke="none"/><line x1="8" y1="7.4" x2="8" y2="11.6"/></svg></span><span class="set-mi-tx" id="help-wfinfo-tx">Workflow Info</span></div>
   </div>
   <!-- About 모달 (n8n About 참조; 빨간 영역=브랜드/Third-Party/InstanceID/Debug 제거) (2026-06-12) -->
   <div id="about-modal-overlay" onclick="if(event.target===this) closeAboutModal()">
@@ -9896,30 +10074,39 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
     #x-meta-info {{
-      /* 위젯 패널 우측 끝 +20px(=캔버스 좌측 +20px)에서 시작. 좌측 메뉴/위젯 패널
-         펼침·닫힘 상태에 따라 left 가 함께 이동 (2026-06-13) */
-      position: fixed; left: 63px; bottom: 22px; z-index: 50;
-      transition: left .16s ease;
+      /* 왼쪽 메뉴(사이드바) 기준으로만 위치. 위젯 패널/Example/DataSet Des/메뉴 등
+         다른 패널·페이지가 열리면 좌우로 따라가지 않고 창 아래로 숨긴다 (2026-06-14) */
+      position: fixed; left: 65px; bottom: 17px; z-index: 50;
+      transition: left .16s ease, bottom .22s ease, opacity .22s ease;
       font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;
-      font-size: 10pt; color: #9ca3af; line-height: 1.55;
-      /* 불투명 흰 박스가 위젯을 가리던 문제 → 배경 제거하고 흰색 글로우
-         그림자로 캔버스 위 가독성 유지(위젯이 그대로 보임). 클릭은 pointer-events:none */
+      font-size: 8pt; color: #9ca3af; line-height: 1.55;
+      /* 배경 제거 + 흰색 글로우 그림자로 캔버스 위 가독성 유지. 클릭 통과 */
       background: transparent;
       padding: 0; border-radius: 0;
       text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
       pointer-events: none;
-      display: grid; grid-template-columns: auto auto; column-gap: 22px; row-gap: 2px;
-      justify-items: start;
+      /* 세로 구조 (1열 스택) */
+      display: flex; flex-direction: column; align-items: flex-start; row-gap: 2px;
     }}
-    /* 캔버스 좌측 시작점 +20px 추적 — #vnc-frame 푸시 규칙과 동일 상태 (2026-06-13) */
-    body.widgets-open #x-meta-info {{ left: 363px; }}              /* 위젯 패널 열림: 343+20 */
-    body.nav-expanded #x-meta-info {{ left: 216px; }}             /* 좌측 메뉴 펼침: 196+20 */
-    body.nav-expanded.widgets-open #x-meta-info {{ left: 516px; }} /* 둘 다 펼침: 496+20 */
-    /* Example 패널 열림 — 위젯 패널 우측 끝 +20 추적 (#vnc-frame 와 동일 상태, 2026-06-13) */
-    body.example-open.widgets-open #x-meta-info {{ left: 723px; }}              /* example+위젯: 703+20 */
-    body.nav-expanded.example-open.widgets-open #x-meta-info {{ left: 876px; }} /* 전부: 856+20 */
-    body.example-open:not(.widgets-open) #x-meta-info {{ left: 423px; }}        /* example만: 403+20 */
-    body.nav-expanded.example-open:not(.widgets-open) #x-meta-info {{ left: 576px; }} /* nav+example: 556+20 */
+    /* 좌측 메뉴 펼침 시 좌측 위치를 따른다 (왼쪽 메뉴 기준) */
+    body.nav-expanded #x-meta-info {{ left: 213px; }}             /* 좌측 메뉴 펼침 (-3px) */
+    /* 위젯 메뉴가 열린 경우: 숨기지 말고 위젯 패널 바로 오른쪽(=왼쪽 구조 옆)에 고정 노출 */
+    body.widgets-open #x-meta-info {{ left: 365px; }}             /* 위젯 패널 옆 (343+20-3) */
+    body.nav-expanded.widgets-open #x-meta-info {{ left: 513px; }} /* 메뉴 펼침+위젯 (496+20-3) */
+    /* Menu·Examples·DataSet Des 패널이 열려도 캔버스가 함께 노출되므로 숨기지 말고
+       캔버스 좌측(패널 오른쪽)에 맞춰 노출한다 (= #vnc-frame canvas-left + 17, 2026-06-14) */
+    body.example-open:not(.widgets-open) #x-meta-info,
+    body.dsd-open:not(.widgets-open) #x-meta-info,
+    body.menu-open:not(.widgets-open) #x-meta-info {{ left: 425px; }}              /* 패널만 (403+17) */
+    body.nav-expanded.example-open:not(.widgets-open) #x-meta-info,
+    body.nav-expanded.dsd-open:not(.widgets-open) #x-meta-info,
+    body.nav-expanded.menu-open:not(.widgets-open) #x-meta-info {{ left: 573px; }}  /* 메뉴 펼침+패널 (556+17) */
+    body.example-open.widgets-open #x-meta-info,
+    body.dsd-open.widgets-open #x-meta-info,
+    body.menu-open.widgets-open #x-meta-info {{ left: 725px; }}                     /* 위젯+패널 (703+17) */
+    body.nav-expanded.example-open.widgets-open #x-meta-info,
+    body.nav-expanded.dsd-open.widgets-open #x-meta-info,
+    body.nav-expanded.menu-open.widgets-open #x-meta-info {{ left: 873px; }}        /* 전부 (856+17) */
     #x-meta-info > div {{ white-space: nowrap; }}
   </style>
   <div id="x-meta-info">
@@ -14527,6 +14714,8 @@ def _admin_default_settings() -> dict:
         "nav": {"Menu": True, "Examples": True, "WorkSpaces": True, "DataSetDes": True},
         # 위젯 패널 하단 로고(EBS·교육부·Orange3) 전체 노출 여부 (2026-06-13)
         "footer_logo": True,
+        # 캔버스 우상단 툴바의 우측 슬라이드 패널 노출 여부 (2026-06-14)
+        "toolbar_panel": True,
         "updated_at": "",
     }
 
@@ -14603,6 +14792,8 @@ def _admin_load_settings() -> dict:
         data["nav"] = nav
         # 하단 로고 노출 (2026-06-13) — 누락 시 default True
         data["footer_logo"] = bool(data.get("footer_logo", True))
+        # 툴바 우측 패널 노출 (2026-06-14) — 누락 시 default True
+        data["toolbar_panel"] = bool(data.get("toolbar_panel", True))
         return data
     except Exception as e:
         log.warning(f"[admin-settings] load failed: {e}; fallback default")
@@ -14641,6 +14832,8 @@ def _nav_hide_style() -> str:
         sels += ["#an-dsd-btn", "#an-dsd-acc"]
     if not _s.get("footer_logo", True):   # 하단 로고 전체 숨김
         sels += [".hwd-footer-logos"]
+    if not _s.get("toolbar_panel", True):   # 툴바 우측 슬라이드 패널 숨김 (버튼+패널+드래그 오버레이)
+        sels += ["#ct-rpanel-btn", "#right-panel", "#rp-drag-overlay"]
     if not sels:
         return ""
     return ('<style id="nav-vis-style">' + ",".join(sels)
@@ -14764,6 +14957,10 @@ async def admin_settings_put(request: Request):
     fl_in = body.get("footer_logo")
     if isinstance(fl_in, bool):
         cur["footer_logo"] = fl_in
+    # toolbar_panel: 툴바 우측 슬라이드 패널 노출 (2026-06-14)
+    tp_in = body.get("toolbar_panel")
+    if isinstance(tp_in, bool):
+        cur["toolbar_panel"] = tp_in
     try:
         _admin_save_settings(cur)
     except Exception as e:
@@ -16682,12 +16879,22 @@ async def admin_firstpage_page():
 .footer-logo-preview img{{height:24px;width:auto}}
 .footer-logo-preview .flp-orange{{display:inline-flex;align-items:center;gap:5px;filter:grayscale(1);opacity:0.55}}
 .footer-logo-preview .flp-orange > span{{font-size:13px;font-weight:700;color:#777}}
+/* 메뉴 설정 서브탭 (이미지2 WorkSpaces 탭 스타일, 활성=파란색, 2026-06-14) */
+.mtab-bar{{display:flex;gap:22px;margin:2px 0 14px}}
+.mtab{{padding:9px 2px;font-size:14px;font-weight:600;color:#6b7280;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px}}
+.mtab:hover{{color:#1a1a2e}}
+.mtab.active{{color:#2563eb;border-bottom-color:#2563eb}}
 </style></head><body>
 <div class="wrap">
   {nav}
-  <div class="card" id="fp-card">
-    <h1>메뉴 설정</h1>
-    <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin:2px 0 6px;">첫 페이지 지정</div>
+  <div class="mtab-bar">
+    <button class="mtab active" data-mp="main" onclick="mtabSwitch('main')">메인 메뉴 설정</button>
+    <button class="mtab" data-mp="panel" onclick="mtabSwitch('panel')">툴바 패널 버튼 설정</button>
+    <button class="mtab" data-mp="footer" onclick="mtabSwitch('footer')">하단 로고 설정</button>
+  </div>
+  <div class="mtab-pane" id="mpane-main" style="display:flex;flex-direction:column">
+  <div class="card" id="fp-card" style="order:2">
+    <h1>첫 페이지 지정</h1>
     <ul class="sub sub-bullets"><li>사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</li><li>신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
     <div id="fp-gate-note" style="display:none;margin:0 0 14px;padding:9px 13px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a6b3f;font-size:12.5px;line-height:1.5;">WorkSpaces 메뉴가 비활성화되어 있습니다. 아래 "왼쪽 메뉴 노출"에서 WorkSpaces 를 활성화하면 첫 페이지를 지정할 수 있습니다.</div>
     <div class="fp-list" id="fp-list">
@@ -16707,7 +16914,7 @@ async def admin_firstpage_page():
       <button id="save-fp-btn" onclick="saveFp()">저장</button>
     </div>
   </div>
-  <div class="card">
+  <div class="card" style="order:1">
     <h1>왼쪽 메뉴 노출</h1>
     <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces·Examples·DataSet Des 메뉴 노출 여부를 설정합니다.</li></ul>
     <div class="nav-mock-wrap">
@@ -16715,15 +16922,15 @@ async def admin_firstpage_page():
         <div class="nav-mock-logo">Orange3</div>
         <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New</div>
         <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Open</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>Menu</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>WorkSpaces</div>
-        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Widget</div>
-        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Analysis-Datasets</div>
-        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>Templates</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5V3.6A1.6 1.6 0 0 1 10.1 2h8.3A1.6 1.6 0 0 1 20 3.6v12.8A1.6 1.6 0 0 1 18.4 18H17"/><rect x="4" y="6" width="13" height="15" rx="1.6"/></svg>Examples<span class="nav-mock-chev">›</span></div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>Menu</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10.4a2 2 0 0 1 .73-1.55l6.5-5.4a2.5 2.5 0 0 1 3.14 0l6.5 5.4A2 2 0 0 1 21 10.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>WorkSpaces</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" transform="rotate(45 17.5 6.5)"/></svg>Widget</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Analysis-Datasets</div>
+        <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="4.5" rx="1"/><rect x="15" y="9.5" width="6" height="4.5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>Templates</div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Examples<span class="nav-mock-chev">›</span></div>
         <div class="nav-mock-sub">Example 01</div>
         <div class="nav-mock-sub">Example 02</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>DataSet Des<span class="nav-mock-chev">›</span></div>
+        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="5" cy="14" r="3"/><path d="m9 18-1.5-1.5"/></svg>DataSet Des<span class="nav-mock-chev">›</span></div>
         <div class="nav-mock-sub">DataSet Des 01</div>
         <div class="nav-mock-sub">DataSet Des 02</div>
       </div>
@@ -16736,6 +16943,8 @@ async def admin_firstpage_page():
       <button id="save-nav-btn" onclick="saveNav()">저장</button>
     </div>
   </div>
+  </div><!-- /mpane-main -->
+  <div class="mtab-pane" id="mpane-footer" style="display:none">
   <div class="card">
     <h1>하단 로고 노출</h1>
     <ul class="sub sub-bullets"><li>위젯 패널 하단의 로고(EBS·교육부·Orange 3)를 한 번에 표시/숨김 설정합니다.</li></ul>
@@ -16753,6 +16962,70 @@ async def admin_firstpage_page():
       <button id="save-footer-btn" onclick="saveFooterLogo()">저장</button>
     </div>
   </div>
+  </div><!-- /mpane-footer -->
+  <div class="mtab-pane" id="mpane-panel" style="display:none">
+  <div class="card">
+    <h1>패널 설정</h1>
+    <ul class="sub sub-bullets"><li>캔버스 우상단 툴바의 우측 슬라이드 패널(작업 공간) 노출 여부를 설정합니다. 왼쪽 메뉴와 별개인 툴바 기능입니다.</li><li>끄면 툴바의 패널 버튼과 우측 패널이 모두 숨겨집니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
+    <div class="flp-wrap">
+      <!-- 이미지2: 우측 패널이 열린 전체 앱 화면(축소 도식) -->
+      <svg viewBox="0 0 130 92" xmlns="http://www.w3.org/2000/svg" style="width:104px;height:auto;border:1px solid #e5e7eb;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.1);background:#fff;display:block;flex-shrink:0">
+        <rect x="0" y="0" width="130" height="10" fill="#fafafa"/>
+        <rect x="5" y="3.5" width="40" height="3" rx="1.5" fill="#d1d5db"/>
+        <rect x="2" y="12" width="9" height="78" fill="#fafafa"/>
+        <circle cx="6.5" cy="17" r="1.4" fill="#F47B20"/>
+        <rect x="4" y="23" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
+        <rect x="4" y="28" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
+        <rect x="4" y="33" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
+        <rect x="13" y="12" width="36" height="78" fill="#fff" stroke="#f1f3f5"/>
+        <rect x="16" y="16" width="30" height="6" rx="1.5" fill="#fde7d2"/>
+        <rect x="16" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
+        <rect x="27" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
+        <rect x="38" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
+        <rect x="16" y="38" width="30" height="3" rx="1" fill="#f1f3f5"/>
+        <rect x="16" y="44" width="30" height="3" rx="1" fill="#f1f3f5"/>
+        <rect x="51" y="12" width="44" height="78" fill="#fbfbfc"/>
+        <rect x="64" y="15" width="28" height="6.5" rx="3.2" fill="#fff" stroke="#e0e0e0"/>
+        <rect x="85.5" y="16" width="5.5" height="4.5" rx="1.2" fill="#F47B20"/>
+        <rect x="97" y="12" width="31" height="78" fill="#fff" stroke="#F47B20" stroke-width="1.3"/>
+        <rect x="100" y="16" width="9" height="3.5" rx="1" fill="#1a1a2e"/>
+        <line x1="97" y1="23" x2="128" y2="23" stroke="#f1f3f5"/>
+      </svg>
+      <svg class="fp-thumb" viewBox="0 0 120 64" xmlns="http://www.w3.org/2000/svg" style="display:block">
+        <rect x="0.5" y="0.5" width="119" height="63" rx="4" fill="#fff" stroke="#e5e7eb"/>
+        <!-- 윗줄: 패널 버튼 없는 툴바 -->
+        <rect x="15" y="9" width="62" height="15" rx="7.5" fill="#fff" stroke="#dcdce0"/>
+        <g stroke="#6b7280" stroke-width="1" stroke-linecap="round" fill="none">
+          <path d="M22.5 13.5h7"/><path d="M26 13.5v6"/>
+          <path d="M34 19.5l6-6"/>
+          <path d="M57.5 12.8h3l2 2v5.4h-5z"/>
+          <circle cx="70" cy="16.8" r="3"/>
+        </g>
+        <g fill="#6b7280"><rect x="46.3" y="13.5" width="1.5" height="6" rx="0.5"/><rect x="49" y="13.5" width="1.5" height="6" rx="0.5"/><circle cx="70" cy="14.6" r="0.5"/><rect x="69.6" y="16" width="0.8" height="2.6" rx="0.4"/></g>
+        <!-- 아랫줄: 패널 버튼 추가된 툴바 -->
+        <rect x="15" y="37" width="74" height="15" rx="7.5" fill="#fff" stroke="#dcdce0"/>
+        <g stroke="#6b7280" stroke-width="1" stroke-linecap="round" fill="none">
+          <path d="M22.5 41.5h7"/><path d="M26 41.5v6"/>
+          <path d="M34 47.5l6-6"/>
+          <path d="M57.5 40.8h3l2 2v5.4h-5z"/>
+          <circle cx="70" cy="44.8" r="3"/>
+        </g>
+        <g fill="#6b7280"><rect x="46.3" y="41.5" width="1.5" height="6" rx="0.5"/><rect x="49" y="41.5" width="1.5" height="6" rx="0.5"/><circle cx="70" cy="42.6" r="0.5"/><rect x="69.6" y="44" width="0.8" height="2.6" rx="0.4"/></g>
+        <!-- 추가된 패널 버튼 (오렌지 하이라이트) -->
+        <rect x="78" y="40" width="9.5" height="9.5" rx="2" fill="#fff7f1" stroke="#F47B20" stroke-width="1.1"/>
+        <rect x="80" y="42" width="5.5" height="5.5" rx="0.8" fill="none" stroke="#F47B20" stroke-width="0.9"/>
+        <line x1="83.6" y1="42" x2="83.6" y2="47.5" stroke="#F47B20" stroke-width="0.9"/>
+      </svg>
+      <div class="grid" id="tbpanel-grid">
+        <div class="row"><input type="checkbox" id="tbpanel-cb"><label for="tbpanel-cb">툴바 패널 노출</label></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="resetTbPanel()">취소</button>
+      <button id="save-tbpanel-btn" onclick="saveTbPanel()">저장</button>
+    </div>
+  </div>
+  </div><!-- /mpane-panel -->
   <div class="meta" id="meta"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -16764,6 +17037,16 @@ function toast(msg, ms){{
   t.textContent = msg; t.classList.add('show');
   clearTimeout(window._tt);
   window._tt = setTimeout(()=>t.classList.remove('show'), ms||2200);
+}}
+/* 메뉴 설정 서브탭 전환 (메인/툴바 패널/하단 로고) */
+function mtabSwitch(which){{
+  ['main','panel','footer'].forEach(function(k){{
+    var pane=document.getElementById('mpane-'+k);
+    if(pane) pane.style.display=(k===which)?(k==='main'?'flex':'block'):'none';
+  }});
+  document.querySelectorAll('.mtab').forEach(function(t){{
+    t.classList.toggle('active', t.getAttribute('data-mp')===which);
+  }});
 }}
 async function loadFp(){{
   try {{
@@ -16777,6 +17060,8 @@ async function loadFp(){{
     renderNav();
     var fl = document.getElementById('footer-logo-cb');
     if (fl) fl.checked = (_settings.footer_logo !== false);
+    var tp = document.getElementById('tbpanel-cb');
+    if (tp) tp.checked = (_settings.toolbar_panel !== false);
     document.getElementById('meta').textContent = _settings.updated_at
       ? 'updated_at: ' + _settings.updated_at : '(저장 전)';
   }} catch(e) {{ toast('로드 오류: ' + e.message); }}
@@ -16809,6 +17094,15 @@ function resetFp(){{
   const fp = (_settings.first_page === 'workspaces') ? 'workspaces' : 'canvas';
   const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
   if (el) el.checked = true;
+}}
+function resetTbPanel(){{
+  if (!_settings) {{ loadFp(); return; }}
+  var tp = document.getElementById('tbpanel-cb');
+  if (tp) tp.checked = (_settings.toolbar_panel !== false);
+}}
+function saveTbPanel(){{
+  var tp = document.getElementById('tbpanel-cb');
+  _putSettings({{ toolbar_panel: !!(tp && tp.checked) }}, 'save-tbpanel-btn', '패널 설정 저장됨');
 }}
 async function _putSettings(body, btnId, okMsg){{
   const btn = document.getElementById(btnId);

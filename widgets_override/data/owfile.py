@@ -393,14 +393,14 @@ class OWFile(OWUrlDropBase, RecentPathsWComboMixin):
             pass
 
     def _make_dataset_icon(self):
-        """첨부 이미지의 데이터베이스(원통 3단) 아이콘을 SVG로 생성."""
+        """레이어(겹친 3단) 아이콘을 SVG로 생성 — 사이드바 Analysis-Datasets 와 통일."""
         svg = (
             b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
             b'fill="none" stroke="currentColor" stroke-width="2" '
             b'stroke-linecap="round" stroke-linejoin="round">'
-            b'<ellipse cx="12" cy="5" rx="9" ry="3"/>'
-            b'<path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>'
-            b'<path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>'
+            b'<polygon points="12 2 2 7 12 12 22 7 12 2"/>'
+            b'<polyline points="2 17 12 22 22 17"/>'
+            b'<polyline points="2 12 12 17 22 12"/>'
             b'</svg>'
         )
         pix = QPixmap()
