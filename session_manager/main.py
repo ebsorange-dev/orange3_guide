@@ -2441,8 +2441,11 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-tab {{ padding:8px 2px; font-size:13.5px; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; }}
     .ovp-tab.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#F47B20; }}
     /* DataSet 탭 — 카드 버튼 (Widget Guide 형식, 2026-06-13) */
-    .ovp-ds-head {{ font-size:20px; font-weight:800; color:#1a1a2e; margin-bottom:4px; }}
-    .ovp-ds-sub {{ font-size:13px; color:#6b7280; margin-bottom:18px; }}
+    /* DataSet 패널을 Widget Guide(이미지1) 카드와 동일하게 — 테두리 카드 + 동일 패딩(32/20)
+       으로 타이틀 시작 위치(좌+21·상+33)를 Widget Guide 와 일치시킴 (2026-06-15) */
+    #ovp-pane-dataset {{ border:1px solid #e5e7eb; border-radius:10px; background:transparent; padding:32px 20px 40px; }}
+    .ovp-ds-head {{ font-size:24px; font-weight:800; color:#1a1a2e; margin:0 0 6px; }}
+    .ovp-ds-sub {{ font-size:14px; color:#6b7280; margin-bottom:22px; }}
     .ovp-ds-grid {{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }}
     .ovp-ds-card {{ display:flex; align-items:center; gap:13px; padding:16px; border:1px solid #e5e7eb; border-radius:12px;
       background:#fff; cursor:pointer; text-align:left; font-family:inherit; transition:border-color .12s, box-shadow .12s; }}
@@ -2492,7 +2495,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:border-color .12s, box-shadow .12s, background .12s, color .12s; }}
     .ovt-cat-btn:hover {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.06); color:#1a1a2e; }}
     /* 선택 상태 — 검은 배경 대신 주황 테두리 하이라이트 (2026-06-11) */
-    .ovt-cat-btn.active {{ background:#fff7f1; color:#1a1a2e; border-color:#F47B20; box-shadow:0 0 0 1px #F47B20 inset; }}
+    .ovt-cat-btn.active {{ background:#fff7f1; color:#1a1a2e; border-color:#F47B20; }}
     .ovt-cat-ic {{ display:flex; color:#F47B20; }}
     .ovt-cat-ic svg {{ display:block; }}
     .ovt-cat-btn.active .ovt-cat-ic {{ color:#F47B20; }}
@@ -3699,7 +3702,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       </div>
       <!-- DataSet 패널 (Widget Guide 형식, 카드 버튼 4개, 2026-06-13) -->
       <div id="ovp-pane-dataset" style="display:none;">
-        <div class="ovp-ds-head">DataSet</div>
+        <div class="ovp-ds-head">DataSet Guide</div>
         <div class="ovp-ds-sub">분석용 샘플 데이터셋 — 카드를 선택해 적용합니다.</div>
         <div class="ovp-ds-grid">
           <button class="ovp-ds-card" onclick="ovpDatasetApply('iris','IRIS 분석 데이터')">
@@ -5533,6 +5536,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       try {{ showToast((name || '데이터셋') + ' 적용 (준비 중)', 2500); }} catch(_e) {{}}
     }}
     function ovpSwitchTab(which) {{
+      // 탭 전환/선택 시 항상 초기 상태로 로딩 — 개요 페이지 스크롤 최상단 리셋 (2026-06-15)
+      var _op=document.getElementById('overview-page'); if(_op) _op.scrollTop=0;
       var tabs=document.querySelectorAll('#overview-page .ovp-tab');
       tabs.forEach(function(t){{ t.classList.remove('active'); }});
       var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl'),
@@ -5544,15 +5549,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (which==='tpl') {{
         if (tabs[1]) tabs[1].classList.add('active');
         if (tpl) tpl.style.display='';
-        try {{ _ovtInit(); }} catch(_e) {{}}
+        try {{ _ovtInit(); }} catch(_e) {{}}   // 템플릿: 항상 초기 카테고리로 재초기화
       }} else if (which==='widgets') {{
         if (tabs[2]) tabs[2].classList.add('active');
         if (wg) {{
           wg.style.display='';
           var f=document.getElementById('ovp-wg-frame');
-          if (f && !f.getAttribute('src')) {{
-            var _lg=(typeof INIT_LANG!=='undefined')?INIT_LANG:'en';
-            f.setAttribute('src', '/widget-guide?lang='+_lg);  // 래퍼 언어 전달, 최초 진입 시에만 로드
+          var _lg=(typeof INIT_LANG!=='undefined')?INIT_LANG:'en';
+          if (f) {{
+            if (!f.getAttribute('src')) {{
+              f.setAttribute('src', '/widget-guide?lang='+_lg);  // 최초 진입 로드
+            }} else {{
+              try {{ f.contentWindow.scrollTo(0,0); }} catch(_e) {{}}  // 재방문: 최상단(초기 상태)
+            }}
           }}
         }}
       }} else if (which==='dataset') {{
@@ -5561,6 +5570,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }} else {{
         if (tabs[0]) tabs[0].classList.add('active');
         if (wf) wf.style.display='';
+        try {{ _ovWfPage=0; }} catch(_e) {{}}        // Workflows: 1페이지로 리셋
+        try {{ _ovRenderWfList(); }} catch(_e) {{}}  // 목록 재렌더(초기 상태)
       }}
     }}
     /* Templates 인라인 페이지 — Templates 모달(_lcTemplates)의 데이터를 재사용.
