@@ -113,6 +113,6 @@ ssl_certificate_key /etc/nginx/certs/orange3.key;
 인증서 결정 필요:
 - self-signed: 내부 테스트용, 브라우저 경고 발생
 - Let's Encrypt: 외부 도메인 필요
-- 사내 PKI: EBS 내부 CA 발급
+- 사내 PKI: 내부 CA 발급
 
 > HTTP/2 도입은 Nginx 정적 오프로드가 안정 운영된 뒤 별도 트랙으로 진행 권장.

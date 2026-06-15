@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""EBS Orange3 session-manager HTTP 계층 부하 테스트 (④ 부하 테스트, 2026-05-22).
+"""Orange3 session-manager HTTP 계층 부하 테스트 (④ 부하 테스트, 2026-05-22).
 
 컨테이너를 새로 띄우지 않는 경량 엔드포인트(GET /)만 부하를 줘서
 FastAPI/uvicorn 프런트엔드의 동시 요청 처리 용량을 측정한다.

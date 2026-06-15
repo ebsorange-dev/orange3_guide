@@ -1470,7 +1470,7 @@ LOADING_PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>EBS Orange3</title>
+  <title>Orange3</title>
   <style>
     body {{ background:#ffffff; color:#222; font-family:sans-serif;
            display:flex; justify-content:center; align-items:center;
@@ -1565,7 +1565,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EBS Orange3</title>
+  <title>Orange3</title>
   <style>
     * {{ margin:0; padding:0; box-sizing:border-box; }}
     /* 브라우저 스크롤바 완전 차단 — html·body 둘 다 overflow:hidden + 100vh 고정 */
@@ -2319,8 +2319,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #app-nav.expanded .an-top {{ justify-content:flex-start; padding:0 9px 0 14px; }}
     .an-brand {{ display:flex; align-items:center; gap:8px; min-width:0; }}
     .an-brand img {{ width:26px; height:26px; border-radius:5px; flex-shrink:0; }}
-    /* 로고 마크 — 굵은 검은색. 접힘=E / 펼침=EBS */
-    /* EBS = EBS English 로고 네이비(인라인 텍스트로 Orange3 와 베이스라인 정렬). Orange3 만 오렌지(em). */
+    /* 로고 마크 — 굵은 검은색. 접힘=O / 펼침=Orange */
+    /* 로고(인라인 텍스트). Orange3 만 오렌지(em). */
     .an-logo-e {{ flex-shrink:0; font-family:Arial,"Helvetica Neue",sans-serif; font-weight:600;
       font-size:21px; letter-spacing:-0.3px; color:#F47B20; line-height:1; }}
     .an-logo-bs {{ display:none; }}
@@ -3436,7 +3436,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- 헤더 브랜드 문구 (2026-06-13) — 좌측 5px, EBS Orange3 스타일(굵은 진한색) -->
+    <!-- 헤더 브랜드 문구 (2026-06-13) — 좌측 5px, Orange3 스타일(굵은 진한색) -->
     <div id="header-caption">Orange Beta Test</div>
 
     <!-- 우측 버튼 -->

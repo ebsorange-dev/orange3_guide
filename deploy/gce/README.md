@@ -1,6 +1,6 @@
 # orange3web — Google Compute Engine 배포 가이드
 
-EBS Orange3 웹 배포를 GCE 리눅스 VM에 **lift-and-shift**로 외부 공개하는 절차.
+Orange3 웹 배포를 GCE 리눅스 VM에 **lift-and-shift**로 외부 공개하는 절차.
 현재 Windows에서 돌리는 것과 **동일한 docker-compose 스택**을 그대로 올린다.
 
 > 왜 VM인가: 세션 매니저가 `docker.sock` 으로 GUI 컨테이너를 **동적 생성**하므로
