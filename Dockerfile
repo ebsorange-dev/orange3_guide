@@ -57,50 +57,23 @@ RUN mkdir -p /etc/dconf/db/local.d /etc/dconf/profile && \
 
 RUN pip3 install --no-cache-dir --upgrade pip requests urllib3 charset-normalizer
 RUN pip3 install --no-cache-dir orange3 koreanize-matplotlib PyQtWebEngine
-RUN pip3 install --no-cache-dir orange3-geo
-RUN pip3 install --no-cache-dir orange3-imageanalytics
-RUN pip3 install --no-cache-dir orange3-text
-RUN pip3 install --no-cache-dir orange3-timeseries
-# orange3-network: orange3-text 의 "Corpus to Network" 위젯이 의존
-# 미설치 시 해당 위젯이 "Please install network add-on" 오류 표시
-RUN pip3 install --no-cache-dir orange3-network
 
-# ── 추가 Orange3 addons (Phase 5, 2026-05-24) ─────────────────────────────────
-# 가벼운 것부터 → 무거운 것 순. 각각 별도 RUN 으로 분리해 캐시·실패 격리.
-RUN pip3 install --no-cache-dir orange3-associate
-RUN pip3 install --no-cache-dir orange3-educational
-RUN pip3 install --no-cache-dir orange3-explain
-RUN pip3 install --no-cache-dir orange3-fairness
-RUN pip3 install --no-cache-dir orange3-survival-analysis
-RUN pip3 install --no-cache-dir orange3-bioinformatics
-# Spectroscopy: PyPI 패키지명은 orange-spectroscopy (Orange3- 접두 없음)
-RUN pip3 install --no-cache-dir orange-spectroscopy
-# Single Cell: PyPI 패키지명 Orange3-SingleCell (정규화: orange3-singlecell).
-# 무거운 의존 (scanpy/anndata) → 마지막 배치. 일부 환경에서 빌드 실패할 수
-# 있어 || true 로 격리 — 실패해도 다른 7개 addon 영향 없게.
-RUN pip3 install --no-cache-dir Orange3-SingleCell || \
-    echo "[warn] Orange3-SingleCell 설치 실패 — 메뉴에서 누락됨"
+# ── 3개 예제 워크플로우 .ows 파일 배치 ───────────────────────────────────────────
+# (orange3-text 미설치이므로 tutorials 디렉토리가 없음 → 직접 복사)
+RUN mkdir -p /usr/local/lib/python3.10/dist-packages/orangecontrib/text/tutorials
+COPY orange3/ows_whitelist/60-author-predictions-on-tweets.ows \
+     /usr/local/lib/python3.10/dist-packages/orangecontrib/text/tutorials/
+COPY orange3/ows_whitelist/20-bag-of-words.ows \
+     /usr/local/lib/python3.10/dist-packages/orangecontrib/text/tutorials/
+COPY orange3/ows_whitelist/250-tree-scatterplot.ows \
+     /usr/local/lib/python3.10/dist-packages/Orange/canvas/workflows/
 
-# ── 추가 Orange3 addons (2026-05-25) — 사용자 요청 4종 ─────────────────────────
-# Textable: 텍스트 마이닝 위젯 세트 (Text addon 보조)
-# Pumice: ML 모델 비교/벤치마크 위젯
-# WorldHappiness: World Happiness 데이터셋 + 시각화 위젯
-# Orange-SNOM: 분광 현미경(SNOM) 데이터 분석 (PyPI 패키지명 dash 없음)
-# 각각 || true 로 격리 — 일부 실패해도 다른 addon 영향 없게.
-RUN pip3 install --no-cache-dir Orange3-Textable || \
-    echo "[warn] Orange3-Textable 설치 실패"
-RUN pip3 install --no-cache-dir Orange3-Pumice || \
-    echo "[warn] Orange3-Pumice 설치 실패"
-RUN pip3 install --no-cache-dir Orange3-WorldHappiness || \
-    echo "[warn] Orange3-WorldHappiness 설치 실패"
-RUN pip3 install --no-cache-dir Orange-SNOM || \
-    echo "[warn] Orange-SNOM 설치 실패"
-
-# ── TensorFlow 설치 제거 (2026-05-29) — 사용자 요청. orange3-fairness 의
-# Adversarial Debiasing 위젯이 비활성 됨. 필요 시 아래 블록 주석 해제 후 재빌드:
-# RUN pip3 install --no-cache-dir 'tensorflow-cpu==2.18.0' || \
-#     pip3 install --no-cache-dir tensorflow-cpu || \
-#     echo "[warn] TensorFlow 설치 실패 — Adversarial Debiasing 위젯 비활성"
+# ── 3개 외의 모든 .ows 파일 삭제 ─────────────────────────────────────────────────
+RUN find /usr/local/lib/python3.10/dist-packages -name "*.ows" \
+    ! -name "60-author-predictions-on-tweets.ows" \
+    ! -name "20-bag-of-words.ows" \
+    ! -name "250-tree-scatterplot.ows" \
+    -delete 2>/dev/null || true
 
 # ── Python 설치 경로 동적 탐지 후 환경변수로 설정 ─────────────────────────────
 RUN PYVER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')") && \
@@ -133,30 +106,6 @@ COPY orange3/Orange/widgets/model/__init__.py ${SITE}/Orange/widgets/model/__ini
 COPY orange3/Orange/widgets/data/owsplit.py             ${SITE}/Orange/widgets/data/owsplit.py
 COPY orange3/Orange/widgets/data/icons/Split.svg        ${SITE}/Orange/widgets/data/icons/Split.svg
 
-# ── 애드온 번역: Geo ──────────────────────────────────────────────────────────
-COPY orange3/orangecontrib/geo/i18n/English.json   ${SITE}/orangecontrib/geo/i18n/English.json
-COPY orange3/orangecontrib/geo/i18n/Slovenian.json ${SITE}/orangecontrib/geo/i18n/Slovenian.json
-COPY orange3/orangecontrib/geo/i18n/Korean.json    ${SITE}/orangecontrib/geo/i18n/Korean.json
-COPY orange3/orangecontrib/geo/widgets/__init__.py ${SITE}/orangecontrib/geo/widgets/__init__.py
-
-# ── 애드온 번역: ImageAnalytics ───────────────────────────────────────────────
-COPY orange3/orangecontrib/imageanalytics/i18n/Korean.json \
-     ${SITE}/orangecontrib/imageanalytics/i18n/Korean.json
-
-# ── 애드온 번역: Text ─────────────────────────────────────────────────────────
-RUN mkdir -p ${SITE}/orangecontrib/text/i18n
-COPY orange3/orangecontrib/text/i18n/English.json  ${SITE}/orangecontrib/text/i18n/English.json
-COPY orange3/orangecontrib/text/i18n/Korean.json   ${SITE}/orangecontrib/text/i18n/Korean.json
-COPY orange3/orangecontrib/text/widgets/__init__.py ${SITE}/orangecontrib/text/widgets/__init__.py
-
-# ── 애드온 번역: TimeSeries ───────────────────────────────────────────────────
-RUN mkdir -p ${SITE}/orangecontrib/timeseries/i18n
-COPY orange3/orangecontrib/timeseries/i18n/English.json  ${SITE}/orangecontrib/timeseries/i18n/English.json
-COPY orange3/orangecontrib/timeseries/i18n/Korean.json   ${SITE}/orangecontrib/timeseries/i18n/Korean.json
-COPY orange3/orangecontrib/timeseries/widgets/__init__.py ${SITE}/orangecontrib/timeseries/widgets/__init__.py
-
-# ── 애드온 번역: Network ──────────────────────────────────────────────────────
-COPY orange3/orangecontrib/network/i18n/Korean.json   ${SITE}/orangecontrib/network/i18n/Korean.json
 
 # CRLF 방어: 빌드 컨텍스트에 CRLF 가 섞여도(Windows 클론·ZIP 등) 컨테이너 실행 보장.
 # .gitattributes 로 LF 강제하지만 belt-and-suspenders 로 \r 제거 후 실행권한 부여.
@@ -190,14 +139,6 @@ RUN printf '%s\n' \
 RUN sed -i 's/const useFallback = !supportsCursorURIs || isTouchDevice;/const useFallback = !supportsCursorURIs;/' \
     /opt/noVNC/core/util/cursor.js
 
-
-# ── shap numpy 2.x 호환 패치 (Orange3-Explain 위젯 복구) ──────────────────────
-# shap 0.42.1(orange3-explain 0.6.10 이 shap==0.42.1 로 핀)이 numpy 2.0 에서 제거된
-# np.obj2sctype 를 _colorconv.py 에서 사용 → explain 위젯(Explain Model/Prediction/
-# Predictions) import 실패로 레지스트리에서 누락됐었다. shap 버전 유지(핀 충족)하고
-# 해당 호출만 numpy2 호환(np.dtype().type)으로 치환. 검증: discovery 위젯 270→273 복구.
-RUN sed -i 's/np\.obj2sctype(\([^)]*\))/np.dtype(\1).type/g' \
-    /usr/local/lib/python3.10/dist-packages/shap/plots/colors/_colorconv.py
 
 # ── Orange3 위젯 레지스트리 캐시 언어별 사전 생성 (English/Korean/Slovenian) ──
 # 캐시에는 위젯명·카테고리 번역이 박혀 언어별로 다르다(실측 확인). 언어 변경 시

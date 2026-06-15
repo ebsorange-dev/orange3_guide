@@ -1486,7 +1486,7 @@ LOADING_PAGE = """<!DOCTYPE html>
 <body>
   <div class="box">
     <div class="spinner"></div>
-    <h2>EBS Orange3</h2>
+    <h2 style="text-align:center">Orange3</h2>
     <div id="msg"></div>
   </div>
   <script>
@@ -1656,23 +1656,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .h-btn.accent:hover {{ background:#fff5eb; }}
     .h-btn.accent svg {{ stroke:#222; }}
 
-    /* 언어/옵션 드롭다운 */
-    #lang-wrap {{ position:relative; }}
-    #lang-btn {{
-      display:flex; align-items:center; gap:5px; cursor:pointer;
-      padding:5px 10px; border-radius:8px; font-size:13px;
-      color:#222; border:1px solid #e5e5ea; background:#fff;
-      user-select:none; transition:background .15s;
-    }}
-    #lang-btn:hover {{ background:#f5f5f7; }}
-    .lang-chevron {{ font-size:10px; color:#888; }}
-    #lang-dropdown {{
-      display:none; position:fixed; top:42px; right:12px;
-      background:#fff; border:1px solid #e5e5ea; border-radius:10px;
-      box-shadow:0 8px 24px rgba(0,0,0,0.13); min-width:148px;
-      padding:4px 0; z-index:99999;
-    }}
-    #lang-dropdown.open {{ display:block; }}
     /* Settings 서브메뉴 (Option 등) */
     #settings-menu {{
       display:none; position:fixed; background:#fff; border:1px solid #e5e5ea; border-radius:10px;
@@ -1722,14 +1705,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .set-mi-head {{ padding:7px 14px 3px; font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.4px; }}
     .set-sep {{ height:1px; background:#eee; margin:4px 0; }}
     .set-mi.set-sub {{ padding-left:24px; }}
-    /* 언어 드롭다운 바깥(캔버스) 클릭 감지용 투명 백드롭. top 은 toggleLang 에서
-       헤더 바로 아래로 동적 설정 → 헤더 버튼 영역은 덮지 않음. z-index 는 드롭다운
-       (99999)보다 아래라 항목 선택은 그대로 가능. */
-    #lang-backdrop {{
-      display:none; position:fixed; top:42px; left:0; right:0; bottom:0;
-      z-index:99990; background:transparent;
-    }}
-    #lang-backdrop.open {{ display:block; }}
     .li {{
       padding:8px 16px; font-size:13px; color:#222; cursor:pointer;
       transition:background .12s;
@@ -1750,33 +1725,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       will-change:transform; transform:translateZ(0);
       backface-visibility:hidden;
     }}
-    /* ── 위젯 패널 하단 footer (Phase 5, 2026-05-24) ──
-       기존 canvas 좌하단 footer-info 를 위젯 패널 하단으로 이동.
-       패널이 열린 동안만 노출, 닫히면 자연스럽게 사라짐. */
-    #hwd-panel-footer {{
-      flex-shrink:0; padding:22px 12px 10px;
-      border-top:1px solid #ececef; background:#fafafa;
-      display:flex; flex-direction:column; align-items:flex-start; gap:8px;
-      justify-content:flex-start;
-      user-select:none;
-    }}
-    /* 헤더에서 이동해 온 안내 문구 (2026-06-13) */
-    #hwd-footer-caption {{
-      font-size:11px; color:#888; font-weight:500; line-height:1.45;
-      letter-spacing:0.1px;
-      font-family:-apple-system,"Malgun Gothic",sans-serif;
-    }}
-    #hwd-panel-footer img {{
-      max-height:28px; width:auto; height:28px;
-      flex:none; opacity:0.92;
-    }}
-    #hwd-panel-footer img:not([src]),
-    #hwd-panel-footer img[src=""] {{ display:none; }}
-    /* 푸터 로고 행 + Orange 3 브랜드 (옆 로고와 사이즈 맞춤·회색, 2026-06-13) */
-    .hwd-footer-logos {{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }}
-    .hwd-orange-brand {{ display:inline-flex; align-items:center; gap:5px; filter:grayscale(1); opacity:0.55; }}
-    #hwd-panel-footer .hwd-orange-brand img {{ height:24px; width:auto; opacity:1; }}
-    .hwd-orange-brand > span {{ font-size:13px; font-weight:700; color:#777; letter-spacing:0.2px; white-space:nowrap; }}
 
     /* ── 워크플로우 탭 바 ── */
     /* ── 워크플로우 탭 바 ── */
@@ -2440,23 +2388,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     .ovp-tabs {{ display:flex; gap:18px; border-bottom:1px solid #e5e7eb; margin-bottom:20px; }}
     .ovp-tab {{ padding:8px 2px; font-size:13.5px; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; }}
     .ovp-tab.active {{ color:#1a1a2e; font-weight:700; border-bottom-color:#F47B20; }}
-    /* DataSet 탭 — 카드 버튼 (Widget Guide 형식, 2026-06-13) */
-    /* DataSet 패널을 Widget Guide(이미지1) 카드와 동일하게 — 테두리 카드 + 동일 패딩(32/20)
-       으로 타이틀 시작 위치(좌+21·상+33)를 Widget Guide 와 일치시킴 (2026-06-15) */
-    #ovp-pane-dataset {{ border:1px solid #e5e7eb; border-radius:10px; background:transparent; padding:32px 20px 40px; }}
-    .ovp-ds-head {{ font-size:24px; font-weight:800; color:#1a1a2e; margin:0 0 6px; }}
-    .ovp-ds-sub {{ font-size:14px; color:#6b7280; margin-bottom:22px; }}
-    .ovp-ds-grid {{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }}
-    .ovp-ds-card {{ display:flex; align-items:center; gap:13px; padding:16px; border:1px solid #e5e7eb; border-radius:12px;
-      background:#fff; cursor:pointer; text-align:left; font-family:inherit; transition:border-color .12s, box-shadow .12s; }}
-    .ovp-ds-card:hover:not(:disabled) {{ border-color:#F47B20; box-shadow:0 4px 14px rgba(0,0,0,0.06); }}
-    .ovp-ds-ic {{ width:44px; height:44px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-      border-radius:10px; background:#fff4ec; color:#F47B20; }}
-    .ovp-ds-meta {{ display:flex; flex-direction:column; min-width:0; }}
-    .ovp-ds-name {{ font-size:14px; font-weight:700; color:#1a1a2e; }}
-    .ovp-ds-desc {{ font-size:12px; color:#9ca3af; margin-top:3px; }}
-    .ovp-ds-ph {{ opacity:0.5; cursor:default; }}
-    .ovp-ds-ph .ovp-ds-ic {{ background:#f3f4f6; color:#9ca3af; }}
     .ovp-grid {{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:16px; }}
     .ovp-card {{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; min-height:116px;
       display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
@@ -3105,46 +3036,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     #canvas-toolbar .ct-btn.sb-active {{ background:rgba(244,123,32,0.15); color:#F47B20; }}
     #canvas-toolbar .ct-sep {{ width:1px; height:20px; background:rgba(0,0,0,0.12); margin:0 3px; flex-shrink:0; }}
 
-    /* ── 우측 슬라이드 패널 (캔버스 우상단 툴바 버튼으로 토글, 가로 폭 조절 가능, 2026-06-14) ──
-       왼쪽 메뉴와 무관한 별도 패널. 내용은 추후 추가. */
-    #right-panel {{
-      position:fixed; top:73px; right:0; bottom:0;
-      width:340px; min-width:240px; max-width:70vw;
-      background:#fff; border-left:1px solid #e5e7eb;
-      box-shadow:-3px 0 14px rgba(0,0,0,0.08);
-      z-index:8450; display:flex; flex-direction:column;
-      transform:translateX(100%); transition:transform .2s ease;
-    }}
-    #right-panel.open {{ transform:translateX(0); }}
-    #right-panel-resizer {{
-      position:absolute; top:0; left:-6px; width:13px; height:100%;
-      cursor:ew-resize; z-index:5;
-    }}
-    #right-panel-resizer::after {{
-      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:2px; height:34px; border-radius:2px; background:rgba(0,0,0,0.18); transition:background .12s, height .12s;
-    }}
-    #right-panel-resizer:hover::after {{ background:#F47B20; height:48px; }}
-    /* 드래그 중 화면 전체를 덮어 마우스 이벤트를 안정적으로 받는 오버레이
-       — iframe 위 드래그 끊김 + mouseup 누락(드래그 스턱→폭 폭주) 방지 (2026-06-14) */
-    #rp-drag-overlay {{ position:fixed; inset:0; z-index:99998; cursor:ew-resize; display:none; }}
-    #rp-drag-overlay.on {{ display:block; }}
-    .rp-head {{ display:flex; align-items:center; gap:8px; padding:10px 12px 8px 16px;
-      border-bottom:1px solid #f1f3f5; flex-shrink:0; }}
-    .rp-title {{ flex:1; min-width:0; font-size:16px; font-weight:800; color:#1a1a2e; }}
-    .rp-close {{ width:28px; height:28px; display:flex; align-items:center; justify-content:center;
-      cursor:pointer; color:#888; border-radius:5px; font-size:15px; transition:background .12s, color .12s; }}
-    .rp-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
-    .rp-content {{ flex:1; overflow:auto; }}
-    .rp-empty {{ display:flex; align-items:center; justify-content:center; height:100%;
-      color:#9ca3af; font-size:13px; text-align:center; line-height:1.6; padding:24px; }}
-    /* 패널 열림 시 우측 플로팅 툴바(상단/하단)를 패널 폭만큼 왼쪽으로 이동해 가려짐 방지 */
-    #canvas-toolbar, #sb-wrap {{ transition:right .18s ease; }}
-    body.rpanel-open #canvas-toolbar {{ right:calc(var(--rp-w, 340px) + 12px); }}
-    body.rpanel-open #sb-wrap {{ right:calc(var(--rp-w, 340px) + 11px); }}
-    /* 드래그 중에는 전환 제거(폭 조절 크리스프하게) */
-    body.rp-dragging #canvas-toolbar, body.rp-dragging #sb-wrap, body.rp-dragging #right-panel {{ transition:none; }}
-    body.rp-dragging {{ cursor:ew-resize; }}
 
     /* ── 펜 버튼 롱프레스 색상 드롭다운 (아래쪽) ── */
     #ct-color-drop {{
@@ -3546,7 +3437,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     </div>
 
     <!-- 헤더 브랜드 문구 (2026-06-13) — 좌측 5px, EBS Orange3 스타일(굵은 진한색) -->
-    <div id="header-caption">AI Data Analytics Training Platform</div>
+    <div id="header-caption">Orange Beta Test</div>
 
     <!-- 우측 버튼 -->
     <div id="header-right">
@@ -3569,14 +3460,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       </div>
       <div class="h-btn" id="btn-share"   onclick="openLessonTemplates()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.6"/></svg>Templates</div>
 
-      <!-- 언어/옵션 드롭다운 -->
-      <div id="lang-wrap">
-        <div id="lang-btn" onclick="toggleLang()">
-          <span class="lang-globe">🌐</span>
-          <span id="lang-label">옵션</span>
-          <span class="lang-chevron">▼</span>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -3661,32 +3544,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       <span class="an-label">Templates</span>
     </div>
     <div class="an-sep"></div>
-    <div class="an-item" id="an-example-btn" title="Example" onclick="event.stopPropagation(); toggleExamplesRoot(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span class="an-label">Examples</span>
-      <span class="an-chev">›</span>
-    </div>
-    <div id="an-example-acc" class="an-acc">
-      <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('elem')">Example 01</div>
-      <div class="an-subitem" onclick="event.stopPropagation(); openExampleLevel('mid')">Example 02</div>
-    </div>
-    <div class="an-item" id="an-dsd-btn" title="DataSet Des" onclick="event.stopPropagation(); toggleDsdRoot(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="5" cy="14" r="3"/><path d="m9 18-1.5-1.5"/></svg>
-      <span class="an-label">DataSet Des</span>
-      <span class="an-chev">›</span>
-    </div>
-    <div id="an-dsd-acc" class="an-acc">
-      <div class="an-subitem" onclick="event.stopPropagation(); openDsdLevel('01')">DataSet Des 01</div>
-      <div class="an-subitem" onclick="event.stopPropagation(); openDsdLevel('02')">DataSet Des 02</div>
-    </div>
-    <div class="an-sep"></div>
     <div class="an-spacer"></div>
     <div class="an-sep"></div>
-    <div class="an-item" title="Help" onclick="toggleHelpMenu(this, event)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <span class="an-label">Help</span>
-      <span class="an-chev">›</span>
-    </div>
     <div class="an-item" title="Settings" onclick="toggleSettingsMenu(this, event)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span class="an-label">Settings</span>
@@ -3702,33 +3561,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <button class="ovp-new" onclick="hideOverview(); _ensureWidgetPanel(); wfAddTab();"><span class="ovp-new-plus">+</span><span class="ovp-new-label">New Workflow</span></button>
       </div>
       <div class="ovp-sub">워크플로우 홈 — 최근 작업과 템플릿을 한눈에 봅니다.</div>
-      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span><span class="ovp-tab" onclick="ovpSwitchTab('widgets')">Widget</span><span class="ovp-tab" onclick="ovpSwitchTab('dataset')">DataSet</span></div>
-      <div id="ovp-pane-widgets" style="display:none;">
-        <iframe id="ovp-wg-frame" title="Widget Introduce" style="width:100%;height:calc(100vh - 240px);min-height:420px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;"></iframe>
-      </div>
-      <!-- DataSet 패널 (Widget Guide 형식, 카드 버튼 4개, 2026-06-13) -->
-      <div id="ovp-pane-dataset" style="display:none;">
-        <div class="ovp-ds-head">DataSet Guide</div>
-        <div class="ovp-ds-sub">분석용 샘플 데이터셋 — 카드를 선택해 적용합니다.</div>
-        <div class="ovp-ds-grid">
-          <button class="ovp-ds-card" onclick="ovpDatasetApply('iris','IRIS 분석 데이터')">
-            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
-            <span class="ovp-ds-meta"><span class="ovp-ds-name">IRIS 분석 데이터</span><span class="ovp-ds-desc">붓꽃 3품종 분류용 대표 샘플 (150행 × 4특성)</span></span>
-          </button>
-          <button class="ovp-ds-card ovp-ds-ph" disabled>
-            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
-            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 02</span><span class="ovp-ds-desc">준비 중</span></span>
-          </button>
-          <button class="ovp-ds-card ovp-ds-ph" disabled>
-            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
-            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 03</span><span class="ovp-ds-desc">준비 중</span></span>
-          </button>
-          <button class="ovp-ds-card ovp-ds-ph" disabled>
-            <span class="ovp-ds-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/></svg></span>
-            <span class="ovp-ds-meta"><span class="ovp-ds-name">샘플 데이터 04</span><span class="ovp-ds-desc">준비 중</span></span>
-          </button>
-        </div>
-      </div>
+      <div class="ovp-tabs"><span class="ovp-tab active" onclick="ovpSwitchTab('wf')">Workflows</span><span class="ovp-tab" onclick="ovpSwitchTab('tpl')">Templates</span></div>
       <!-- Workflows 패널 -->
       <div id="ovp-pane-wf">
         <div class="ovp-grid">
@@ -3788,14 +3621,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     <!-- 검색 결과 없을 때 안내 메시지 (영어) -->
     <div id="hwd-panel-noresult" aria-hidden="true">No matching widgets. Click a category name to clear the search.</div>
     <div id="hwd-panel-body"></div>
-    <!-- 패널 하단 footer 로고 (Phase 5, 2026-05-24) — EBS / 교육부 -->
-    <div id="hwd-panel-footer">
-      <div id="hwd-footer-caption">Web-based machine learning &amp; data analysis platform powered by Orange3</div>
-      <div class="hwd-footer-logos">
-        <img src="/footer-logo" alt="" onerror="this.style.display='none'"/>
-        <span class="hwd-orange-brand" title="Orange 3"><img src="/logo" alt="" onerror="this.style.display='none'"/><span>Orange 3</span></span>
-      </div>
-    </div>
   </div>
 
   <!-- ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ── -->
@@ -4045,23 +3870,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           </svg>
           Open
         </div>
-        <div id="open-subtitle" style="flex:1;font-size:12.5px;color:#6b7280;line-height:1.45;padding:0 16px;">왼쪽 탭에서 소스를 선택하고, .ows 워크플로우 파일을 불러옵니다.</div>
+        <div id="open-subtitle" style="flex:1;font-size:12.5px;color:#6b7280;line-height:1.45;padding:0 16px;">.ows 워크플로우 파일을 선택해 불러옵니다.</div>
         <div onclick="closeOpenOwsModal()" style="width:34px;height:34px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:16px;color:#9ca3af;display:flex;align-items:center;justify-content:center;">✕</div>
       </div>
       <!-- 본문 -->
       <div style="flex:1;display:flex;min-height:0;">
         <!-- 좌측 사이드바 (Templates 모달과 동일 톤) -->
         <div style="width:200px;flex-shrink:0;padding:14px 12px;overflow-y:auto;border-right:1px solid #ececef;background:#fafafa;">
-          <div id="opentab-examples" class="om-cat" onclick="_openOwsSwitchTab('examples')"
-               style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:#444;margin-bottom:2px;transition:background .12s;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7l-2-2H5a2 2 0 0 0-2 2z"/></svg>
-            Example Workflow
-          </div>
-          <div id="opentab-gdrive" class="om-cat" onclick="_openOwsSwitchTab('gdrive')"
-               style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:#444;margin-bottom:2px;transition:background .12s;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
-            Google Drive
-          </div>
           <div id="opentab-local" class="om-cat" onclick="_openOwsSwitchTab('local')"
                style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:#fff;margin-bottom:2px;background:#1a1a1c;font-weight:500;transition:background .12s;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -4075,48 +3890,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             <div style="font-size:20px;font-weight:700;color:#1a1a1c;margin-bottom:14px;">Local File</div>
             <div id="open-drop-zone" style="flex:1;border:2px dashed #d0d0d4;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#666;cursor:pointer;text-align:center;padding:20px;user-select:none;transition:border-color .15s,background .15s;font-size:14px;">
               .ows 파일을 드래그 하거나 <span style="color:#2563eb;text-decoration:underline;margin:0 4px;">여기를 클릭</span>해 선택하세요.
-            </div>
-          </div>
-          <!-- Example Workflow 패널 -->
-          <div id="openpanel-examples" class="openpanel" style="flex:1;display:none;flex-direction:column;min-height:0;">
-            <div style="font-size:20px;font-weight:700;color:#1a1a1c;margin-bottom:6px;">Example Workflow</div>
-            <div id="open-ex-subtitle" style="font-size:12.5px;color:#6b7280;margin-bottom:8px;">Orange3 내장 예제 워크플로우 목록</div>
-            <div class="open-ex-src"><span id="open-src-label">[출처]</span> <a href="https://orangedatamining.com/examples/" target="_blank" rel="noopener">https://orangedatamining.com/examples/</a></div>
-            <div id="open-ex-cats" class="open-ex-cats"></div>
-            <div style="flex:1;min-height:0;overflow:auto;">
-              <div id="open-examples-list" style="display:flex;flex-direction:column;gap:10px;">
-                <div style="grid-column:1/-1;padding:30px;color:#888;text-align:center;">로딩 중...</div>
-              </div>
-            </div>
-          </div>
-          <!-- Google Drive 패널 — 이미지1 스타일 (로고 + works with + Google Drive + LOGIN 버튼) -->
-          <div id="openpanel-gdrive" class="openpanel" style="flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;min-height:0;color:#444;gap:18px;">
-            <div style="display:flex;align-items:center;gap:18px;">
-              <!-- Google Drive 공식 삼각 로고 (노랑/초록/파랑 3색) — 인라인 SVG -->
-              <svg width="92" height="80" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg" aria-label="Google Drive">
-                <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-                <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
-                <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
-                <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-                <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
-                <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
-              </svg>
-              <div style="display:flex;flex-direction:column;align-items:flex-start;">
-                <div style="font-size:13px;color:#777;letter-spacing:0.5px;">works with</div>
-                <div style="font-size:30px;font-weight:400;color:#444;line-height:1.05;">
-                  <span style="color:#4285F4;">G</span><span style="color:#EA4335;">o</span><span style="color:#FBBC05;">o</span><span style="color:#4285F4;">g</span><span style="color:#34A853;">l</span><span style="color:#EA4335;">e</span>
-                  <span style="color:#5f6368;font-weight:300;">Drive</span>
-                </div>
-              </div>
-            </div>
-            <button id="open-gdrive-login-btn" onclick="_openGDriveLogin()"
-                    style="background:#88c8c8;color:#fff;border:none;padding:11px 28px;border-radius:6px;font-weight:600;letter-spacing:1.5px;font-size:13px;cursor:pointer;transition:background .15s;">
-              LOGIN TO GOOGLE
-            </button>
-            <div id="open-gdrive-status" style="margin-top:4px;color:#999;font-size:11.5px;height:14px;"></div>
-            <div id="open-gdrive-note"
-                 style="margin-top:6px;padding:10px 16px;border:1px dashed #d1d5db;border-radius:6px;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.55;text-align:center;max-width:440px;">
-              도메인 확정 및 정식 서비스 오픈 후 구글 드라이브 연결 설정을 제공 예정입니다.
             </div>
           </div>
           <!-- 하단 취소 버튼 -->
@@ -4173,76 +3946,15 @@ WRAPPER_PAGE = """<!DOCTYPE html>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h3M2 8h3M2 12h3M7 4h7M7 8h7M7 12h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
             <span>All Templates</span>
           </div>
-          <div class="lc-cat" data-cat="초등 Workflow">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13l5-9 5 9H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" fill="none"/><circle cx="8" cy="10" r="0.8" fill="currentColor"/></svg>
-            <span>초등 Workflow</span>
-          </div>
-          <div class="lc-cat" data-cat="중등 Workflow">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 7h4M6 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-            <span>중등 Workflow</span>
-          </div>
           <div class="lc-cat" data-cat="공통 Workflow">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
             <span>공통 Workflow</span>
           </div>
           <!-- Getting Started 카테고리 삭제됨 (2026-06-13) -->
-          <!-- Example Workflow 그룹 (v7, 2026-05-27): 2-level hierarchy 재구성
-               Example Workflow (부모) — 통합 보기: Basic + 8개 카테고리 카드 전체
-                 ↳ Basic — Orange3 내장 examples (이전 부모 자리)
-                 ↳ Bioinformatics / Classification / Clustering / Fairness /
-                   Hierarchical Clustering / Scatter Plot / Survival Analysis / Text Mining
-               (2026-05-29) 부모 두 번 클릭 시 sub 그룹 접기 토글 — data-parent 그룹화. -->
-          <div class="lc-cat lc-cat-parent collapsed" data-cat="Example Workflow" data-collapse-target="lc-example-subs">
+          <div class="lc-cat" data-cat="Example Workflow">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><line x1="6" y1="6" x2="10" y2="10" stroke="currentColor" stroke-width="1.4"/></svg>
             <span>Example Workflow</span>
-            <span class="lc-caret" aria-hidden="true">▾</span>
           </div>
-          <div id="lc-example-subs" class="lc-subgroup collapsed">
-          <div class="lc-cat lc-cat-sub" data-cat="베이직">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v9H2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 4V2.5C6 2.2 6.2 2 6.5 2h3c.3 0 .5.2.5.5V4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><line x1="4" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.1"/><line x1="4" y1="9.5" x2="10" y2="9.5" stroke="currentColor" stroke-width="1.1"/></svg>
-            <span>Basic</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Bioinformatics">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="5" r="1.4" fill="currentColor"/><circle cx="11" cy="5" r="1.4" fill="currentColor"/><circle cx="8" cy="11" r="1.4" fill="currentColor"/><path d="M5 5L11 5M5 5L8 11M11 5L8 11" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>Bioinformatics</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Classification">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 12L8 4L13 12" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="5.5" y1="9" x2="10.5" y2="9" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>Classification</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Clustering">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/></svg>
-            <span>Clustering</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Fairness">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2V14M2 6h12M3 6l-1 3h4l-1-3M13 6l-1 3h4l-1-3" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            <span>Fairness</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Hierarchical Clustering">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v3M5 5v3M11 5v3M3.5 8v3M6.5 8v3M9.5 8v3M12.5 8v3M5 5h6M3.5 8h3M9.5 8h3" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>Hierarchical Clustering</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Scatter Plot">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="11" r="1" fill="currentColor"/><circle cx="7" cy="7" r="1" fill="currentColor"/><circle cx="10" cy="9" r="1" fill="currentColor"/><circle cx="12" cy="4" r="1" fill="currentColor"/><circle cx="6" cy="13" r="1" fill="currentColor"/><path d="M2 14h12M2 2v12" stroke="currentColor" stroke-width="1.1"/></svg>
-            <span>Scatter Plot</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Survival Analysis">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 7L8 9L11 4L14 6" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.1"/></svg>
-            <span>Survival Analysis</span>
-          </div>
-          <div class="lc-cat lc-cat-sub" data-cat="Text Mining">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="9" x2="11" y2="9" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>Text Mining</span>
-          </div>
-          </div><!-- /#lc-example-subs -->
-          <!-- 교재 BOOK 그룹 (2026-05-29) — _upload_ows_/orange3_book/ 폴더 기반
-               부모 두 번 클릭 시 sub 그룹 접기 토글 (Example Workflow 와 동일 패턴) -->
-          <div class="lc-cat lc-cat-parent collapsed" data-cat="교재 BOOK" data-collapse-target="lc-book-subs-host">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2.5C3 2.2 3.2 2 3.5 2H12c.3 0 .5.2.5.5v11c0 .3-.2.5-.5.5H4.5C3.7 14 3 13.3 3 12.5v-10z" stroke="currentColor" stroke-width="1.3"/><path d="M3 12.5c0-.8.7-1.5 1.5-1.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="5.5" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.1"/><line x1="5.5" y1="7.5" x2="10" y2="7.5" stroke="currentColor" stroke-width="1.1"/></svg>
-            <span>교재 BOOK</span>
-            <span class="lc-caret" aria-hidden="true">▾</span>
-          </div>
-          <div id="lc-book-subs-host" class="lc-subgroup collapsed"><!-- 책 목록 sub 항목 동적 삽입 --></div>
         </div>
         <div id="lesson-content">
           <h2 id="lesson-heading">All Templates</h2>
@@ -4360,27 +4072,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <line x1="8" y1="7.4" x2="8" y2="11.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>
     </button>
-    <!-- 우측 패널 열기/닫기 — 왼쪽 메뉴와 별개 (2026-06-14) -->
-    <button class="ct-btn" id="ct-rpanel-btn" title="패널 열기/닫기" onclick="toggleRightPanel(this)">
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
-        <line x1="10.5" y1="3" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.4"/>
-      </svg>
-    </button>
   </div>
-
-  <!-- 우측 슬라이드 패널 (툴바 버튼으로 토글, 좌측 가장자리 드래그로 가로 폭 조절. 내용 추후 추가) -->
-  <div id="right-panel" aria-hidden="true">
-    <div id="right-panel-resizer" title="너비 조절"></div>
-    <div class="rp-head">
-      <span class="rp-title">패널</span>
-      <span class="rp-close" onclick="toggleRightPanel()" title="닫기">✕</span>
-    </div>
-    <div class="rp-content">
-      <div class="rp-empty">빈 페이지 — 작업 공간<br>(콘텐츠 준비 중)</div>
-    </div>
-  </div>
-  <div id="rp-drag-overlay"></div>
 
   <!-- ── 좌하단 상태바 ── -->
   <div id="sb-wrap">
@@ -5561,53 +5253,28 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       p.classList.add('show');
     }}
     /* ── Workflows ↔ Templates 탭 전환 (2026-06-11) ── */
-    /* DataSet 카드 적용 — 추후 IRIS 등 샘플 워크플로우 로드 연결 예정 (2026-06-13) */
-    function ovpDatasetApply(key, name) {{
-      try {{ showToast((name || '데이터셋') + ' 적용 (준비 중)', 2500); }} catch(_e) {{}}
-    }}
     function ovpSwitchTab(which) {{
-      // 탭 전환/선택 시 항상 초기 상태로 로딩 — 개요 페이지 스크롤 최상단 리셋 (2026-06-15)
       var _op=document.getElementById('overview-page'); if(_op) _op.scrollTop=0;
       var tabs=document.querySelectorAll('#overview-page .ovp-tab');
       tabs.forEach(function(t){{ t.classList.remove('active'); }});
-      var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl'),
-          wg=document.getElementById('ovp-pane-widgets'), ds=document.getElementById('ovp-pane-dataset');
+      var wf=document.getElementById('ovp-pane-wf'), tpl=document.getElementById('ovp-pane-tpl');
       if (wf) wf.style.display='none';
       if (tpl) tpl.style.display='none';
-      if (wg) wg.style.display='none';
-      if (ds) ds.style.display='none';
       if (which==='tpl') {{
         if (tabs[1]) tabs[1].classList.add('active');
         if (tpl) tpl.style.display='';
-        try {{ _ovtInit(); }} catch(_e) {{}}   // 템플릿: 항상 초기 카테고리로 재초기화
-      }} else if (which==='widgets') {{
-        if (tabs[2]) tabs[2].classList.add('active');
-        if (wg) {{
-          wg.style.display='';
-          var f=document.getElementById('ovp-wg-frame');
-          var _lg=(typeof INIT_LANG!=='undefined')?INIT_LANG:'en';
-          if (f) {{
-            if (!f.getAttribute('src')) {{
-              f.setAttribute('src', '/widget-guide?lang='+_lg);  // 최초 진입 로드
-            }} else {{
-              try {{ f.contentWindow.scrollTo(0,0); }} catch(_e) {{}}  // 재방문: 최상단(초기 상태)
-            }}
-          }}
-        }}
-      }} else if (which==='dataset') {{
-        if (tabs[3]) tabs[3].classList.add('active');
-        if (ds) ds.style.display='';
+        try {{ _ovtInit(); }} catch(_e) {{}}
       }} else {{
         if (tabs[0]) tabs[0].classList.add('active');
         if (wf) wf.style.display='';
-        try {{ _ovWfPage=0; }} catch(_e) {{}}        // Workflows: 1페이지로 리셋
-        try {{ _ovRenderWfList(); }} catch(_e) {{}}  // 목록 재렌더(초기 상태)
+        try {{ _ovWfPage=0; }} catch(_e) {{}}
+        try {{ _ovRenderWfList(); }} catch(_e) {{}}
       }}
     }}
     /* Templates 인라인 페이지 — Templates 모달(_lcTemplates)의 데이터를 재사용.
        상단 카테고리 버튼(개수 배지) + Example/TextBook 하위 버튼 + 썸네일/제목/설명 리스트.
        기본 = 첫 버튼(Elementary). 전체 통합 보기는 표시하지 않음. (2026-06-11) */
-    var _OVT_CATS = ['초등 Workflow','중등 Workflow','공통 Workflow','Example Workflow','교재 BOOK'];
+    var _OVT_CATS = ['공통 Workflow','Example Workflow'];
     var _ovtInited=false, _ovtActiveCat=null, _ovtActiveSub=null;
     function _ovtTxt(k) {{
       var T={{ ko:{{loading:'로딩 중...', empty:'템플릿이 없습니다.'}},
@@ -5881,53 +5548,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         showOverview();
       }}
     }}
-    /* ── 우측 슬라이드 패널 토글 + 가로 폭 조절 (2026-06-14) ──
-       캔버스 우상단 툴바 버튼(#ct-rpanel-btn)으로 열고 닫는다. 왼쪽 메뉴와 무관. 내용 추후 추가. */
-    function toggleRightPanel(el) {{
-      var p = document.getElementById('right-panel');
-      if (!p) return;
-      var open = !p.classList.contains('open');
-      p.classList.toggle('open', open);
-      p.setAttribute('aria-hidden', open ? 'false' : 'true');
-      document.body.classList.toggle('rpanel-open', open);
-      if (open) {{
-        var w = parseInt(p.style.width, 10) || p.offsetWidth || 340;
-        document.documentElement.style.setProperty('--rp-w', w + 'px');
-      }}
-      var btn = document.getElementById('ct-rpanel-btn');
-      if (btn) btn.classList.toggle('sb-active', open);
-    }}
-    document.addEventListener('DOMContentLoaded', function() {{
-      var rz = document.getElementById('right-panel-resizer');
-      var p  = document.getElementById('right-panel');
-      var ov = document.getElementById('rp-drag-overlay');
-      if (!rz || !p || !ov) return;
-      function onMove(e) {{
-        var min = 240, max = Math.round(window.innerWidth * 0.7);
-        var w = Math.max(min, Math.min(max, window.innerWidth - e.clientX));
-        p.style.width = w + 'px';
-        document.documentElement.style.setProperty('--rp-w', w + 'px');
-      }}
-      function endDrag() {{
-        ov.classList.remove('on');
-        document.body.classList.remove('rp-dragging');
-        document.body.style.userSelect = '';
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', endDrag);
-        window.removeEventListener('blur', endDrag);
-      }}
-      rz.addEventListener('mousedown', function(e) {{
-        e.preventDefault();
-        // 전체 화면 오버레이로 마우스 이벤트를 안정적으로 캡처 → iframe 위에서도 끊김 없고
-        // mouseup 이 항상 잡혀 드래그가 스턱되어 폭이 폭주하는 현상을 막는다.
-        ov.classList.add('on');
-        document.body.classList.add('rp-dragging');
-        document.body.style.userSelect = 'none';
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', endDrag);
-        window.addEventListener('blur', endDrag);   // 창 포커스 이탈 시에도 드래그 종료
-      }});
-    }});
     /* 위젯 메뉴 항상 노출 — 닫혀 있으면 다시 연다 */
     function _ensureWidgetPanel() {{
       var panel = document.getElementById('hwd-panel');
@@ -6152,7 +5772,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── VNC 키 이벤트 전달 (서버 사이드 xdotool) ── */
     const _keyMap = {{'=':'equal', '-':'minus', ' ':'space', '+':'plus'}};
     async function sendKey(key, modifiers) {{
-      closeMenu(); closeLang();
+      closeMenu();
       const xk = _keyMap[key] || key;
       const xkey = modifiers ? modifiers + '+' + xk : xk;
       try {{
@@ -6289,9 +5909,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var m = document.getElementById('open-modal');
       if (!m) return;
       m.style.display = 'flex';
-      _openOwsSwitchTab('local');   // 기본 Local File 탭
-      _openOwsLoadExamples();       // Examples 채우기
-      _openOwsPrecheckGDrive();     // Google Drive 설정 사전 확인
+      _openOwsSwitchTab('local');
     }}
     /* Google Drive OAuth 설정 사전 확인 — 모달 열릴 때 1회, 미설정 시 버튼 비활성 + 안내 표시. */
     var _gdriveChecked = false;
@@ -6361,7 +5979,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       if (m) m.style.display = 'none';
     }}
     function _openOwsSwitchTab(name) {{
-      ['examples','gdrive','local'].forEach(function(k) {{
+      ['local'].forEach(function(k) {{
         var tab = document.getElementById('opentab-' + k);
         var panel = document.getElementById('openpanel-' + k);
         var active = (k === name);
@@ -6373,7 +5991,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         }}
         if (panel) panel.style.display = active ? 'flex' : 'none';
       }});
-      if (name === 'gdrive') {{ try {{ _openOwsPrecheckGDrive(); }} catch(_e) {{}} }}
     }}
     /* Local File 탭: 드롭/클릭 → ows-file-input 트리거 */
     (function() {{
@@ -6491,15 +6108,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }}
     /* Menu Examples: Templates 데이터를 카테고리 버튼으로 그룹핑 → 선택 시 카드 리스트 (2026-06-13) */
     var _MENU_EX_CATS = [
-      {{ key:'basic',                    label:'Example Workflow' }},
-      {{ key:'Classification',           label:'Classification' }},
-      {{ key:'Clustering',               label:'Clustering' }},
-      {{ key:'Bioinformatics',           label:'Bioinformatics' }},
-      {{ key:'Fairness',                 label:'Fairness' }},
-      {{ key:'Hierarchical Clustering',  label:'Hierarchical Clustering' }},
-      {{ key:'Scatter Plot',             label:'Scatter Plot' }},
-      {{ key:'Survival Analysis',        label:'Survival Analysis' }},
-      {{ key:'Text Mining',              label:'Text Mining' }}
+      {{ key:'basic', label:'Example Workflow' }}
     ];
     var _menuExCache = {{}};            // {{ '<cat>': [items...] }}
     var _menuExCatsRendered = false;
@@ -6517,17 +6126,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }}
       return await r.json();
     }}
+    var _OPEN_EX_WHITELIST = ['Author Prediction on Tweets', 'Bag of Words', 'Classification Tree'];
     async function _menuFetchCat(key) {{
       if (_menuExCache[key]) return _menuExCache[key];
       if (key === 'basic') {{
         var d = await _menuFetchJson('/basic_templates?sid=' + SID);
-        _menuExCache['basic'] = (d && d.ok && Array.isArray(d.items)) ? d.items : [];
-      }} else {{
-        // 8개 Sample 카테고리를 한 번에 (단일 호출로 전체 캐시)
-        var d = await _menuFetchJson('/orange3_templates_all?sid=' + SID);
-        if (d && d.ok && d.by_cat) {{
-          Object.keys(d.by_cat).forEach(function(c) {{ _menuExCache[c] = d.by_cat[c] || []; }});
-        }}
+        var items = (d && d.ok && Array.isArray(d.items)) ? d.items : [];
+        _menuExCache['basic'] = items.filter(function(it) {{ return _OPEN_EX_WHITELIST.indexOf(it.title || it.filename) >= 0; }});
       }}
       return _menuExCache[key] || [];
     }}
@@ -6865,44 +6470,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       }}
     }}
 
-    /* ── 언어 드롭다운 ── */
-    function toggleLang() {{
-      var drop = document.getElementById('lang-dropdown');
-      var btn  = document.getElementById('lang-btn');
-      var bd   = document.getElementById('lang-backdrop');
-      var rect = btn.getBoundingClientRect();
-      drop.style.top   = (rect.bottom + 4) + 'px';
-      drop.style.right = (window.innerWidth - rect.right) + 'px';
-      var opening = !drop.classList.contains('open');
-      drop.classList.toggle('open');
-      // 백드롭: 헤더 바로 아래부터 캔버스(iframe) 전체를 덮어 바깥(캔버스) 클릭을 잡는다.
-      if (bd) {{
-        bd.style.top = rect.bottom + 'px';
-        bd.classList.toggle('open', opening);
-      }}
-      document.getElementById('menu-dropdown').classList.remove('open');
-    }}
-    function closeLang() {{
-      document.getElementById('lang-dropdown').classList.remove('open');
-      var bd = document.getElementById('lang-backdrop');
-      if (bd) bd.classList.remove('open');
-    }}
-    /* 좌측 메뉴 Option → 언어 드롭다운을 항목 오른쪽에 띄움 (헤더 lang-btn 숨김 대응) */
-    function toggleLangNav(el, ev) {{
-      if (ev) ev.stopPropagation();   // document 클릭 핸들러의 즉시 closeLang 방지
-      var drop = document.getElementById('lang-dropdown');
-      var bd   = document.getElementById('lang-backdrop');
-      if (!drop) return;
-      var rect = el.getBoundingClientRect();
-      drop.style.top = 'auto';
-      drop.style.right = 'auto';
-      drop.style.left = (rect.right + 8) + 'px';
-      drop.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-      var opening = !drop.classList.contains('open');
-      drop.classList.toggle('open');
-      if (bd) {{ bd.style.top = '0px'; bd.classList.toggle('open', opening); }}
-      var md = document.getElementById('menu-dropdown'); if (md) md.classList.remove('open');
-    }}
     /* Settings 항목 → 하위 서브메뉴(Option) 플라이아웃 */
     function toggleSettingsMenu(el, ev) {{
       if (ev) ev.stopPropagation();
@@ -6915,12 +6482,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       m.style.bottom = (window.innerHeight - rect.bottom) + 'px';
       m.style.top = 'auto'; m.style.right = 'auto';
       m.classList.add('open');
-      var lang = document.getElementById('lang-dropdown'); if (lang) lang.classList.remove('open');
       try {{ closeHelpMenu(); }} catch(_e) {{}}
       try {{ closeMenu(); }} catch(_e) {{}}
     }}
     function closeSettingsMenu() {{
       var m = document.getElementById('settings-menu'); if (m) m.classList.remove('open');
+      var f = document.getElementById('file-submenu'); if (f) f.classList.remove('open');
     }}
     /* Help 항목 → 도움말 드롭다운(Documentation/About) 플라이아웃 */
     function toggleHelpMenu(el, ev) {{
@@ -6936,12 +6503,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       m.classList.add('open');
       closeSettingsMenu();
       try {{ closeMenu(); }} catch(_e) {{}}
-      try {{ closeLang(); }} catch(_e) {{}}
     }}
-    function closeHelpMenu() {{
-      var m = document.getElementById('help-menu'); if (m) m.classList.remove('open');
-      var f = document.getElementById('file-submenu'); if (f) f.classList.remove('open');
-    }}
+    function closeHelpMenu() {{ var m=document.getElementById('help-menu'); if(m) m.classList.remove('open'); }}
     /* File 플라이아웃 토글 — 설정 Option(toggleLangNav) 과 동일 패턴 (2026-06-14) */
     function toggleFileNav(el, ev) {{
       if (ev) ev.stopPropagation();
@@ -7107,9 +6670,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       // 옵션 버튼 라벨 — 한국어 '옵션', 영어·슬로베니아어 'Option' (아이콘·화살표는 별도 span이라 유지)
       const optLabel = document.getElementById('lang-label');
       if (optLabel && d.optionLabel) optLabel.textContent = d.optionLabel;
-      // 헤더 가운데 안내 문구 — 언어별 분기
-      const fCap = document.getElementById('hwd-footer-caption');
-      if (fCap && d.headerCaption) fCap.textContent = d.headerCaption;
       // Workflow Info 모달 헤더 — 언어별 분기 (2026-05-26)
       const wfTitle = document.querySelector('#wf-info-modal .wf-title-text');
       if (wfTitle && d.wfInfoTitle) wfTitle.textContent = d.wfInfoTitle;
@@ -7142,9 +6702,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 새 사이드바·Overview 라벨 i18n (2026-06-11) — 언어 전환 시 함께 갱신 */
     function applyNewUILang(code) {{
       var NAV = {{
-        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','예제','DataSet Des','도움말','설정'],
-        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Examples','DataSet Des','Help','Settings'],
-        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Primer','DataSet Des','Pomoč','Nastavitve']
+        ko: ['새 문서','열기','메뉴','펼치기','WorkSpaces','위젯','분석 데이터셋','템플릿','설정'],
+        en: ['New','Open','Menu','Expand','WorkSpaces','Widget','Analysis-Datasets','Templates','Settings'],
+        sl: ['Nova','Odpri','Meni','Razširi','WorkSpaces','Gradnik','Zbirke podatkov','Predloge','Nastavitve']
       }};
       var arr = NAV[code] || NAV.en;
       document.querySelectorAll('#app-nav .an-item .an-label').forEach(function(el, i) {{
@@ -7182,7 +6742,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var srch = document.getElementById('hwd-panel-search'); if(srch) srch.setAttribute('placeholder', srchT);
     }}
     async function setLang(code) {{
-      closeLang();
       if (!LANGS[code]) return;
       // 현재 표시 언어(INIT_LANG = 이 페이지가 로드된 언어) 재선택 → 변경 없음.
       // 불필요한 컨테이너 재시작·리로드를 막고 그대로 유지.
@@ -7347,10 +6906,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* 모달 텍스트 i18n — data-cat/category 는 식별자라 유지하고 '표시' 텍스트만 INIT_LANG
        으로 치환한다. ko 는 HTML 하드코딩 원본을 그대로 둔다(치환 안 함). */
     var LC_CAT_I18N = {{
-      '초등 Workflow': {{en:'Elementary Workflow', sl:'Osnovnošolski potek'}},
-      '중등 Workflow': {{en:'Secondary Workflow', sl:'Srednješolski potek'}},
-      '공통 Workflow': {{en:'Common Workflow', sl:'Skupni potek'}},
-      '교재 BOOK': {{en:'TextBook Workflow', sl:'Učbenik'}}
+      '공통 Workflow': {{en:'Common Workflow', sl:'Skupni potek'}}
     }};
     var LC_NOTE_I18N = {{
       en:'Select a category and click a card to instantly run an Orange3 workflow.',
@@ -7445,7 +7001,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         if (d.ok && Array.isArray(d.items)) {{
           _lcTemplates = _lcTemplates.filter(function(t) {{ return t.category !== '베이직'; }});
           var palette = ['#5B6BFF','#FF6B9C','#FFB86B','#6BCB77','#9B6BFF','#6BD9FF','#FF6B6B','#A48BFF','#5BD3D9','#FF9B6B','#A0C8E8','#B8B8C8'];
-          d.items.forEach(function(it, i) {{
+          var _EW_WHITELIST = ['Author Prediction on Tweets', 'Bag of Words', 'Classification Tree'];
+          d.items.filter(function(it) {{ return _EW_WHITELIST.indexOf(it.title || it.filename) >= 0; }}).forEach(function(it, i) {{
             _lcTemplates.push({{
               vendor:'베이직', vendorIcon:'B',
               title: it.title || it.filename,
@@ -7467,10 +7024,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
        Sample 부모 + 8개 sub (v5, 2026-05-27). */
     var _lcOrange3CatLoaded = {{}};   // {{ 'Classification': true, ... }}
     var _lcOrange3CatLoading = {{}};
-    var _ORANGE3_CATS = [
-      'Bioinformatics', 'Classification', 'Clustering', 'Fairness',
-      'Hierarchical Clustering', 'Scatter Plot', 'Survival Analysis', 'Text Mining'
-    ];
+    var _ORANGE3_CATS = [];
     var _ORANGE3_CAT_COLORS = {{
       'Bioinformatics':         '#6BCB77',
       'Classification':         '#5B6BFF',
@@ -8061,14 +7615,10 @@ WRAPPER_PAGE = """<!DOCTYPE html>
                   || (e.target.closest && e.target.closest('.hwd-menu'));
         if (!inMenu) closeMenu();
       }}
-      if (!document.getElementById('lang-wrap').contains(e.target) &&
-          !document.getElementById('lang-dropdown').contains(e.target))  closeLang();
       var _sm = document.getElementById('settings-menu');
-      if (_sm && _sm.classList.contains('open') && !_sm.contains(e.target) &&
-          !document.getElementById('lang-dropdown').contains(e.target)) closeSettingsMenu();
-      var _hm = document.getElementById('help-menu');
+      if (_sm && _sm.classList.contains('open') && !_sm.contains(e.target)) closeSettingsMenu();
       var _fs = document.getElementById('file-submenu');
-      if (_hm && _hm.classList.contains('open') && !_hm.contains(e.target) && !(_fs && _fs.contains(e.target))) closeHelpMenu();
+      if (_fs && _fs.classList.contains('open') && !_fs.contains(e.target)) closeSettingsMenu();
       if (!document.getElementById('sb-wrap').contains(e.target)) {{
         document.querySelectorAll('.sb-drop').forEach(function(d) {{ d.classList.remove('sb-open'); }});
       }}
@@ -9476,7 +9026,6 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         // 여기서 열린 드롭다운/메뉴를 닫는다. (activeElement 게이트는 cross-origin
         // iframe 에서 신뢰 불가 — blur 자체가 iframe 포커스 이동 신호. closeLang/
         // closeMenu 는 idempotent 라 닫힌 상태에서 호출해도 무해.)
-        closeLang();
         var saveModal = document.getElementById('save-confirm-overlay');
         if (!(saveModal && saveModal.classList.contains('open'))) closeMenu();
         document.querySelectorAll('.sb-drop').forEach(function(d) {{ d.classList.remove('sb-open'); }});
@@ -10061,31 +9610,21 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     }})();
   </script>
 
-  <!-- 언어 드롭다운: body 직속으로 루트 z-index 보장 -->
-  <div id="lang-dropdown">
-    <div class="li" onclick="setLang('ko')">한국어</div>
-    <div class="li" onclick="setLang('en')">English</div>
-    <div class="li" onclick="setLang('sl')">Slovenčina</div>
-  </div>
-  <!-- Settings 하위 서브메뉴 (Option → 언어 선택) -->
   <div id="settings-menu">
-    <div class="set-mi" onclick="toggleLangNav(this, event)"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="2" y1="8" x2="14" y2="8"/><path d="M8 2c2.2 2 2.2 10 0 12M8 2c-2.2 2-2.2 10 0 12"/></svg></span><span class="set-mi-tx" data-set="option">Option</span><span class="set-mi-chev">›</span></div>
-  </div>
-  <!-- Help 드롭다운 (n8n 참조) — 항목은 아직 동작 미연결 (2026-06-12) -->
-  <div id="help-menu">
     <div class="set-mi" id="file-nav-btn" onclick="toggleFileNav(this, event)"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M2 4.5h4.2l1.4 1.6H14v7H2z"/></svg></span><span class="set-mi-tx">File</span><span class="set-mi-chev">›</span></div>
     <div class="set-sep"></div>
     <div class="set-mi"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="2" y="3" width="12" height="9" rx="1"/><line x1="4.5" y1="6" x2="11.5" y2="6"/><line x1="4.5" y1="8.5" x2="9.5" y2="8.5"/></svg></span><span class="set-mi-tx">Documentation</span></div>
     <div class="set-mi" onclick="openAboutModal()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><line x1="8" y1="7.3" x2="8" y2="11" stroke-linecap="round"/><circle cx="8" cy="5" r="0.6" fill="currentColor" stroke="none"/></svg></span><span class="set-mi-tx">About</span></div>
   </div>
+  <div id="help-menu" style="display:none"></div>
   <!-- File 플라이아웃 (New/Open → 구분선 → Workflow Info/Save/Save a Copy) -->
   <div id="file-submenu">
-    <div class="set-mi" onclick="closeHelpMenu(); hideOverview(); _ensureWidgetPanel(); wfAddTab()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span class="set-mi-tx">New</span></div>
-    <div class="set-mi" onclick="closeHelpMenu(); _ensureWidgetPanel(); openOwsDialog()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Open</span></div>
-    <div class="set-mi" onclick="closeHelpMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Save</span></div>
-    <div class="set-mi" onclick="closeHelpMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M3 10.5V3.5a1 1 0 0 1 1-1h6"/></svg></span><span class="set-mi-tx">Save a Copy</span></div>
+    <div class="set-mi" onclick="closeSettingsMenu(); hideOverview(); _ensureWidgetPanel(); wfAddTab()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><span class="set-mi-tx">New</span></div>
+    <div class="set-mi" onclick="closeSettingsMenu(); _ensureWidgetPanel(); openOwsDialog()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Open</span></div>
+    <div class="set-mi" onclick="closeSettingsMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span><span class="set-mi-tx">Save</span></div>
+    <div class="set-mi" onclick="closeSettingsMenu(); saveWorkflow()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="8" rx="1"/><path d="M3 10.5V3.5a1 1 0 0 1 1-1h6"/></svg></span><span class="set-mi-tx">Save a Copy</span></div>
     <div class="set-sep"></div>
-    <div class="set-mi" onclick="closeHelpMenu(); ctShowInfo()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="5" r="0.85" fill="currentColor" stroke="none"/><line x1="8" y1="7.4" x2="8" y2="11.6"/></svg></span><span class="set-mi-tx" id="help-wfinfo-tx">Workflow Info</span></div>
+    <div class="set-mi" onclick="closeSettingsMenu(); ctShowInfo()"><span class="set-mi-ic"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"/><circle cx="8" cy="5" r="0.85" fill="currentColor" stroke="none"/><line x1="8" y1="7.4" x2="8" y2="11.6"/></svg></span><span class="set-mi-tx" id="help-wfinfo-tx">Workflow Info</span></div>
   </div>
   <!-- About 모달 (n8n About 참조; 빨간 영역=브랜드/Third-Party/InstanceID/Debug 제거) (2026-06-12) -->
   <div id="about-modal-overlay" onclick="if(event.target===this) closeAboutModal()">
@@ -10100,17 +9639,13 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         <div class="about-row"><span class="about-lbl" data-ab="license">License</span><span class="about-val about-license">GPL-3.0</span></div>
         <div class="about-divider"></div>
         <div class="about-row"><span class="about-lbl" data-ab="version">Version</span><span class="about-val">{web_version}</span></div>
-        <div class="about-row"><span class="about-lbl" data-ab="websource">Web Source Code</span><span class="about-val"><a href="https://github.com/ebsorange-dev/orange3web1.git" target="_blank" rel="noopener noreferrer">https://github.com/ebsorange-dev/orange3web1.git</a></span></div>
+        <div class="about-row"><span class="about-lbl" data-ab="websource">Web Source Code</span><span class="about-val"><a href="https://github.com/ebsorange-dev/orange3_guide.git" target="_blank" rel="noopener noreferrer">https://github.com/ebsorange-dev/orange3_guide.git</a></span></div>
       </div>
       <div class="about-foot">
         <button class="about-ok" onclick="closeAboutModal()" data-ab="close">Close</button>
       </div>
     </div>
   </div>
-  <!-- 언어 드롭다운 바깥(캔버스) 클릭 감지용 투명 백드롭: iframe 내부 클릭은 부모
-       document 의 click 으로 버블되지 않으므로, 드롭다운이 열린 동안 캔버스 위를 덮어
-       클릭을 잡아 닫는다. 헤더 영역은 덮지 않음(top 동적 = 헤더 아래). -->
-  <div id="lang-backdrop" onclick="closeLang()"></div>
 
   <!-- 세션 메타 정보 패널 — 좌하단, 회색 10pt -->
   <style id="x-meta-info-style">
@@ -10484,10 +10019,7 @@ async def index(request: Request, sid: str | None = None, lang: str | None = Non
         try:
             _first_page = _effective_first_page()
             _html = WRAPPER_PAGE.format(novnc_url=novnc_url, sid=sid, init_lang=lang, web_version=WEB_APP_VERSION, first_page=_first_page)
-            # ready splash(로딩 완료 후 환영 카드) + loading splash 숨김 주입 —
-            # xpra 와 동일하게 noVNC 에도 적용 (2026-05-31 버그 수정: 기존엔 xpra 만
-            # 적용돼 Basic 모드에서 노출 토글이 안 먹던 문제)
-            _inject = _loading_cover_hide_css() + _nav_hide_style() + _ready_splash_html(lang)
+            _inject = _loading_cover_hide_css() + _nav_hide_style()
             if _inject:
                 _html = _html.replace("</head>", _inject + "</head>", 1)
             return html_response(_html)
@@ -11565,26 +11097,6 @@ async def splash_image():
     return _serve_loading_splash()
 
 
-@app.get("/footer-logo")
-async def footer_logo():
-    """캔버스 왼쪽 하단 footer 로고. 파일 없으면 404 → 프론트엔드가 자동 숨김.
-       지원 포맷: PNG, JPG, SVG. 우선순위: png > svg > jpg.
-       파일 위치: html/footer_logo.{png,svg,jpg} (이미 docker-compose 로 마운트된 폴더)"""
-    candidates = [
-        ("/app/html/footer_logo.png", "image/png"),
-        ("/app/html/footer_logo.svg", "image/svg+xml"),
-        ("/app/html/footer_logo.jpg", "image/jpeg"),
-    ]
-    for path, mime in candidates:
-        if os.path.isfile(path):
-            with open(path, "rb") as f:
-                data = f.read()
-            return Response(
-                content=data,
-                media_type=mime,
-                headers={"Cache-Control": "public, max-age=3600"},
-            )
-    return Response(status_code=404)
 
 
 @app.get("/splash-mascot")
@@ -11771,6 +11283,8 @@ def _apply_catalog_admin_filter(data: dict) -> None:
         for c in cats_in:
             cname = c.get("name", "")
             canon = _ADMIN_CAT_ALIASES.get(cname, cname)
+            if canon not in _ADMIN_KNOWN_CATEGORIES:
+                continue
             if not _menu.get(canon, True):
                 continue
             if not (c.get("widgets") or []):
@@ -12684,111 +12198,6 @@ def _live_session_widgets() -> tuple[dict, dict, int]:
         return w_add, w_run, 0
 
 
-@app.get("/api/admin/usage/summary")
-async def api_admin_usage_summary(date: str | None = None):
-    """일별 이용 패턴 요약 (admin). date=YYYYMMDD (기본 오늘 UTC).
-    오늘이면 진행 중(미종료) 세션의 위젯 사용도 실시간 합산해 Top 위젯에 반영."""
-    day = date or time.strftime("%Y%m%d", time.gmtime())
-    if not (len(day) == 8 and day.isdigit()):
-        return JSONResponse({"ok": False, "error": "date=YYYYMMDD 형식"}, status_code=400)
-    try:
-        res = _usage_aggregate(day)
-        if res.get("ok") and day == time.strftime("%Y%m%d", time.gmtime()):
-            live_add, live_run, live_sess = _live_session_widgets()
-            # 로그(종료 세션) + 진행 중 세션 위젯 합산 → 중복 없음
-            # (진행 중 세션은 아직 widget.* 로그에 없음)
-            m_add = {w["widget"]: w["add"] for w in res.get("top_widgets", [])}
-            m_run = {w["widget"]: w["run"] for w in res.get("top_widgets", [])}
-            for w, c in live_add.items():
-                m_add[w] = m_add.get(w, 0) + c
-            for w, c in live_run.items():
-                m_run[w] = m_run.get(w, 0) + c
-            _allw = set(m_add) | set(m_run)
-            res["top_widgets"] = [
-                {"widget": w, "add": m_add.get(w, 0), "run": m_run.get(w, 0)}
-                for w in sorted(_allw, key=lambda w: m_add.get(w, 0) + m_run.get(w, 0),
-                                reverse=True)[:20]]
-            res["live_widget_total"] = sum(live_add.values()) + sum(live_run.values())
-            res["active_sessions"] = live_sess
-        return JSONResponse(res)
-    except Exception as e:
-        log.warning(f"[usage-summary] 집계 실패: {e}")
-        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
-
-
-@app.get("/api/admin/usage/days")
-async def api_admin_usage_days():
-    """이용 로그가 있는 날짜 목록 (admin) — 대시보드 날짜 선택용."""
-    days = []
-    try:
-        for fn in os.listdir(USAGE_LOG_DIR):
-            if fn.startswith("usage-") and fn.endswith(".jsonl"):
-                days.append(fn[6:14])
-    except Exception:
-        pass
-    return JSONResponse({"ok": True, "days": sorted(days, reverse=True)})
-
-
-def _kst_date_hour(ts: str):
-    """UTC ISO ts → (KST 날짜 YYYYMMDD, KST 시각 0-23). 실패 시 (None,None)."""
-    ep = _usage_ts_epoch(ts)
-    if ep is None:
-        return None, None
-    k = time.gmtime(ep + 9 * 3600)   # KST = UTC+9
-    return time.strftime("%Y%m%d", k), k.tm_hour
-
-
-@app.get("/api/admin/usage/heatmap")
-async def api_admin_usage_heatmap(days: int = 14):
-    """일자 × 시간대(KST) 세션 시작 히트맵 (admin). 최근 N일.
-    반환: rows=[{date, hours:[24]}] (최신일 먼저), max(셀 최대값)."""
-    days = max(1, min(days, 90))
-    today_kst = time.strftime("%Y%m%d", time.gmtime(time.time() + 9 * 3600))
-    # 대상 KST 날짜 집합 (최근 N일)
-    want = set()
-    base = _usage_ts_epoch(today_kst[:4] + "-" + today_kst[4:6] + "-" + today_kst[6:8] + "T00:00:00Z")
-    for i in range(days):
-        want.add(time.strftime("%Y%m%d", time.gmtime((base or time.time()) - i * 86400)))
-    mat: dict = {}   # date -> [24]
-    try:
-        files = [fn for fn in os.listdir(USAGE_LOG_DIR)
-                 if fn.startswith("usage-") and fn.endswith(".jsonl")]
-        # UTC 파일명이 KST 날짜와 ±1일 차이날 수 있어 want ± 1일 범위 파일만 읽음
-        want_utc = set()
-        for d in want:
-            want_utc.add(d)
-            try:
-                ep0 = _usage_ts_epoch(d[:4] + "-" + d[4:6] + "-" + d[6:8] + "T00:00:00Z")
-                if ep0:
-                    want_utc.add(time.strftime("%Y%m%d", time.gmtime(ep0 - 86400)))
-                    want_utc.add(time.strftime("%Y%m%d", time.gmtime(ep0 + 86400)))
-            except Exception:
-                pass
-        for fn in files:
-            if fn[6:14] not in want_utc:
-                continue
-            try:
-                with open(os.path.join(USAGE_LOG_DIR, fn), encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line or '"session.start"' not in line:
-                            continue
-                        try:
-                            r = json.loads(line)
-                            if r.get("event") != "session.start":
-                                continue
-                            d, h = _kst_date_hour(r.get("ts", ""))
-                            if d in want and h is not None:
-                                mat.setdefault(d, [0] * 24)[h] += 1
-                        except Exception:
-                            pass
-            except Exception:
-                pass
-    except Exception as e:
-        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
-    rows = [{"date": d, "hours": mat.get(d, [0] * 24)} for d in sorted(want, reverse=True)]
-    mx = max((max(r["hours"]) for r in rows), default=0)
-    return JSONResponse({"ok": True, "tz": "KST", "rows": rows, "max": mx})
 
 
 # ── Xpra 전환 실험 라우트 (Phase 2, 2026-05-23) ─────────────────────────────
@@ -13146,10 +12555,12 @@ def _loading_cover_hide_css() -> str:
 
 
 def _ready_splash_html(init_lang: str) -> str:
-    """로딩 완료 후(ready) 환영 splash inject 문자열.
-    admin_settings.splashes.ready.enabled=False 또는 해당 언어 메시지가 비면 "".
-    noVNC·xpra 래퍼 공통 사용 (vnc-frame iframe + .hwd-cat 사이드바 감지 기반).
-    2026-05-31: 기존 xpra 라우트 인라인 코드를 헬퍼로 추출 — noVNC 에도 적용."""
+    """(removed)"""
+    return ""
+
+
+def _ready_splash_html_legacy(init_lang: str) -> str:
+    """(legacy - not used)"""
     try:
         _sp_cfg = _admin_load_settings().get("splashes", {}) or {}
         _ready_cfg = _sp_cfg.get("ready") or {}
@@ -13457,10 +12868,7 @@ async def xpra_wrapped_route(xpra_sid: str, request: Request, lang: str | None =
         '})();'
         '</script>'
     ).replace("__SPLASH_WELCOME_MSG__", _splash_msg_js)
-    # ready splash 는 _ready_splash_html() 헬퍼로 일원화 (noVNC 와 동일 동작 보장,
-    # ② 단순 토글 로직 한 곳에서 관리). 위 인라인 splash 계산은 미사용. (2026-05-31)
-    splash = _ready_splash_html(_init_lang)
-    html = html.replace("</head>", _loading_cover_hide_css() + _nav_hide_style() + inject + splash + "</head>", 1)
+    html = html.replace("</head>", _loading_cover_hide_css() + _nav_hide_style() + inject + "</head>", 1)
     return html_response(html)
 
 
@@ -13907,6 +13315,8 @@ async def basic_templates(request: Request, sid: str | None = None):
         )
         paths, headers, thumb_set = _scan_ows_batch(container, find_cmd)
         items = _build_ows_items(paths, headers, thumb_set, sid)
+        _BASIC_WHITELIST = {"Author Prediction on Tweets", "Bag of Words", "Classification Tree"}
+        items = [it for it in items if it.get("title") in _BASIC_WHITELIST]
         items.sort(key=lambda x: x["title"])
         return JSONResponse({"ok": True, "items": items})
     except Exception as e:
@@ -14649,18 +14059,6 @@ _ADMIN_CATEGORY_PHASES = [
     {"phase": 1, "title": "Orange Service Menu",
      "categories": ["Data", "Transform", "Visualize",
                     "Model", "Evaluate", "Unsupervised"]},
-    {"phase": 2, "title": "Add on Menu 1",
-     "categories": ["Image Analytics", "Network", "Time Series",
-                    "Text Mining", "Geo"]},
-    {"phase": 3, "title": "Add on Menu 2",
-     "categories": ["Single Cell", "Spectroscopy", "Bioinformatics",
-                    "Survival Analysis", "Fairness"]},
-    # 4차 (2026-05-25) — 3차에서 이동한 3개 + 신규 addon 4종.
-    # 사용자 지정 순서: Explain · Educational · Associate · Textable ·
-    # Pumice · World Happiness · SNOM
-    {"phase": 4, "title": "Add on Menu 3",
-     "categories": ["Explain", "Educational", "Associate",
-                    "Textable", "Pumice", "World Happiness", "SNOM"]},
 ]
 _ADMIN_KNOWN_CATEGORIES = [
     cat for g in _ADMIN_CATEGORY_PHASES for cat in g["categories"]
@@ -14714,13 +14112,7 @@ for _c in _ADMIN_KNOWN_CATEGORIES:
     _ADMIN_CAT_ALIASES.setdefault(_c, _c)
 
 
-# ready splash 환영 메시지 기본값 — admin 페이지 placeholder 와 WRAPPER_PAGE
-# 에서 동일하게 참조. 빈 문자열로 저장하면 해당 언어 사용자에게 비노출.
-_SPLASH_READY_DEFAULT_MSGS = {
-    "ko": "오렌지3(Orange3) 기반의 웹 머신러닝·데이터 분석 실습 환경",
-    "en": "Web-based machine learning & data analysis platform powered by Orange3",
-    "sl": "Spletno okolje za strojno učenje in analizo podatkov, ki temelji na Orange3",
-}
+_SPLASH_READY_DEFAULT_MSGS: dict = {}
 
 
 def _admin_default_settings() -> dict:
@@ -14738,25 +14130,14 @@ def _admin_default_settings() -> dict:
         # 위젯 단위 가시성: { "Data": {"File": True, "Datasets": False, ...}, ... }
         # 카테고리 키는 canonical 영문명 (menu 와 동일). 빈 dict 면 모두 visible.
         "widgets": {},
-        # 로딩/완료 splash 설정 (2026-05-25)
-        # loading: Orange3 부팅 중 표시되는 splash (add-on 리스트 등) — bool 토글
-        # ready: 로딩 완료 후 표시되는 환영 카드 — enabled 토글 + 언어별 메시지.
-        #   - enabled=False → 모든 사용자에게 비노출
-        #   - enabled=True + 해당 언어 메시지 빈 문자열 → 그 언어 사용자에겐 비노출
         "splashes": {
             "loading": True,
             "loading_source": "default",   # default=Orange 기본 이미지 / custom=업로드 이미지
-            "ready": {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS},
         },
         # 접속 시 첫 페이지 (2026-06-12): "canvas"(기본) | "workspaces"(WorkSpaces)
         "first_page": "canvas",
-        # 좌측 사이드바 메뉴 노출 (2026-06-13): Menu·Examples·WorkSpaces 항목 표시 여부
-        # WorkSpaces 비활성 시 first_page 는 canvas 로 강제(첫 페이지 지정 의미 없음).
-        "nav": {"Menu": True, "Examples": True, "WorkSpaces": True, "DataSetDes": True},
-        # 위젯 패널 하단 로고(EBS·교육부·Orange3) 전체 노출 여부 (2026-06-13)
-        "footer_logo": True,
-        # 캔버스 우상단 툴바의 우측 슬라이드 패널 노출 여부 (2026-06-14)
-        "toolbar_panel": True,
+        # 좌측 사이드바 메뉴 노출: Menu·WorkSpaces 항목 표시 여부
+        "nav": {"Menu": True, "WorkSpaces": True},
         "updated_at": "",
     }
 
@@ -14803,23 +14184,6 @@ def _admin_load_settings() -> dict:
         splashes.setdefault("loading", True)
         if splashes.get("loading_source") not in ("default", "custom"):
             splashes["loading_source"] = "default"
-        # ready 필드 마이그레이션 (2026-05-25):
-        #   bool         → {enabled: bool, <기본 메시지 또는 빈 메시지>}
-        #   dict (구버전, 메시지만)  → {enabled: True, <언어별 메시지>}
-        #   dict (신버전, enabled+메시지) → 그대로, 누락 키 보충
-        ready_v = splashes.get("ready")
-        if isinstance(ready_v, bool):
-            msgs = (dict(_SPLASH_READY_DEFAULT_MSGS) if ready_v
-                    else {k: "" for k in _SPLASH_READY_DEFAULT_MSGS})
-            ready_v = {"enabled": bool(ready_v), **msgs}
-        elif isinstance(ready_v, dict):
-            enabled = ready_v.get("enabled", True)
-            msgs = {k: (str(ready_v.get(k, "")) if ready_v.get(k) is not None else "")
-                    for k in _SPLASH_READY_DEFAULT_MSGS}
-            ready_v = {"enabled": bool(enabled), **msgs}
-        else:
-            ready_v = {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS}
-        splashes["ready"] = ready_v
         data["splashes"] = splashes
         # 첫 페이지 지정 (2026-06-12) — 유효값 외엔 canvas 로 정규화
         fp = data.get("first_page")
@@ -14827,14 +14191,8 @@ def _admin_load_settings() -> dict:
         # 좌측 메뉴 노출 (2026-06-13) — 누락 키 default True 보충
         nav = data.get("nav") or {}
         nav.setdefault("Menu", True)
-        nav.setdefault("Examples", True)
         nav.setdefault("WorkSpaces", True)
-        nav.setdefault("DataSetDes", True)
         data["nav"] = nav
-        # 하단 로고 노출 (2026-06-13) — 누락 시 default True
-        data["footer_logo"] = bool(data.get("footer_logo", True))
-        # 툴바 우측 패널 노출 (2026-06-14) — 누락 시 default True
-        data["toolbar_panel"] = bool(data.get("toolbar_panel", True))
         return data
     except Exception as e:
         log.warning(f"[admin-settings] load failed: {e}; fallback default")
@@ -14865,16 +14223,8 @@ def _nav_hide_style() -> str:
     sels: list[str] = []
     if not nav.get("Menu", True):
         sels += ["#an-menu-btn", "#an-menu-acc"]
-    if not nav.get("Examples", True):
-        sels += ["#an-example-btn", "#an-example-acc"]
     if not nav.get("WorkSpaces", True):
         sels += ["#an-ws-btn"]
-    if not nav.get("DataSetDes", True):
-        sels += ["#an-dsd-btn", "#an-dsd-acc"]
-    if not _s.get("footer_logo", True):   # 하단 로고 전체 숨김
-        sels += [".hwd-footer-logos"]
-    if not _s.get("toolbar_panel", True):   # 툴바 우측 슬라이드 패널 숨김 (버튼+패널+드래그 오버레이)
-        sels += ["#ct-rpanel-btn", "#right-panel", "#rp-drag-overlay"]
     if not sels:
         return ""
     return ('<style id="nav-vis-style">' + ",".join(sels)
@@ -14939,28 +14289,11 @@ async def admin_settings_put(request: Request):
             # default 는 반드시 available 안에 포함되어야 함
             if default in cur["languages"]["available"]:
                 cur["languages"]["default"] = default
-    # splashes: { "loading": bool, "ready": {ko:str, en:str, sl:str} }
-    # ready 는 언어별 환영 메시지. 빈 문자열이면 해당 언어 사용자에게 비노출.
     sp_in = body.get("splashes")
     if isinstance(sp_in, dict):
         cur_sp = cur.get("splashes") or {}
         if "loading" in sp_in:
             cur_sp["loading"] = bool(sp_in["loading"])
-        if "ready" in sp_in:
-            ready_in = sp_in["ready"]
-            cur_ready = cur_sp.get("ready") if isinstance(cur_sp.get("ready"), dict) \
-                        else {"enabled": True, **_SPLASH_READY_DEFAULT_MSGS}
-            cur_ready.setdefault("enabled", True)
-            if isinstance(ready_in, dict):
-                if "enabled" in ready_in:
-                    cur_ready["enabled"] = bool(ready_in["enabled"])
-                for k in _SPLASH_READY_DEFAULT_MSGS:
-                    if k in ready_in:
-                        v = ready_in[k]
-                        cur_ready[k] = str(v).strip() if v is not None else ""
-            elif isinstance(ready_in, bool):
-                cur_ready["enabled"] = bool(ready_in)
-            cur_sp["ready"] = cur_ready
         cur["splashes"] = cur_sp
     # widgets: { "Data": {"File": true, ...}, ... } — 카테고리별 부분 업데이트 지원
     widgets_in = body.get("widgets")
@@ -14979,29 +14312,19 @@ async def admin_settings_put(request: Request):
     fp_in = body.get("first_page")
     if isinstance(fp_in, str) and fp_in in ("canvas", "workspaces"):
         cur["first_page"] = fp_in
-    # nav: 좌측 사이드바 메뉴 노출 (2026-06-13) — Menu/Examples bool 만 화이트리스트
+    # nav: 좌측 사이드바 메뉴 노출 (2026-06-13) — Menu/WorkSpaces bool 만 화이트리스트
     nav_in = body.get("nav")
     if isinstance(nav_in, dict):
         cur_nav = cur.get("nav") or {}
-        for key in ("Menu", "Examples", "WorkSpaces", "DataSetDes"):
+        for key in ("Menu", "WorkSpaces"):
             if key in nav_in:
                 cur_nav[key] = bool(nav_in[key])
         cur_nav.setdefault("Menu", True)
-        cur_nav.setdefault("Examples", True)
         cur_nav.setdefault("WorkSpaces", True)
-        cur_nav.setdefault("DataSetDes", True)
         cur["nav"] = cur_nav
         # WorkSpaces 비활성 → 첫 페이지는 캔버스로 강제 (workspaces 시작 불가)
         if not cur_nav.get("WorkSpaces", True):
             cur["first_page"] = "canvas"
-    # footer_logo: 위젯 패널 하단 로고 전체 노출 (2026-06-13)
-    fl_in = body.get("footer_logo")
-    if isinstance(fl_in, bool):
-        cur["footer_logo"] = fl_in
-    # toolbar_panel: 툴바 우측 슬라이드 패널 노출 (2026-06-14)
-    tp_in = body.get("toolbar_panel")
-    if isinstance(tp_in, bool):
-        cur["toolbar_panel"] = tp_in
     try:
         _admin_save_settings(cur)
     except Exception as e:
@@ -15154,14 +14477,6 @@ async def admin_widgets_get(refresh: int = 0):
             "phase": ph["phase"],
             "title": ph["title"],
             "categories": items,
-        })
-    # phase 미정의 카테고리 (Orange Obsolete 등) — "기타" 그룹
-    others = [v for k, v in cat_map.items() if k not in seen]
-    if others:
-        out_groups.append({
-            "phase": 0,
-            "title": "기타",
-            "categories": others,
         })
     return JSONResponse({
         "ok": True,
@@ -15319,321 +14634,7 @@ def _apply_admin_pool_overrides() -> None:
             XPRA_WARM_POOL_SIZE_IDLE = x
 
 
-@app.get("/api/admin/pool")
-async def api_admin_pool_get():
-    """현재 풀 상태 + 상한(MAX). admin/sessions 페이지가 조회."""
-    return JSONResponse({
-        "ok": True,
-        "main": {
-            "current": WARM_POOL_SIZE,
-            "current_idle": WARM_POOL_SIZE_IDLE,
-            "max": WARM_POOL_SIZE_MAX,
-            "in_pool": len(_warm_pool),
-            "in_flight": _warm_inflight,
-            "effective_target": _effective_pool_size(),
-        },
-        "xpra": {
-            "current": XPRA_WARM_POOL_SIZE,
-            "current_idle": XPRA_WARM_POOL_SIZE_IDLE,
-            "max": XPRA_WARM_POOL_SIZE_MAX,
-            "in_pool": len(_xpra_warm_pool),
-            "in_flight": _xpra_warm_inflight,
-            "effective_target": _xpra_effective_pool_size(),
-        },
-    })
 
-
-@app.put("/api/admin/pool")
-async def api_admin_pool_put(request: Request):
-    """풀 크기 변경. body: {"main": int|null, "xpra": int|null}
-       null 또는 키 누락 → 해당 풀 변경 없음. 값은 0..MAX 범위만 수용.
-       MAX 초과 또는 음수면 400.
-    """
-    global WARM_POOL_SIZE, WARM_POOL_SIZE_IDLE, XPRA_WARM_POOL_SIZE
-    try:
-        body = await request.json()
-    except Exception as e:
-        return JSONResponse({"ok": False, "error": f"invalid json: {e}"}, status_code=400)
-    if not isinstance(body, dict):
-        return JSONResponse({"ok": False, "error": "body must be object"}, status_code=400)
-    cur = _admin_load_settings()
-    pools = cur.get("pools") or {"main": None, "xpra": None}
-    # main
-    if "main" in body and body["main"] is not None:
-        try:
-            n = int(body["main"])
-        except (TypeError, ValueError):
-            return JSONResponse({"ok": False, "error": "main must be int"}, status_code=400)
-        if not (0 <= n <= WARM_POOL_SIZE_MAX):
-            return JSONResponse({"ok": False,
-                "error": f"main out of range: 0..{WARM_POOL_SIZE_MAX}"}, status_code=400)
-        pools["main"] = n
-        WARM_POOL_SIZE = n
-        if WARM_POOL_SIZE_IDLE > n:
-            WARM_POOL_SIZE_IDLE = n
-    # xpra
-    if "xpra" in body and body["xpra"] is not None:
-        try:
-            n = int(body["xpra"])
-        except (TypeError, ValueError):
-            return JSONResponse({"ok": False, "error": "xpra must be int"}, status_code=400)
-        if not (0 <= n <= XPRA_WARM_POOL_SIZE_MAX):
-            return JSONResponse({"ok": False,
-                "error": f"xpra out of range: 0..{XPRA_WARM_POOL_SIZE_MAX}"}, status_code=400)
-        pools["xpra"] = n
-        XPRA_WARM_POOL_SIZE = n
-    cur["pools"] = pools
-    try:
-        _admin_save_settings(cur)
-    except Exception as e:
-        log.warning(f"[admin-pool] save failed: {e}")
-        return JSONResponse({"ok": False, "error": f"save failed: {e}"}, status_code=500)
-    # 변경 후 워밍풀 자동 재조정: 새로 줄였으면 cleanup_loop 가 잉여 컨테이너 제거.
-    # 늘렸으면 즉시 _replenish 호출.
-    try:
-        if WARM_POOL_SIZE > len(_warm_pool) + _warm_inflight:
-            asyncio.create_task(_replenish_pool())
-        if XPRA_WARM_POOL_SIZE > len(_xpra_warm_pool) + _xpra_warm_inflight:
-            asyncio.create_task(_xpra_replenish_pool())
-    except Exception:
-        pass
-    log.info(f"[admin-pool] main={WARM_POOL_SIZE}/{WARM_POOL_SIZE_MAX} "
-             f"xpra={XPRA_WARM_POOL_SIZE}/{XPRA_WARM_POOL_SIZE_MAX} "
-             f"by {request.client.host if request.client else '?'}")
-    return JSONResponse({
-        "ok": True,
-        "main": {"current": WARM_POOL_SIZE, "max": WARM_POOL_SIZE_MAX},
-        "xpra": {"current": XPRA_WARM_POOL_SIZE, "max": XPRA_WARM_POOL_SIZE_MAX},
-    })
-
-
-@app.get("/api/admin/nginx")
-async def api_admin_nginx_get():
-    """Nginx 리버스 프록시 상태 조회 — admin/sessions 페이지가 표시.
-    구성: docker-compose.nginx.yml (opt-in 오버레이)
-    역할: 정적 자산 alias + reverse proxy (포트 8889 → upstream session-manager:8080)
-    반환: 실행 여부, 컨테이너 정보, 호스트/내부 포트, 헬스, 업타임.
-    """
-    info: dict = {"ok": True, "running": False, "container_name": "orange3-nginx"}
-    if client is None:
-        info["error"] = "docker client 미설정"
-        return JSONResponse(info)
-    try:
-        try:
-            c = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: client.containers.get("orange3-nginx"))
-        except Exception:
-            return JSONResponse(info)
-        await asyncio.get_event_loop().run_in_executor(None, c.reload)
-        attrs = c.attrs or {}
-        state = attrs.get("State") or {}
-        info["running"] = bool(state.get("Running"))
-        info["status"] = state.get("Status", "?")
-        # 헬스체크 (compose 에서 healthcheck 정의됨)
-        hc = (state.get("Health") or {}).get("Status")
-        info["healthy"] = (hc == "healthy") if hc else None
-        info["health_status"] = hc or "—"
-        # 가동시간 (StartedAt ISO 8601)
-        started = state.get("StartedAt", "")
-        if started:
-            try:
-                from datetime import datetime as _dt, timezone as _tz
-                # docker 는 "2026-05-29T00:43:32.123456789Z" 형식 → 나노초 제거
-                s = started.split(".")[0].rstrip("Z")
-                dt = _dt.fromisoformat(s).replace(tzinfo=_tz.utc)
-                info["started_at"] = started
-                info["uptime_sec"] = int(
-                    (_dt.now(_tz.utc) - dt).total_seconds())
-            except Exception:
-                pass
-        # 포트 매핑 (예: 8889 → 80)
-        ports = (attrs.get("NetworkSettings") or {}).get("Ports") or {}
-        host_port = None
-        for cont_port, bindings in ports.items():
-            if cont_port.startswith("80/") and bindings:
-                try:
-                    host_port = int(bindings[0].get("HostPort"))
-                    break
-                except Exception:
-                    pass
-        info["internal_port"] = 80
-        info["host_port"] = host_port
-        # 이미지
-        info["image"] = (attrs.get("Config") or {}).get("Image", "?")
-        # Upstream — nginx.conf 에 하드코딩된 값
-        info["upstream"] = "orange3-session-manager:8080"
-
-        # 풀 수(upstream 블록 개수) + 접속 수(stub_status) — nginx 컨테이너 내부 조회
-        def _nginx_pools_conns():
-            import re as _re
-            pools_n = conns = None
-            extra: dict = {}
-            try:
-                rc, out = c.exec_run(
-                    ["sh", "-c", "grep -cE '^[[:space:]]*upstream ' /etc/nginx/nginx.conf"])
-                if rc == 0:
-                    pools_n = int(out.decode().strip())
-            except Exception:
-                pass
-            try:
-                rc, out = c.exec_run(["wget", "-qO-", "http://127.0.0.1/nginx-status"])
-                txt = out.decode() if rc == 0 else ""
-                m = _re.search(r"Active connections:\s*(\d+)", txt)
-                if m:
-                    conns = int(m.group(1))
-                m2 = _re.search(r"Reading:\s*(\d+)\s+Writing:\s*(\d+)\s+Waiting:\s*(\d+)", txt)
-                if m2:
-                    extra = {"reading": int(m2.group(1)), "writing": int(m2.group(2)),
-                             "waiting": int(m2.group(3))}
-            except Exception:
-                pass
-            return pools_n, conns, extra
-        try:
-            _p, _conn, _extra = await asyncio.get_event_loop().run_in_executor(
-                None, _nginx_pools_conns)
-            info["pools"] = _p
-            info["active_connections"] = _conn
-            if _extra:
-                info["conn_detail"] = _extra
-        except Exception:
-            info["pools"] = info["active_connections"] = None
-
-        return JSONResponse(info)
-    except Exception as e:
-        log.warning(f"[admin-nginx] 조회 실패: {e}")
-        info["error"] = str(e)
-        return JSONResponse(info)
-
-
-@app.post("/api/admin/nginx/reload")
-async def api_admin_nginx_reload(request: Request):
-    """Nginx 설정 핫리로드 — `nginx -s reload` 실행.
-    호스트 nginx/nginx.conf 변경 후 컨테이너 재시작 없이 적용 가능."""
-    if client is None:
-        return JSONResponse({"ok": False, "error": "docker client 미설정"},
-                            status_code=500)
-    try:
-        c = await asyncio.get_event_loop().run_in_executor(
-            None, lambda: client.containers.get("orange3-nginx"))
-    except Exception:
-        return JSONResponse({"ok": False, "error": "nginx 컨테이너 없음"},
-                            status_code=404)
-    try:
-        # 1) 설정 검증
-        rc, out = await asyncio.get_event_loop().run_in_executor(
-            None, lambda: c.exec_run(["nginx", "-t"], demux=False))
-        if rc != 0:
-            return JSONResponse({
-                "ok": False,
-                "error": "nginx -t 실패",
-                "detail": (out or b"").decode("utf-8", "replace")[:500],
-            }, status_code=400)
-        # 2) 리로드
-        rc2, out2 = await asyncio.get_event_loop().run_in_executor(
-            None, lambda: c.exec_run(["nginx", "-s", "reload"], demux=False))
-        if rc2 != 0:
-            return JSONResponse({
-                "ok": False,
-                "error": "nginx -s reload 실패",
-                "detail": (out2 or b"").decode("utf-8", "replace")[:500],
-            }, status_code=500)
-        log.info(f"[admin-nginx] reload 성공 "
-                 f"by {request.client.host if request.client else '?'}")
-        return JSONResponse({"ok": True, "message": "Nginx 설정 리로드 완료"})
-    except Exception as e:
-        log.warning(f"[admin-nginx] reload 실패: {e}")
-        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
-
-
-@app.post("/api/admin/sessions/terminate-all")
-async def api_admin_terminate_all(request: Request):
-    """일괄 종료. body: {"kind": "main" | "xpra"}
-       main → noVNC 운영 세션 전체 (sessions[] 안 항목 모두 remove_session).
-       xpra → xpra 컨테이너 전체 종료 (사용자 세션 + 워밍풀 포함).
-       관리자 보호: request.client.host 와 동일 IP 로 바인딩된 세션은 스킵
-       (관리자가 자신의 Orange3 세션을 함께 죽이지 않도록).
-    """
-    try:
-        body = await request.json()
-    except Exception as e:
-        return JSONResponse({"ok": False, "error": f"invalid json: {e}"}, status_code=400)
-    kind = (body or {}).get("kind")
-    if kind not in ("main", "xpra"):
-        return JSONResponse({"ok": False, "error": "kind must be 'main' or 'xpra'"},
-                            status_code=400)
-    admin_ip = request.client.host if request.client else None
-    killed: list = []
-    skipped: list = []  # 관리자 자신의 세션 보호
-    errs: list = []
-    if kind == "main":
-        with _lock:
-            # 운영 noVNC 세션만 대상 — xpra 미러는 별도 분기에서 처리
-            sids = [sid for sid, info in sessions.items()
-                    if info.get("engine") != "xpra"]
-            ip_by_sid = {sid: sessions[sid].get("client_ip") for sid in sids}
-        for sid in sids:
-            if admin_ip and ip_by_sid.get(sid) == admin_ip:
-                skipped.append(sid)
-                continue
-            try:
-                remove_session(sid, reason="admin")
-                killed.append(sid)
-            except Exception as e:
-                errs.append(f"{s8(sid)}: {e}")
-        # 워밍풀은 사용자 바인딩 없음 — 안전하게 전체 정리
-        with _warm_lock:
-            warm_sids = list(_warm_pool)
-            _warm_pool.clear()
-        for sid in warm_sids:
-            try:
-                remove_session(sid, reason="admin")
-                killed.append(sid)
-            except Exception as e:
-                errs.append(f"warm {s8(sid)}: {e}")
-    else:  # xpra
-        with _lock:
-            ip_by_sid = {sid: info.get("client_ip") for sid, info in sessions.items()}
-        with _xpra_lock:
-            xsids = list(xpra_sessions.keys())
-        for sid in xsids:
-            if admin_ip and ip_by_sid.get(sid) == admin_ip:
-                skipped.append(sid)
-                continue
-            try:
-                info = xpra_sessions.get(sid)
-                if info:
-                    try:
-                        c = client.containers.get(info["container_id"])
-                        c.stop(timeout=3)
-                        c.remove()
-                    except Exception:
-                        pass
-                with _xpra_lock:
-                    xpra_sessions.pop(sid, None)
-                with _lock:
-                    sessions.pop(sid, None)
-                killed.append(sid)
-            except Exception as e:
-                errs.append(f"{s8(sid)}: {e}")
-        # 워밍풀 정리 (사용자 바인딩 없음 — 관리자 세션 영향 없음)
-        with _xpra_lock:
-            _xpra_warm_pool.clear()
-    log.info(f"[admin-terminate-all] kind={kind} killed={len(killed)} "
-             f"skipped(admin)={len(skipped)} errors={len(errs)} "
-             f"admin_ip={admin_ip} by {admin_ip or '?'}")
-    # 종료 후 즉시 풀 보충 트리거
-    try:
-        if kind == "main" and WARM_POOL_SIZE > 0:
-            asyncio.create_task(_replenish_pool())
-        elif kind == "xpra" and XPRA_WARM_POOL_SIZE > 0:
-            asyncio.create_task(_xpra_replenish_pool())
-    except Exception:
-        pass
-    return JSONResponse({"ok": True, "kind": kind,
-                         "killed": len(killed),
-                         "skipped_admin": len(skipped),
-                         "admin_ip": admin_ip,
-                         "errors": errs[:10]})
 
 
 # ── 관리자 페이지 공통 chrome (3-탭: 메뉴 관리 / 언어 설정 / 활성 세션) ────────
@@ -15869,16 +14870,10 @@ _ADMIN_NAV_ITEMS = [
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="14" y2="17"/></svg>'),
     ("widgets", "/admin/widgets", "위젯 활성화",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'),
-    ("language", "/admin/language", "언어",
-     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg>'),
     ("splash", "/admin/splash", "로딩이미지",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg>'),
     ("firstpage", "/admin/firstpage", "메뉴",
      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>'),
-    ("sessions", "/admin/sessions", "활성화 세션",
-     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.2a3 3 0 0 1 0 5.6"/><path d="M21.5 20a6 6 0 0 0-4.5-5.8"/></svg>'),
-    ("usage", "/admin/usage", "이용현황",
-     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="11"/><line x1="10" y1="20" x2="10" y2="4"/><line x1="16" y1="20" x2="16" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>'),
 ]
 
 
@@ -15905,131 +14900,6 @@ async def admin_settings_legacy():
     """기존 URL 호환 — 메뉴 설정 페이지로 리다이렉트."""
     return RedirectResponse("/admin/menu", status_code=302)
 
-
-@app.get("/admin/usage", response_class=HTMLResponse)
-async def admin_usage_page():
-    """이용 현황 — 일별 세션·위젯 패턴 대시보드 (3단계)."""
-    nav = _admin_nav_html("usage")
-    return HTMLResponse(f"""<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8">
-<title>이용 현황 — 관리자</title>
-<style>{_ADMIN_BASE_CSS}
-  .u-cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}}
-  .u-card{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px}}
-  .u-card .v{{font-size:26px;font-weight:800;color:#1f2937}}
-  .u-card .l{{font-size:12.5px;color:#6b7280;margin-top:3px}}
-  .u-sec{{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px 18px;margin:14px 0}}
-  .u-sec h2{{font-size:15px;margin:0 0 12px}}
-  .bars{{display:flex;align-items:flex-end;gap:3px;height:120px}}
-  .bars .b{{flex:1;background:#6b7280;border-radius:3px 3px 0 0;min-height:2px;position:relative}}
-  .bars .b span{{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:9px;color:#9ca3af}}
-  .toprow{{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f3f5;font-size:13px}}
-  .toprow .c{{color:#6b7280;font-weight:700}}
-  .pills{{display:flex;gap:8px;flex-wrap:wrap}}
-  .pill{{background:#f3f4f6;border-radius:16px;padding:4px 12px;font-size:12.5px}}
-  .pill b{{color:#1f2937}}
-  select{{padding:6px 10px;border:1px solid #d5d9e0;border-radius:7px;font-size:13px}}
-  .hm{{border-collapse:collapse;font-size:10px}}
-  .hm th{{color:#9ca3af;font-weight:500;padding:2px 2px;text-align:center;min-width:16px}}
-  .hm td.d{{color:#6b7280;padding:2px 8px 2px 0;white-space:nowrap;text-align:right}}
-  .hm td.c{{width:16px;height:16px;border:1px solid #fff;border-radius:2px}}
-</style></head><body>
-<div class="wrap">
-  {nav}
-  <div class="u-sec">
-    <h1>이용 현황</h1>
-    <ul class="sub sub-bullets"><li>일별 세션·위젯 이용 패턴입니다. 데이터 내용은 기록하지 않으며 세션 메타·위젯 사용만 집계합니다.</li></ul>
-    <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
-      <label>날짜 <select id="u-date"></select></label>
-      <span id="u-empty" style="color:#9ca3af;font-size:13px"></span>
-    </div>
-  </div>
-  <div class="u-cards">
-    <div class="u-card"><div class="v" id="c-sessions">–</div><div class="l">세션 수</div></div>
-    <div class="u-card"><div class="v" id="c-concurrent">–</div><div class="l">최대 동시접속</div></div>
-    <div class="u-card"><div class="v" id="c-avg">–</div><div class="l">평균 사용시간(분)</div></div>
-    <div class="u-card"><div class="v" id="c-completed">–</div><div class="l">종료(완료) 세션</div></div>
-  </div>
-  <div class="u-sec"><h2>시간대별 세션 시작 (UTC)</h2><div class="bars" id="u-hours"></div><div style="height:18px"></div></div>
-  <div class="u-sec">
-    <h2>일자 × 시간대 히트맵 (KST)
-      <select id="hm-days" style="font-size:12px;font-weight:400">
-        <option value="7">최근 7일</option><option value="14" selected>최근 14일</option><option value="30">최근 30일</option>
-      </select>
-      <span style="font-size:11.5px;font-weight:400;color:#9ca3af">· 진할수록 세션 시작 많음</span>
-    </h2>
-    <div id="u-heatmap" style="overflow-x:auto"></div>
-  </div>
-  <div class="u-sec"><h2>엔진 · 언어 · 종료 사유</h2>
-    <div style="margin-bottom:8px"><b>엔진</b> <span class="pills" id="u-engine"></span></div>
-    <div style="margin-bottom:8px"><b>언어</b> <span class="pills" id="u-lang"></span></div>
-    <div><b>종료사유</b> <span class="pills" id="u-reason"></span></div>
-  </div>
-  <div class="u-sec"><h2>Top 위젯 <span id="u-widgets-note" style="font-size:12px;font-weight:400;color:#6b7280"></span></h2><div id="u-widgets"></div></div>
-</div>
-<script>
-function pills(el, obj){{
-  const e=document.getElementById(el);
-  const items=Object.entries(obj||{{}}).sort((a,b)=>b[1]-a[1]);
-  e.innerHTML = items.length ? items.map(([k,v])=>`<span class="pill">${{k}} <b>${{v}}</b></span>`).join('') : '<span style="color:#9ca3af">–</span>';
-}}
-async function loadDay(day){{
-  const r = await fetch('/api/admin/usage/summary?date='+day, {{cache:'no-store'}});
-  const d = await r.json();
-  if(!d.ok){{ document.getElementById('u-empty').textContent='데이터 없음'; return; }}
-  document.getElementById('c-sessions').textContent = d.sessions;
-  document.getElementById('c-concurrent').textContent = d.max_concurrent;
-  document.getElementById('c-avg').textContent = (d.avg_duration_sec/60).toFixed(1);
-  document.getElementById('c-completed').textContent = d.completed;
-  const mx = Math.max(1, ...d.by_hour);
-  document.getElementById('u-hours').innerHTML = d.by_hour.map((v,h)=>
-    `<div class="b" style="height:${{Math.round(v/mx*100)}}%" title="${{h}}시: ${{v}}"><span>${{h}}</span></div>`).join('');
-  var _eng={{}}; for(var _k in (d.by_engine||{{}})){{ _eng[_k==='noVNC'?'기본엔진':_k]=d.by_engine[_k]; }}
-  pills('u-engine', _eng); pills('u-lang', d.by_lang); pills('u-reason', d.by_end_reason);
-  const tw=document.getElementById('u-widgets');
-  tw.innerHTML = (d.top_widgets&&d.top_widgets.length) ?
-    '<div class="toprow" style="color:#9ca3af;font-size:11.5px"><span>위젯</span><span>추가 · <b style="color:#6b7280">실행</b></span></div>' +
-    d.top_widgets.map(w=>
-    `<div class="toprow"><span>${{w.widget.split('.').pop()}}</span><span><span style="color:#6b7280">${{w.add||0}}</span> · <span class="c">${{w.run||0}}</span></span></div>`).join('')
-    : '<span style="color:#9ca3af">위젯 사용 데이터 없음 (캔버스에 위젯을 추가/실행하면 집계됨)</span>';
-  const note=document.getElementById('u-widgets-note');
-  if(note) note.textContent = (d.active_sessions ? `· 진행 중 세션 ${{d.active_sessions}}개 실시간 포함(위젯 ${{d.live_widget_total||0}})` : '');
-}}
-async function loadHeatmap(){{
-  const n=document.getElementById('hm-days').value;
-  const el=document.getElementById('u-heatmap');
-  try{{
-    const r=await fetch('/api/admin/usage/heatmap?days='+n,{{cache:'no-store'}});
-    const d=await r.json();
-    if(!d.ok || !d.rows.length){{ el.textContent='데이터 없음'; return; }}
-    const mx=Math.max(1,d.max);
-    let h='<table class="hm"><tr><th></th>';
-    for(let i=0;i<24;i++) h+=`<th>${{i}}</th>`;
-    h+='</tr>';
-    d.rows.forEach(row=>{{
-      const lbl=row.date.slice(4,6)+'/'+row.date.slice(6,8);
-      h+=`<tr><td class="d">${{lbl}}</td>`;
-      row.hours.forEach((v,hr)=>{{
-        const a=v?(0.12+0.88*v/mx):0;
-        h+=`<td class="c" style="background:rgba(107,114,128,${{a.toFixed(2)}})" title="${{lbl}} ${{hr}}시: ${{v}}"></td>`;
-      }});
-      h+='</tr>';
-    }});
-    el.innerHTML=h+'</table>';
-  }}catch(e){{ el.textContent='불러오기 오류'; }}
-}}
-(async function(){{
-  const hm=document.getElementById('hm-days'); if(hm) hm.onchange=loadHeatmap; loadHeatmap();
-  const sel=document.getElementById('u-date');
-  let days=[];
-  try{{ const r=await fetch('/api/admin/usage/days',{{cache:'no-store'}}); const d=await r.json(); days=d.days||[]; }}catch(e){{}}
-  const today=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  if(!days.includes(today)) days.unshift(today);
-  sel.innerHTML = days.map(d=>`<option value="${{d}}">${{d.slice(0,4)}}-${{d.slice(4,6)}}-${{d.slice(6,8)}}</option>`).join('');
-  sel.onchange=()=>loadDay(sel.value);
-  if(days.length) loadDay(days[0]);
-}})();
-</script></body></html>""")
 
 
 @app.get("/admin/menu", response_class=HTMLResponse)
@@ -16258,7 +15128,7 @@ function renderCatalog(){{
             <button onclick="setAllInCat('${{esc(canon)}}', false)">전체 해제</button>
           </div>
           <div class="wcat-grid">` +
-            cat.widgets.map(w => {{
+            cat.widgets.filter(w => w.visible).map(w => {{
               const wid = 'w-' + esc(canon) + '-' + esc(w.name);
               return `<div class="row">
                 <input type="checkbox" id="${{wid}}" data-canon="${{esc(canon)}}" data-wname="${{esc(w.name)}}"
@@ -16302,7 +15172,8 @@ function setAllInCat(canon, val){{
 }}
 
 function updateCount(canon){{
-  const total = document.querySelectorAll(`.wcat-card[data-canon="${{cssEscape(canon)}}"] input[type=checkbox]`).length;
+  const cat = _byCanon[canon];
+  const total = cat ? cat.widgets.length : document.querySelectorAll(`.wcat-card[data-canon="${{cssEscape(canon)}}"] input[type=checkbox]`).length;
   const checked = document.querySelectorAll(`.wcat-card[data-canon="${{cssEscape(canon)}}"] input[type=checkbox]:checked`).length;
   const el = document.getElementById('cnt-' + canon);
   if (el) el.textContent = checked + '/' + total + ' 노출';
@@ -16402,14 +15273,6 @@ async def admin_splash_page():
 .splash-imgsel .imgsel-drop-link{{color:#2563eb;text-decoration:underline;margin:0 2px}}
 .splash-imgsel .imgsel-fname{{font-size:12px;color:#16a34a;margin-top:8px;word-break:break-all}}
 .splash-imgsel .imgsel-hint{{font-size:11px;color:#9ca3af;margin-top:6px;line-height:1.4}}
-.ready-msgs{{display:flex;flex-direction:column;gap:10px;margin-top:8px}}
-.ready-msg-row{{display:flex;flex-direction:column;gap:4px}}
-.ready-msg-row label{{font-size:12.5px;color:#374151;font-weight:600}}
-.ready-msg-row textarea{{width:100%;box-sizing:border-box;min-height:48px;resize:vertical;
-  border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;font-size:13px;
-  font-family:inherit;line-height:1.5;color:#1a1a1c;background:#fff}}
-.ready-msg-row textarea:focus{{outline:none;border-color:#9ca3af;box-shadow:0 0 0 3px rgba(0,0,0,0.04)}}
-.ready-msg-row .hint{{font-size:11.5px;color:#9ca3af}}
 </style></head><body>
 <div class="wrap">
   {nav}
@@ -16447,38 +15310,6 @@ async def admin_splash_page():
         <div class="wcat-actions">
           <button onclick="resetLoading()">취소</button>
           <button id="save-loading-btn" onclick="saveLoading()">저장</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="splash-card">
-      <div class="splash-preview">
-        <img src="/splash-mascot" alt="완료" onerror="this.style.display='none';this.parentNode.textContent='(이미지 없음)';">
-      </div>
-      <div class="splash-body">
-        <h3>② 로딩 완료 후 (Ready splash)</h3>
-        <div class="desc">사이드바 메뉴 로딩 완료 시 표시되는 환영 카드. <b>노출 사용 체크 시 표시, 해제 시 비노출.</b> 언어별 메시지는 선택 입력 — 입력하면 해당 언어 사용자에게 메시지가 함께 표시되고, 비우면 마스코트 카드만 표시됩니다.</div>
-        <div class="splash-toggle">
-          <input type="checkbox" id="splash-ready-enabled">
-          <label for="splash-ready-enabled">노출 사용</label>
-        </div>
-        <div class="ready-msgs">
-          <div class="ready-msg-row">
-            <label for="ready-msg-ko">한국어 (ko)</label>
-            <textarea id="ready-msg-ko" rows="2" placeholder="비워두면 마스코트 카드만 표시 (선택 입력)"></textarea>
-          </div>
-          <div class="ready-msg-row">
-            <label for="ready-msg-en">English (en)</label>
-            <textarea id="ready-msg-en" rows="2" placeholder="Leave blank to show mascot card only (optional)"></textarea>
-          </div>
-          <div class="ready-msg-row">
-            <label for="ready-msg-sl">Slovenčina (sl)</label>
-            <textarea id="ready-msg-sl" rows="2" placeholder="Pustite prazno za prikaz samo kartice z maskoto (izbirno)"></textarea>
-          </div>
-        </div>
-        <div class="wcat-actions">
-          <button onclick="resetReady()">취소</button>
-          <button id="save-ready-btn" onclick="saveReady()">저장</button>
         </div>
       </div>
     </div>
@@ -16605,14 +15436,6 @@ function _wireSplashDrop(){{
   }});
 }}
 
-function applyReady(){{
-  const sp = (_settings && _settings.splashes) || {{}};
-  const ready = (sp.ready && typeof sp.ready === 'object') ? sp.ready : {{}};
-  document.getElementById('splash-ready-enabled').checked = (ready.enabled !== false);
-  document.getElementById('ready-msg-ko').value = ready.ko || '';
-  document.getElementById('ready-msg-en').value = ready.en || '';
-  document.getElementById('ready-msg-sl').value = ready.sl || '';
-}}
 
 function updateMeta(){{
   document.getElementById('meta').textContent = _settings && _settings.updated_at
@@ -16626,7 +15449,6 @@ async function initLoad(){{
     if (!d.ok) {{ toast('로드 실패'); return; }}
     _settings = d.settings;
     applyLoading();
-    applyReady();
     refreshSplashInfo();
     _wireSplashDrop();
     updateMeta();
@@ -16634,7 +15456,6 @@ async function initLoad(){{
 }}
 
 function resetLoading(){{ applyLoading(); toast('변경 사항 되돌림 (Loading)'); }}
-function resetReady(){{ applyReady(); toast('변경 사항 되돌림 (Ready)'); }}
 
 async function _putSplashPartial(payload, btnId, okMsg){{
   const btn = document.getElementById(btnId);
@@ -16664,18 +15485,6 @@ function saveLoading(){{
   );
 }}
 
-function saveReady(){{
-  _putSplashPartial(
-    {{splashes: {{ready: {{
-      enabled: document.getElementById('splash-ready-enabled').checked,
-      ko: document.getElementById('ready-msg-ko').value.trim(),
-      en: document.getElementById('ready-msg-en').value.trim(),
-      sl: document.getElementById('ready-msg-sl').value.trim(),
-    }}}}}},
-    'save-ready-btn',
-    'Ready splash 설정 저장 완료'
-  );
-}}
 
 initLoad();
 </script>
@@ -16756,140 +15565,6 @@ async def api_admin_splash_source(request: Request):
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
 
-@app.get("/admin/language", response_class=HTMLResponse)
-async def admin_language_page():
-    """언어 설정 — 사용 가능 언어 + 기본 언어 + 저장."""
-    nav = _admin_nav_html("language")
-    return HTMLResponse(f"""<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8">
-<title>언어 설정 — 관리자</title>
-<style>{_ADMIN_BASE_CSS}</style></head><body>
-<div class="wrap">
-  {nav}
-  <div class="card">
-    <h1>언어 설정</h1>
-    <ul class="sub sub-bullets"><li>전체 사용자에게 적용되는 사용 가능 언어와 기본 언어를 지정합니다.</li><li>기본 언어는 반드시 사용 가능 목록에 포함되어야 합니다. 신규 사용자는 기본 언어로 페이지가 로딩되며, 컨테이너 Orange3 도 자동 정렬됩니다.</li></ul>
-
-    <div class="info-note method">
-      <div class="info-note-title">적용 방식</div>
-      <div class="info-note-body">Orange.ini 를 호스트에서 직접 수정 + 컨테이너 재시작</div>
-    </div>
-
-    <div class="info-note warn">
-      <div class="info-note-title">참고</div>
-      <div class="info-note-body">언어 설정 변경은 가능하지만, 풀 조정으로 10초 지연 발생. <b>Orange.ini 직접 수정 방식 추천</b></div>
-    </div>
-
-    <div class="lang-hdr">
-      <span>언어</span>
-      <span>사용</span>
-      <span>기본</span>
-    </div>
-    <div class="lang-list" id="lang-list"></div>
-    <div class="actions">
-      <button onclick="loadLang()">취소</button>
-      <button id="save-btn" onclick="saveLang()">저장</button>
-    </div>
-  </div>
-
-  <div class="meta" id="meta"></div>
-</div>
-<div class="toast" id="toast"></div>
-
-<script>
-let _settings = null, _knownLangs = [];
-
-function esc(s){{return String(s==null?'':s).replace(/[&<>"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}})[c]);}}
-function toast(msg, ms){{
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(window._tt);
-  window._tt = setTimeout(()=>t.classList.remove('show'), ms||2200);
-}}
-
-async function loadLang(){{
-  try {{
-    const r = await fetch('/api/admin/settings', {{cache:'no-store'}});
-    const d = await r.json();
-    if (!d.ok) {{ toast('로드 실패'); return; }}
-    _settings = d.settings;
-    _knownLangs = d.known_languages;
-    renderLangs();
-    document.getElementById('meta').textContent = _settings.updated_at
-      ? 'updated_at: ' + _settings.updated_at : '(저장 전)';
-  }} catch(e) {{ toast('로드 오류: ' + e.message); }}
-}}
-
-function renderLangs(){{
-  const list = document.getElementById('lang-list');
-  list.innerHTML = _knownLangs.map(l => {{
-    const inAvail = _settings.languages.available.includes(l.code);
-    const isDefault = _settings.languages.default === l.code;
-    return `
-      <div class="lang-row">
-        <span class="lang-label">${{esc(l.label)}} <span style="color:#9ca3af;font-size:11px">(${{esc(l.code)}})</span></span>
-        <span class="lang-chk"><input type="checkbox" data-lang="${{esc(l.code)}}" ${{inAvail?'checked':''}}></span>
-        <span class="lang-def"><input type="radio" name="default-lang" data-lang="${{esc(l.code)}}" ${{isDefault?'checked':''}}></span>
-      </div>
-    `;
-  }}).join('');
-  // 사용 체크 해제 시 → 해당 radio 도 자동 해제, 다른 항목으로 default 이동 제안
-  list.querySelectorAll('input[type=checkbox]').forEach(cb => {{
-    cb.addEventListener('change', function() {{
-      if (!cb.checked) {{
-        const code = cb.dataset.lang;
-        const rd = list.querySelector('input[type=radio][data-lang="' + code + '"]');
-        if (rd && rd.checked) {{ rd.checked = false; }}
-      }}
-    }});
-  }});
-  // default radio 선택 시 → 해당 사용 체크가 꺼져 있으면 자동 켜기
-  list.querySelectorAll('input[type=radio]').forEach(rd => {{
-    rd.addEventListener('change', function() {{
-      if (rd.checked) {{
-        const code = rd.dataset.lang;
-        const cb = list.querySelector('input[type=checkbox][data-lang="' + code + '"]');
-        if (cb && !cb.checked) cb.checked = true;
-      }}
-    }});
-  }});
-}}
-
-async function saveLang(){{
-  const available = [];
-  document.querySelectorAll('#lang-list input[type=checkbox]').forEach(cb => {{
-    if (cb.checked) available.push(cb.dataset.lang);
-  }});
-  let def = null;
-  const r = document.querySelector('#lang-list input[type=radio]:checked');
-  if (r) def = r.dataset.lang;
-  if (!available.length) {{ toast('사용 가능한 언어를 1개 이상 선택해야 합니다'); return; }}
-  if (!def || !available.includes(def)) {{
-    toast('기본 언어를 사용 목록 안에서 선택해야 합니다'); return;
-  }}
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true; btn.textContent = '저장 중...';
-  try {{
-    const resp = await fetch('/api/admin/settings', {{
-      method:'PUT', headers:{{'Content-Type':'application/json'}},
-      body: JSON.stringify({{languages: {{available, default: def}}}}),
-    }});
-    const d = await resp.json();
-    if (d.ok) {{
-      _settings = d.settings;
-      document.getElementById('meta').textContent = 'updated_at: ' + _settings.updated_at;
-      toast('언어 설정 저장 완료');
-    }} else {{
-      toast('저장 실패: ' + (d.error || 'unknown'));
-    }}
-  }} catch(e) {{ toast('저장 오류: ' + e.message); }}
-  finally {{ btn.disabled = false; btn.textContent = '저장'; }}
-}}
-
-loadLang();
-</script>
-</body></html>""")
-
 
 @app.get("/admin/firstpage", response_class=HTMLResponse)
 async def admin_firstpage_page():
@@ -16915,11 +15590,6 @@ async def admin_firstpage_page():
 .nav-mock-chev{{margin-left:auto;color:#bbb;font-size:11px}}
 .nav-mock-sub{{padding:2px 6px 2px 25px;font-size:10px;color:#9ca3af}}
 .nav-grid-col{{flex:1;min-width:200px}}
-.flp-wrap{{display:flex;gap:24px;align-items:center;flex-wrap:wrap;margin-top:4px}}
-.footer-logo-preview{{display:flex;align-items:center;gap:12px;padding:9px 14px;background:#fafafa;border:1px solid #ececef;border-radius:8px}}
-.footer-logo-preview img{{height:24px;width:auto}}
-.footer-logo-preview .flp-orange{{display:inline-flex;align-items:center;gap:5px;filter:grayscale(1);opacity:0.55}}
-.footer-logo-preview .flp-orange > span{{font-size:13px;font-weight:700;color:#777}}
 /* 메뉴 설정 서브탭 (이미지2 WorkSpaces 탭 스타일, 활성=파란색, 2026-06-14) */
 .mtab-bar{{display:flex;gap:22px;margin:2px 0 14px}}
 .mtab{{padding:9px 2px;font-size:14px;font-weight:600;color:#6b7280;cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px}}
@@ -16928,12 +15598,7 @@ async def admin_firstpage_page():
 </style></head><body>
 <div class="wrap">
   {nav}
-  <div class="mtab-bar">
-    <button class="mtab active" data-mp="main" onclick="mtabSwitch('main')">메인 메뉴 설정</button>
-    <button class="mtab" data-mp="panel" onclick="mtabSwitch('panel')">툴바 패널 버튼 설정</button>
-    <button class="mtab" data-mp="footer" onclick="mtabSwitch('footer')">하단 로고 설정</button>
-  </div>
-  <div class="mtab-pane" id="mpane-main" style="display:flex;flex-direction:column">
+  <div id="mpane-main" style="display:flex;flex-direction:column">
   <div class="card" id="fp-card" style="order:2">
     <h1>첫 페이지 지정</h1>
     <ul class="sub sub-bullets"><li>사용자가 접속했을 때 처음 보여줄 화면을 지정합니다. 전체 사용자에게 적용됩니다.</li><li>신규 접속·새 세션 진입 시 시작 화면을 선택합니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
@@ -16957,7 +15622,7 @@ async def admin_firstpage_page():
   </div>
   <div class="card" style="order:1">
     <h1>왼쪽 메뉴 노출</h1>
-    <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces·Examples·DataSet Des 메뉴 노출 여부를 설정합니다.</li></ul>
+    <ul class="sub sub-bullets"><li>좌측 사이드바의 Menu·WorkSpaces 메뉴 노출 여부를 설정합니다.</li></ul>
     <div class="nav-mock-wrap">
       <div class="nav-mock" aria-hidden="true">
         <div class="nav-mock-logo">Orange3</div>
@@ -16968,12 +15633,6 @@ async def admin_firstpage_page():
         <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5" transform="rotate(45 17.5 6.5)"/></svg>Widget</div>
         <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Analysis-Datasets</div>
         <div class="nav-mock-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="10" height="11" rx="1"/><rect x="15" y="3" width="6" height="4.5" rx="1"/><rect x="15" y="9.5" width="6" height="4.5" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>Templates</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Examples<span class="nav-mock-chev">›</span></div>
-        <div class="nav-mock-sub">Example 01</div>
-        <div class="nav-mock-sub">Example 02</div>
-        <div class="nav-mock-item on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="5" cy="14" r="3"/><path d="m9 18-1.5-1.5"/></svg>DataSet Des<span class="nav-mock-chev">›</span></div>
-        <div class="nav-mock-sub">DataSet Des 01</div>
-        <div class="nav-mock-sub">DataSet Des 02</div>
       </div>
       <div class="nav-grid-col">
         <div class="grid" id="nav-grid"></div>
@@ -16985,88 +15644,6 @@ async def admin_firstpage_page():
     </div>
   </div>
   </div><!-- /mpane-main -->
-  <div class="mtab-pane" id="mpane-footer" style="display:none">
-  <div class="card">
-    <h1>하단 로고 노출</h1>
-    <ul class="sub sub-bullets"><li>위젯 패널 하단의 로고(EBS·교육부·Orange 3)를 한 번에 표시/숨김 설정합니다.</li></ul>
-    <div class="flp-wrap">
-      <div class="footer-logo-preview">
-        <img src="/footer-logo" alt="" onerror="this.style.display='none'">
-        <span class="flp-orange"><img src="/logo" alt="" onerror="this.style.display='none'"><span>Orange 3</span></span>
-      </div>
-      <div class="grid" id="footer-logo-grid">
-        <div class="row"><input type="checkbox" id="footer-logo-cb"><label for="footer-logo-cb">하단 로고 표시</label></div>
-      </div>
-    </div>
-    <div class="actions">
-      <button onclick="resetFooterLogo()">취소</button>
-      <button id="save-footer-btn" onclick="saveFooterLogo()">저장</button>
-    </div>
-  </div>
-  </div><!-- /mpane-footer -->
-  <div class="mtab-pane" id="mpane-panel" style="display:none">
-  <div class="card">
-    <h1>패널 설정</h1>
-    <ul class="sub sub-bullets"><li>캔버스 우상단 툴바의 우측 슬라이드 패널(작업 공간) 노출 여부를 설정합니다. 왼쪽 메뉴와 별개인 툴바 기능입니다.</li><li>끄면 툴바의 패널 버튼과 우측 패널이 모두 숨겨집니다. 변경 후 새로 접속하는 세션부터 적용됩니다.</li></ul>
-    <div class="flp-wrap">
-      <!-- 이미지2: 우측 패널이 열린 전체 앱 화면(축소 도식) -->
-      <svg viewBox="0 0 130 92" xmlns="http://www.w3.org/2000/svg" style="width:104px;height:auto;border:1px solid #e5e7eb;border-radius:5px;box-shadow:0 1px 3px rgba(0,0,0,0.1);background:#fff;display:block;flex-shrink:0">
-        <rect x="0" y="0" width="130" height="10" fill="#fafafa"/>
-        <rect x="5" y="3.5" width="40" height="3" rx="1.5" fill="#d1d5db"/>
-        <rect x="2" y="12" width="9" height="78" fill="#fafafa"/>
-        <circle cx="6.5" cy="17" r="1.4" fill="#F47B20"/>
-        <rect x="4" y="23" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
-        <rect x="4" y="28" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
-        <rect x="4" y="33" width="5" height="1.8" rx="0.9" fill="#d1d5db"/>
-        <rect x="13" y="12" width="36" height="78" fill="#fff" stroke="#f1f3f5"/>
-        <rect x="16" y="16" width="30" height="6" rx="1.5" fill="#fde7d2"/>
-        <rect x="16" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
-        <rect x="27" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
-        <rect x="38" y="26" width="8" height="8" rx="1.5" fill="#f3f4f6"/>
-        <rect x="16" y="38" width="30" height="3" rx="1" fill="#f1f3f5"/>
-        <rect x="16" y="44" width="30" height="3" rx="1" fill="#f1f3f5"/>
-        <rect x="51" y="12" width="44" height="78" fill="#fbfbfc"/>
-        <rect x="64" y="15" width="28" height="6.5" rx="3.2" fill="#fff" stroke="#e0e0e0"/>
-        <rect x="85.5" y="16" width="5.5" height="4.5" rx="1.2" fill="#F47B20"/>
-        <rect x="97" y="12" width="31" height="78" fill="#fff" stroke="#F47B20" stroke-width="1.3"/>
-        <rect x="100" y="16" width="9" height="3.5" rx="1" fill="#1a1a2e"/>
-        <line x1="97" y1="23" x2="128" y2="23" stroke="#f1f3f5"/>
-      </svg>
-      <svg class="fp-thumb" viewBox="0 0 120 64" xmlns="http://www.w3.org/2000/svg" style="display:block">
-        <rect x="0.5" y="0.5" width="119" height="63" rx="4" fill="#fff" stroke="#e5e7eb"/>
-        <!-- 윗줄: 패널 버튼 없는 툴바 -->
-        <rect x="15" y="9" width="62" height="15" rx="7.5" fill="#fff" stroke="#dcdce0"/>
-        <g stroke="#6b7280" stroke-width="1" stroke-linecap="round" fill="none">
-          <path d="M22.5 13.5h7"/><path d="M26 13.5v6"/>
-          <path d="M34 19.5l6-6"/>
-          <path d="M57.5 12.8h3l2 2v5.4h-5z"/>
-          <circle cx="70" cy="16.8" r="3"/>
-        </g>
-        <g fill="#6b7280"><rect x="46.3" y="13.5" width="1.5" height="6" rx="0.5"/><rect x="49" y="13.5" width="1.5" height="6" rx="0.5"/><circle cx="70" cy="14.6" r="0.5"/><rect x="69.6" y="16" width="0.8" height="2.6" rx="0.4"/></g>
-        <!-- 아랫줄: 패널 버튼 추가된 툴바 -->
-        <rect x="15" y="37" width="74" height="15" rx="7.5" fill="#fff" stroke="#dcdce0"/>
-        <g stroke="#6b7280" stroke-width="1" stroke-linecap="round" fill="none">
-          <path d="M22.5 41.5h7"/><path d="M26 41.5v6"/>
-          <path d="M34 47.5l6-6"/>
-          <path d="M57.5 40.8h3l2 2v5.4h-5z"/>
-          <circle cx="70" cy="44.8" r="3"/>
-        </g>
-        <g fill="#6b7280"><rect x="46.3" y="41.5" width="1.5" height="6" rx="0.5"/><rect x="49" y="41.5" width="1.5" height="6" rx="0.5"/><circle cx="70" cy="42.6" r="0.5"/><rect x="69.6" y="44" width="0.8" height="2.6" rx="0.4"/></g>
-        <!-- 추가된 패널 버튼 (오렌지 하이라이트) -->
-        <rect x="78" y="40" width="9.5" height="9.5" rx="2" fill="#fff7f1" stroke="#F47B20" stroke-width="1.1"/>
-        <rect x="80" y="42" width="5.5" height="5.5" rx="0.8" fill="none" stroke="#F47B20" stroke-width="0.9"/>
-        <line x1="83.6" y1="42" x2="83.6" y2="47.5" stroke="#F47B20" stroke-width="0.9"/>
-      </svg>
-      <div class="grid" id="tbpanel-grid">
-        <div class="row"><input type="checkbox" id="tbpanel-cb"><label for="tbpanel-cb">툴바 패널 노출</label></div>
-      </div>
-    </div>
-    <div class="actions">
-      <button onclick="resetTbPanel()">취소</button>
-      <button id="save-tbpanel-btn" onclick="saveTbPanel()">저장</button>
-    </div>
-  </div>
-  </div><!-- /mpane-panel -->
   <div class="meta" id="meta"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -17079,16 +15656,6 @@ function toast(msg, ms){{
   clearTimeout(window._tt);
   window._tt = setTimeout(()=>t.classList.remove('show'), ms||2200);
 }}
-/* 메뉴 설정 서브탭 전환 (메인/툴바 패널/하단 로고) */
-function mtabSwitch(which){{
-  ['main','panel','footer'].forEach(function(k){{
-    var pane=document.getElementById('mpane-'+k);
-    if(pane) pane.style.display=(k===which)?(k==='main'?'flex':'block'):'none';
-  }});
-  document.querySelectorAll('.mtab').forEach(function(t){{
-    t.classList.toggle('active', t.getAttribute('data-mp')===which);
-  }});
-}}
 async function loadFp(){{
   try {{
     const r = await fetch('/api/admin/settings', {{cache:'no-store'}});
@@ -17099,10 +15666,6 @@ async function loadFp(){{
     const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
     if (el) el.checked = true;
     renderNav();
-    var fl = document.getElementById('footer-logo-cb');
-    if (fl) fl.checked = (_settings.footer_logo !== false);
-    var tp = document.getElementById('tbpanel-cb');
-    if (tp) tp.checked = (_settings.toolbar_panel !== false);
     document.getElementById('meta').textContent = _settings.updated_at
       ? 'updated_at: ' + _settings.updated_at : '(저장 전)';
   }} catch(e) {{ toast('로드 오류: ' + e.message); }}
@@ -17111,7 +15674,7 @@ function renderNav(){{
   const g = document.getElementById('nav-grid');
   if (!g || !_settings) return;
   const nav = _settings.nav || {{}};
-  const items = [['Menu','Menu'], ['WorkSpaces','WorkSpaces'], ['Examples','Examples'], ['DataSetDes','DataSet Des']];
+  const items = [['Menu','Menu'], ['WorkSpaces','WorkSpaces']];
   let html = '';
   items.forEach(([key,label]) => {{
     const on = (nav[key] !== false);   // 미정의는 노출(true) 취급
@@ -17135,15 +15698,6 @@ function resetFp(){{
   const fp = (_settings.first_page === 'workspaces') ? 'workspaces' : 'canvas';
   const el = document.querySelector('input[name="first-page"][value="' + fp + '"]');
   if (el) el.checked = true;
-}}
-function resetTbPanel(){{
-  if (!_settings) {{ loadFp(); return; }}
-  var tp = document.getElementById('tbpanel-cb');
-  if (tp) tp.checked = (_settings.toolbar_panel !== false);
-}}
-function saveTbPanel(){{
-  var tp = document.getElementById('tbpanel-cb');
-  _putSettings({{ toolbar_panel: !!(tp && tp.checked) }}, 'save-tbpanel-btn', '패널 설정 저장됨');
 }}
 async function _putSettings(body, btnId, okMsg){{
   const btn = document.getElementById(btnId);
@@ -17171,16 +15725,8 @@ async function saveFp(){{
 }}
 async function saveNav(){{
   const nav = {{}};
-  ['Menu','WorkSpaces','Examples','DataSetDes'].forEach(k => {{ const cb = document.getElementById('nav-' + k); nav[k] = cb ? cb.checked : true; }});
+  ['Menu','WorkSpaces'].forEach(k => {{ const cb = document.getElementById('nav-' + k); nav[k] = cb ? cb.checked : true; }});
   await _putSettings({{nav}}, 'save-nav-btn', '왼쪽 메뉴 노출 저장 완료');
-}}
-function resetFooterLogo(){{
-  var fl = document.getElementById('footer-logo-cb');
-  if (fl && _settings) fl.checked = (_settings.footer_logo !== false);
-}}
-async function saveFooterLogo(){{
-  var fl = document.getElementById('footer-logo-cb');
-  await _putSettings({{footer_logo: fl ? fl.checked : true}}, 'save-footer-btn', '하단 로고 설정 저장 완료');
 }}
 loadFp();
 </script>
@@ -17549,530 +16095,5 @@ async def widget_detail_page(qn: str):
 </body></html>""")
 
 
-@app.get("/api/admin/sessions")
-async def api_admin_sessions(request: Request):
-    """활성 세션 + xpra 세션 + 워밍풀 스냅샷 — admin/sessions 페이지가 폴링.
-    client_ip: SID-IP 바인딩 미들웨어가 첫 접근 IP 를 sessions[sid] 에 기록.
-    워밍풀 컨테이너는 아직 사용자 접근 전이라 None.
-    admin_viewer 플래그: 해당 세션의 client_ip 가 지금 admin 페이지를 보는 요청자의
-    IP 와 같으면 True — UI 에서 "관리자 접근 중" 배지로 강조."""
-    now = time.time()
-    admin_ip = request.client.host if request.client else None
-    out_main = []
-    with _lock:
-        for sid, info in sessions.items():
-            if info.get("engine") == "xpra":
-                continue
-            running = container_running(info["container_id"])
-            age = int(now - info.get("last_seen", now))
-            remain = max(0, SESSION_TIMEOUT - age)
-            cip = info.get("client_ip")
-            out_main.append({
-                "sid": sid,
-                "kind": "noVNC",
-                "client_ip": cip,
-                "admin_viewer": bool(admin_ip and cip and cip == admin_ip),
-                "port": info.get("port"),
-                "container_id": str(info.get("container_id", ""))[:12],
-                "running": running,
-                "age_sec": age,
-                "remain_sec": remain,
-            })
-        ip_by_sid = {sid: info.get("client_ip") for sid, info in sessions.items()}
-    out_xpra = []
-    try:
-        with _xpra_lock:
-            for sid, info in xpra_sessions.items():
-                running = container_running(info.get("container_id", ""))
-                age = int(now - info.get("last_seen", now)) if info.get("last_seen") else 0
-                cip = ip_by_sid.get(sid)
-                out_xpra.append({
-                    "sid": sid,
-                    "kind": "Xpra",
-                    "client_ip": cip,
-                    "admin_viewer": bool(admin_ip and cip and cip == admin_ip),
-                    "port": info.get("port"),
-                    "container_id": str(info.get("container_id", ""))[:12],
-                    "warm": bool(info.get("warm", False)),
-                    "running": running,
-                    "age_sec": age,
-                })
-    except Exception:
-        pass
-    return JSONResponse({
-        "ok": True,
-        "ts": int(now),
-        "session_timeout": SESSION_TIMEOUT,
-        "admin_ip": admin_ip,
-        "sessions": out_main,
-        "xpra_sessions": out_xpra,
-    })
 
-
-@app.get("/admin/sessions", response_class=HTMLResponse)
-async def admin_sessions():
-    """활성 세션 현황 — settings 페이지와 동일 톤. 5초 자동 새로고침 + 강제종료 버튼."""
-    return HTMLResponse("""<!DOCTYPE html>
-<html lang="ko"><head><meta charset="UTF-8">
-<title>활성 세션 — 관리자</title>
-<style>
-body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic",sans-serif;background:#fafafa;color:#1a1a1c}
-.wrap{max-width:880px;margin:30px auto;padding:0 20px 40px;position:relative}
-h1{font-size:15px;margin:0 0 6px;color:#1a1a1c}
-.sub{font-size:13px;color:#6b7280;margin-bottom:14px}
-.sub-bullets{margin:0 0 14px 0;padding-left:20px;line-height:1.65}
-.sub-bullets li{margin:0}
-.admin-tabs{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin:0 0 24px}
-.admin-tabs a{padding:11px 18px;font-size:13.5px;font-weight:600;color:#6b7280;text-decoration:none;border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
-.admin-tabs a:hover{color:#1a1a1c}
-.admin-tabs a.active{color:#F47B20;border-bottom-color:#F47B20}
-.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:22px 26px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.03)}
-h2{font-size:16px;margin:0 0 4px;color:#1a1a1c;display:flex;align-items:center;gap:10px}
-.section-desc{font-size:12.5px;color:#6b7280;margin-bottom:14px}
-.count-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11.5px;font-weight:700;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
-.count-badge.xpra{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
-.count-badge.nginx{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
-.count-badge.nginx.down{background:#f3f4f6;color:#6b7280;border-color:#d1d5db}
-.count-badge.nginx.unhealthy{background:#fffbeb;color:#b45309;border-color:#fde68a}
-/* Nginx 카드 */
-.nginx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:4px}
-.nginx-stat{padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafb}
-.nginx-stat .label{font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px}
-.nginx-stat .value{font-size:13.5px;color:#1f2937;font-family:Consolas,monospace;word-break:break-all}
-.nginx-stat.healthy{border-color:#a7f3d0;background:#ecfdf5}
-.nginx-stat.unhealthy{border-color:#fde68a;background:#fffbeb}
-.nginx-stat.down{border-color:#fecaca;background:#fef2f2}
-.nginx-stat.healthy .value{color:#047857}
-.nginx-stat.unhealthy .value{color:#b45309}
-.nginx-stat.down .value{color:#b91c1c}
-.nginx-empty{padding:18px 14px;text-align:center;color:#9ca3af;font-size:13px;background:#fafafb;border:1px dashed #e5e7eb;border-radius:8px}
-.nginx-empty code{background:#fff;padding:2px 6px;border-radius:4px;border:1px solid #e5e7eb;font-size:12px;color:#1f2937}
-.section-desc code{background:#f5f5f7;padding:1px 6px;border-radius:4px;font-size:11.5px;color:#1f2937;font-family:Consolas,monospace}
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
-thead th{text-align:left;padding:9px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:0.4px;color:#6b7280;font-weight:600;border-bottom:1px solid #e5e7eb;background:#fafafb}
-tbody td{padding:10px 12px;border-bottom:1px solid #f1f1f3;vertical-align:middle}
-tbody tr:hover{background:#fafafb}
-tbody tr:last-child td{border-bottom:none}
-.sid{font-family:Consolas,monospace;font-size:12.5px;color:#1f2937}
-.pill{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600}
-.pill.run{background:#dcfce7;color:#15803d}
-.pill.stop{background:#fee2e2;color:#b91c1c}
-.pill.warm{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
-.pill.live{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
-.pill.admin{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;margin-left:6px}
-tbody tr.admin-row{background:#fffbeb}
-tbody tr.admin-row:hover{background:#fef3c7}
-.kill-btn{padding:5px 12px;border-radius:6px;border:1px solid #fecaca;background:#fff;color:#b91c1c;cursor:pointer;font-size:12px;font-weight:600}
-.kill-btn:hover{background:#fef2f2}
-.kill-btn:disabled{opacity:0.55;cursor:not-allowed}
-.killall-btn{padding:6px 14px;border-radius:6px;border:1px solid #b91c1c;background:#b91c1c;color:#fff;cursor:pointer;font-size:12.5px;font-weight:600}
-.killall-btn:hover{background:#991b1b;border-color:#991b1b}
-.killall-btn:disabled{opacity:0.55;cursor:not-allowed}
-.empty{padding:24px;text-align:center;color:#9ca3af;font-size:13px}
-.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.toolbar .right{display:flex;align-items:center;gap:10px;color:#6b7280;font-size:12px;flex-wrap:wrap}
-.toolbar button{padding:6px 14px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-size:12.5px;font-weight:600}
-.toolbar button:hover{background:#f5f5f7}
-/* 풀 컨트롤 (2026-05-24) */
-.pool-card{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-.pool-box{padding:14px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafb}
-.pool-box.main{border-color:#bfdbfe;background:#eff6ff}
-.pool-box.xpra{border-color:#fecaca;background:#fef2f2}
-.pool-title{font-size:13.5px;font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:8px}
-.pool-box.main .pool-title{color:#1e40af}
-.pool-box.xpra .pool-title{color:#b91c1c}
-.pool-stats{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px;color:#374151;margin-bottom:12px}
-.pool-stats .k{color:#6b7280;font-weight:600}
-.pool-stats .v{font-family:Consolas,monospace}
-.pool-input-row{display:flex;align-items:center;gap:8px;margin-top:8px}
-.pool-input-row label{font-size:12px;color:#374151;font-weight:600}
-.pool-input-row input[type=number]{width:72px;padding:6px 8px;border:1px solid #d1d5db;border-radius:5px;font-size:13px;font-family:Consolas,monospace;text-align:right}
-.pool-input-row input[type=number]:focus{outline:none;border-color:#F47B20}
-.pool-input-row .max-hint{font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
-.pool-input-row button{padding:6px 14px;border-radius:5px;border:1px solid #F47B20;background:#F47B20;color:#fff;cursor:pointer;font-size:12.5px;font-weight:600}
-.pool-input-row button:hover{background:#d96b10;border-color:#d96b10}
-.pool-input-row button:disabled{opacity:0.55;cursor:not-allowed}
-.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#1a1a1c;color:#fff;padding:10px 18px;border-radius:8px;font-size:13.5px;opacity:0;transition:all .25s;pointer-events:none;z-index:9999}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.meta{margin-top:14px;font-size:11.5px;color:#9ca3af;font-family:Consolas,monospace}
-.ovp-set-title{font-size:20px;font-weight:800;color:#1a1a2e;margin:0 0 16px}
-.ovp-set-hr{border:0;border-top:1px solid #e5e7eb;margin:0 0 14px}
-.ovp-set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:0}
-.ovp-set-hr2{border:0;border-top:1px solid #e5e7eb;margin:32px 0 16px}
-.ovp-set-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:54px;padding:9px 6px;text-align:center;background:#fff;border:1.5px solid #7dd3fc;border-radius:9px;cursor:pointer;color:#0c4a6e;font-size:12px;font-weight:600;text-decoration:none;transition:border-color .12s,box-shadow .12s,background .12s}
-.ovp-set-btn:hover{border-color:#38bdf8;background:#f0f9ff;box-shadow:0 4px 14px rgba(56,189,248,0.20);color:#075985}
-.ovp-set-btn.active{border-color:#38bdf8;background:#e0f2fe;color:#075985}
-.ovp-set-ic{color:#38bdf8;display:flex}
-.ovp-set-ic svg{width:18px;height:18px}
-</style></head><body>
-<div class="wrap">
-  __ADMIN_NAV__
-  __FB_AUTH_BLOCK__
-
-  <div class="card">
-    <h1>활성 세션</h1>
-    <ul class="sub sub-bullets"><li>현재 실행 중인 Orange3 세션 현황입니다. 5초마다 자동 갱신.</li></ul>
-    <div class="toolbar">
-      <h2>워밍풀 크기</h2>
-      <div class="right">
-        <span id="auto-status">⟳ 5초 자동 갱신</span>
-        <button onclick="loadAll()">지금 새로고침</button>
-      </div>
-    </div>
-    <div class="section-desc">env 로 정의된 풀 크기가 상한(MAX). 0..MAX 범위 안에서만 줄일 수 있습니다. 컨테이너 재시작 후에도 유지.</div>
-    <div class="pool-card" id="pool-card"></div>
-  </div>
-
-  <div class="card">
-    <div class="toolbar">
-      <h2>Nginx 리버스 프록시 <span class="count-badge nginx" id="nginx-state">조회 중…</span></h2>
-      <div class="right">
-        <button onclick="nginxReload()" id="nginx-reload-btn">설정 리로드</button>
-      </div>
-    </div>
-    <div class="section-desc">정적 자산 alias + reverse proxy. opt-in 오버레이 (<code>docker-compose.nginx.yml</code>) 로 구동. 호스트 <code>nginx/nginx.conf</code> 수정 후 「설정 리로드」 로 컨테이너 재시작 없이 반영.</div>
-    <div id="nginx-info"></div>
-  </div>
-
-  <div class="card">
-    <div class="toolbar">
-      <h2>운영 세션 <span class="count-badge" id="cnt-main">0</span></h2>
-      <div class="right">
-        <button class="killall-btn" id="kill-all-main" onclick="terminateAll('main')">운영 세션 일괄 종료</button>
-      </div>
-    </div>
-    <div class="section-desc">사용자가 접속 중인 기본엔진 Orange3 세션. 강제 종료 시 사용자의 워크플로우가 자동 저장되며 즉시 끊깁니다. 일괄 종료는 워밍풀까지 비웁니다(자동 재보충).</div>
-    <div id="tbl-main"></div>
-  </div>
-
-  <div class="card">
-    <div class="toolbar">
-      <h2>Xpra 세션 · 워밍풀 <span class="count-badge xpra" id="cnt-xpra">0</span></h2>
-      <div class="right">
-        <button class="killall-btn" id="kill-all-xpra" onclick="terminateAll('xpra')">Xpra 세션·워밍풀 일괄 종료</button>
-      </div>
-    </div>
-    <div class="section-desc">Xpra 전환 트랙 세션 + 즉시 응답용 사전 부팅 컨테이너(워밍풀). 일괄 종료는 모든 컨테이너 제거(자동 재보충).</div>
-    <div id="tbl-xpra"></div>
-  </div>
-
-  <div class="meta" id="meta"></div>
-</div>
-<div class="toast" id="toast"></div>
-
-<script>
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]);}
-function fmtAge(sec){
-  if (sec < 60) return sec + '초 전';
-  if (sec < 3600) return Math.floor(sec/60) + '분 ' + (sec%60) + '초 전';
-  return Math.floor(sec/3600) + '시간 ' + Math.floor((sec%3600)/60) + '분 전';
-}
-function fmtRemain(sec){
-  if (sec <= 0) return '만료됨';
-  if (sec < 60) return sec + '초';
-  if (sec < 3600) return Math.floor(sec/60) + '분';
-  return Math.floor(sec/3600) + '시간 ' + Math.floor((sec%3600)/60) + '분';
-}
-function toast(msg, ms){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(window._tt);
-  window._tt = setTimeout(()=>t.classList.remove('show'), ms||2200);
-}
-
-async function loadSessions(){
-  try {
-    const r = await fetch('/api/admin/sessions', {cache:'no-store'});
-    const d = await r.json();
-    if (!d.ok) { toast('로드 실패'); return; }
-    renderMain(d.sessions || []);
-    renderXpra(d.xpra_sessions || []);
-    const ts = new Date((d.ts||0)*1000);
-    document.getElementById('meta').textContent =
-      'snapshot: ' + ts.toLocaleString('ko-KR') + ' · session_timeout=' + d.session_timeout + 's';
-  } catch(e) { toast('로드 오류: ' + e.message); }
-}
-
-function fmtIp(ip, isAdminViewer){
-  if (!ip) return '<span style="color:#9ca3af">—</span>';
-  const badge = isAdminViewer
-    ? '<span class="pill admin" title="이 IP 에서 admin 페이지를 조회 중 — 일괄 종료에서 자동 제외됨">관리자 접근 중</span>'
-    : '';
-  return '<span class="sid">' + esc(ip) + '</span>' + badge;
-}
-
-function renderMain(rows){
-  document.getElementById('cnt-main').textContent = rows.length + '개';
-  const c = document.getElementById('tbl-main');
-  if (!rows.length) { c.innerHTML = '<div class="empty">현재 활성 기본엔진 세션이 없습니다.</div>'; return; }
-  let html = '<table><thead><tr>'
-    + '<th>세션 ID</th><th>컨테이너</th><th>접근 IP</th><th>포트</th><th>상태</th>'
-    + '<th>마지막 접속</th><th>남은 시간</th><th>액션</th>'
-    + '</tr></thead><tbody>';
-  rows.forEach(s => {
-    const run = s.running
-      ? '<span class="pill run">실행 중</span>'
-      : '<span class="pill stop">중지됨</span>';
-    const trCls = s.admin_viewer ? ' class="admin-row"' : '';
-    html += `<tr${trCls}>
-      <td class="sid">${esc(s.sid.slice(0,12))}…</td>
-      <td class="sid">${esc(s.container_id)}</td>
-      <td>${fmtIp(s.client_ip, s.admin_viewer)}</td>
-      <td>${esc(String(s.port||''))}</td>
-      <td>${run}</td>
-      <td>${esc(fmtAge(s.age_sec))}</td>
-      <td>${esc(fmtRemain(s.remain_sec))}</td>
-      <td><button class="kill-btn" onclick="killSession('${esc(s.sid)}','noVNC')">종료</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  c.innerHTML = html;
-}
-
-function renderXpra(rows){
-  document.getElementById('cnt-xpra').textContent = rows.length + '개';
-  const c = document.getElementById('tbl-xpra');
-  if (!rows.length) { c.innerHTML = '<div class="empty">현재 Xpra 세션 / 워밍풀이 비어 있습니다.</div>'; return; }
-  let html = '<table><thead><tr>'
-    + '<th>세션 ID</th><th>컨테이너</th><th>접근 IP</th><th>포트</th><th>유형</th>'
-    + '<th>상태</th><th>마지막 접속</th><th>액션</th>'
-    + '</tr></thead><tbody>';
-  rows.forEach(s => {
-    const run = s.running
-      ? '<span class="pill run">실행 중</span>'
-      : '<span class="pill stop">중지됨</span>';
-    const kind = s.warm
-      ? '<span class="pill warm">워밍풀</span>'
-      : '<span class="pill live">사용 중</span>';
-    const trCls = s.admin_viewer ? ' class="admin-row"' : '';
-    html += `<tr${trCls}>
-      <td class="sid">${esc(s.sid.slice(0,12))}…</td>
-      <td class="sid">${esc(s.container_id)}</td>
-      <td>${fmtIp(s.client_ip, s.admin_viewer)}</td>
-      <td>${esc(String(s.port||''))}</td>
-      <td>${kind}</td>
-      <td>${run}</td>
-      <td>${esc(fmtAge(s.age_sec))}</td>
-      <td><button class="kill-btn" onclick="killSession('${esc(s.sid)}','Xpra')">종료</button></td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  c.innerHTML = html;
-}
-
-async function killSession(sid, kind){
-  if (!confirm(kind + ' 세션 ' + sid.slice(0,8) + '… 을(를) 종료합니다.\\n사용자가 접속 중이면 즉시 끊기게 됩니다. 진행할까요?')) return;
-  try {
-    let r;
-    if (kind === 'Xpra') {
-      r = await fetch('/xpra-end?sid=' + encodeURIComponent(sid));
-    } else {
-      r = await fetch('/admin/sessions/' + encodeURIComponent(sid), {method:'DELETE'});
-    }
-    if (r.ok) { toast('종료 요청 전송'); loadAll(); }
-    else { toast('종료 실패: HTTP ' + r.status); }
-  } catch(e) { toast('종료 오류: ' + e.message); }
-}
-
-async function terminateAll(kind){
-  const label = (kind === 'main') ? '운영 세션' : 'Xpra 세션·워밍풀';
-  if (!confirm(label + ' 전체를 일괄 종료합니다.\\n현재 사용 중인 사용자도 즉시 끊깁니다. 진행할까요?')) return;
-  const btn = document.getElementById(kind === 'main' ? 'kill-all-main' : 'kill-all-xpra');
-  if (btn) { btn.disabled = true; btn.textContent = '종료 중...'; }
-  try {
-    const r = await fetch('/api/admin/sessions/terminate-all', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({kind})
-    });
-    const d = await r.json();
-    if (d.ok) {
-      let msg = label + ' ' + d.killed + '개 종료';
-      if (d.skipped_admin > 0) msg += ' (관리자 IP ' + d.skipped_admin + '개 보호)';
-      toast(msg, 3500);
-      loadAll();
-    } else { toast('일괄 종료 실패: ' + (d.error || 'unknown')); }
-  } catch(e) { toast('일괄 종료 오류: ' + e.message); }
-  finally {
-    if (btn) { btn.disabled = false;
-      btn.textContent = (kind === 'main') ? '운영 세션 일괄 종료' : 'Xpra 세션·워밍풀 일괄 종료'; }
-  }
-}
-
-let _pool = null;
-async function loadPool(){
-  try {
-    const r = await fetch('/api/admin/pool', {cache:'no-store'});
-    const d = await r.json();
-    if (!d.ok) return;
-    _pool = d;
-    renderPools(d);
-  } catch(e) {}
-}
-
-function renderPools(d){
-  const c = document.getElementById('pool-card');
-  c.innerHTML =
-    poolBox('main', '운영 세션 풀 (noVNC)', d.main) +
-    poolBox('xpra', 'Xpra 풀 (시범)', d.xpra);
-}
-
-function poolBox(kind, title, p){
-  const inputId = 'pool-input-' + kind;
-  const idleRow = (p.current_idle !== undefined)
-    ? `<span class="k">유휴 시간 목표</span><span class="v">${p.current_idle}</span>`
-    : '';
-  const effRow = (p.effective_target !== undefined)
-    ? `<span class="k">현재 시각 적용</span><span class="v">${p.effective_target}</span>`
-    : '';
-  return `<div class="pool-box ${kind}">
-    <div class="pool-title">${esc(title)}</div>
-    <div class="pool-stats">
-      <span class="k">설정값(피크)</span><span class="v">${p.current} / ${p.max}</span>
-      ${idleRow}
-      ${effRow}
-      <span class="k">현재 풀</span><span class="v">${p.in_pool}개 (보충 중 ${p.in_flight})</span>
-    </div>
-    <div class="pool-input-row">
-      <label for="${inputId}">변경:</label>
-      <input type="number" id="${inputId}" min="0" max="${p.max}" value="${p.current}">
-      <span class="max-hint">/ ${p.max} (MAX)</span>
-      <button onclick="savePool('${kind}')">적용</button>
-    </div>
-  </div>`;
-}
-
-async function savePool(kind){
-  const inp = document.getElementById('pool-input-' + kind);
-  if (!inp) return;
-  const v = parseInt(inp.value, 10);
-  const max = _pool && _pool[kind] ? _pool[kind].max : 0;
-  if (!Number.isFinite(v) || v < 0 || v > max) {
-    toast('값은 0..' + max + ' 범위여야 합니다'); return;
-  }
-  try {
-    const body = {}; body[kind] = v;
-    const r = await fetch('/api/admin/pool', {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
-    const d = await r.json();
-    if (d.ok) { toast('풀 크기 변경 완료'); loadPool(); }
-    else { toast('변경 실패: ' + (d.error || 'unknown')); }
-  } catch(e) { toast('변경 오류: ' + e.message); }
-}
-
-function fmtUptime(sec){
-  if (sec == null || sec < 0) return '—';
-  if (sec < 60) return sec + '초';
-  if (sec < 3600) return Math.floor(sec/60) + '분 ' + (sec%60) + '초';
-  if (sec < 86400) return Math.floor(sec/3600) + '시간 ' + Math.floor((sec%3600)/60) + '분';
-  return Math.floor(sec/86400) + '일 ' + Math.floor((sec%86400)/3600) + '시간';
-}
-
-async function loadNginx(){
-  try {
-    const r = await fetch('/api/admin/nginx', {cache:'no-store'});
-    const d = await r.json();
-    renderNginx(d);
-  } catch(e) {
-    renderNginx({ok:false, running:false, error:e.message});
-  }
-}
-
-function renderNginx(d){
-  const stateBadge = document.getElementById('nginx-state');
-  const reloadBtn = document.getElementById('nginx-reload-btn');
-  const info = document.getElementById('nginx-info');
-  if (!d.running) {
-    stateBadge.textContent = '중지됨';
-    stateBadge.className = 'count-badge nginx down';
-    if (reloadBtn) reloadBtn.disabled = true;
-    info.innerHTML = `<div class="nginx-empty">
-      Nginx 컨테이너가 실행 중이 아닙니다.<br>
-      기동: <code>docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d nginx</code>
-    </div>`;
-    return;
-  }
-  const healthy = d.healthy === true;
-  const unhealthy = d.healthy === false;
-  if (healthy) {
-    stateBadge.textContent = '실행 중 (healthy)';
-    stateBadge.className = 'count-badge nginx';
-  } else if (unhealthy) {
-    stateBadge.textContent = '실행 중 (unhealthy)';
-    stateBadge.className = 'count-badge nginx unhealthy';
-  } else {
-    stateBadge.textContent = '실행 중';
-    stateBadge.className = 'count-badge nginx';
-  }
-  if (reloadBtn) reloadBtn.disabled = false;
-  const cls = healthy ? 'healthy' : (unhealthy ? 'unhealthy' : '');
-  const hostPort = d.host_port ? (d.host_port + ' → ' + d.internal_port + ' (내부)') : '—';
-  info.innerHTML = `<div class="nginx-grid">
-    <div class="nginx-stat ${cls}">
-      <div class="label">상태</div>
-      <div class="value">${esc(d.health_status || d.status || '—')}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">컨테이너</div>
-      <div class="value">${esc(d.container_name || '—')}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">접근 포트</div>
-      <div class="value">${esc(hostPort)}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">Upstream</div>
-      <div class="value">${esc(d.upstream || '—')}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">이미지</div>
-      <div class="value">${esc(d.image || '—')}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">가동 시간</div>
-      <div class="value">${esc(fmtUptime(d.uptime_sec))}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">풀 수 (upstream)</div>
-      <div class="value">${d.pools != null ? d.pools + '개' : '—'}</div>
-    </div>
-    <div class="nginx-stat">
-      <div class="label">접속 수 (active)</div>
-      <div class="value">${d.active_connections != null ? d.active_connections : '—'}${d.conn_detail ? ' <span style="font-size:11px;color:#6b7280;font-weight:400">R'+d.conn_detail.reading+' W'+d.conn_detail.writing+' 대기'+d.conn_detail.waiting+'</span>' : ''}</div>
-    </div>
-  </div>`;
-}
-
-async function nginxReload(){
-  if (!confirm('Nginx 설정을 리로드합니다.\\n호스트 nginx/nginx.conf 변경 사항이 즉시 반영됩니다. 진행할까요?')) return;
-  const btn = document.getElementById('nginx-reload-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '리로드 중...'; }
-  try {
-    const r = await fetch('/api/admin/nginx/reload', {method:'POST'});
-    const d = await r.json();
-    if (d.ok) { toast(d.message || 'Nginx 리로드 완료'); loadNginx(); }
-    else { toast('리로드 실패: ' + (d.error || 'unknown') + (d.detail ? ' — ' + d.detail.slice(0,100) : '')); }
-  } catch(e) { toast('리로드 오류: ' + e.message); }
-  finally {
-    if (btn) { btn.disabled = false; btn.textContent = '설정 리로드'; }
-  }
-}
-
-async function loadAll(){
-  await Promise.all([loadSessions(), loadPool(), loadNginx()]);
-}
-
-loadAll();
-setInterval(loadAll, 5000);
-</script>
-</body></html>""".replace("__ADMIN_NAV__", _admin_nav_cards("sessions")).replace("__FB_AUTH_BLOCK__", _admin_auth_html()))
-
-
-@app.delete("/admin/sessions/{sid}")
-async def delete_session(sid: str):
-    if sid not in sessions:
-        return {"error": "세션 없음"}
-    remove_session(sid, reason="admin_delete")
-    return {"status": "삭제됨"}
 
