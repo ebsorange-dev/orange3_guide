@@ -1740,7 +1740,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     /* ── VNC iframe ── */
     #vnc-frame {{
       position:fixed; top:73px; left:48px; right:0; border:none;
-      width:calc(100vw - 43px); height:calc(100vh - 73px);
+      width:calc(100vw - 48px); height:calc(100vh - 73px);
       transition:left .16s ease, width .16s ease;
       border:none; display:block;
       /* 리프래쉬 시 iframe 재로드 중 + translateZ(0) GPU 레이어 가장자리 seam 에서
@@ -2204,7 +2204,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     body.nav-expanded #vnc-frame {{ left:196px; width:calc(100vw - 196px); }}
     /* 위젯 패널이 열려 있으면 캔버스를 패널 오른쪽으로 푸시(닫으면 전체폭 복귀).
        좌측 메뉴 펼침(nav-expanded)과 동일한 body 클래스 방식 — :has() 미지원/타이밍 대비 (2026-06-13) */
-    body.widgets-open #vnc-frame {{ left:348px; width:calc(100vw - 343px); }}
+    body.widgets-open #vnc-frame {{ left:348px; width:calc(100vw - 348px); }}
     body.nav-expanded.widgets-open #vnc-frame {{ left:496px; width:calc(100vw - 496px); }}
     /* ── Example 학습 페이지 패널 (사이드바↔위젯 패널 사이 별도 컬럼, 2026-06-13) ──
        레이어: 사이드바(9600) > Example(9555) · 위젯 패널(9560)은 별도 컬럼이라 비겹침. */
@@ -2234,9 +2234,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     body.nav-expanded #menu-panel {{ left:196px; }}
     body.menu-open #hwd-panel {{ left:408px; }}
     body.nav-expanded.menu-open #hwd-panel {{ left:556px; }}
-    body.menu-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
+    body.menu-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 708px); }}
     body.nav-expanded.menu-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.menu-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
+    body.menu-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 408px); }}
     body.nav-expanded.menu-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     body.menu-open #header-bar, body.menu-open #wf-tabbar {{ left:408px; }}
     body.nav-expanded.menu-open #header-bar, body.nav-expanded.menu-open #wf-tabbar {{ left:556px; }}
@@ -2251,9 +2251,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     body.nav-expanded #dsd-panel {{ left:196px; }}
     body.dsd-open #hwd-panel {{ left:408px; }}
     body.nav-expanded.dsd-open #hwd-panel {{ left:556px; }}
-    body.dsd-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
+    body.dsd-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 708px); }}
     body.nav-expanded.dsd-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.dsd-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
+    body.dsd-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 408px); }}
     body.nav-expanded.dsd-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     body.dsd-open #header-bar, body.dsd-open #wf-tabbar {{ left:408px; }}
     body.nav-expanded.dsd-open #header-bar, body.nav-expanded.dsd-open #wf-tabbar {{ left:556px; }}
@@ -2319,9 +2319,9 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:background .12s, color .12s; }}
     .wsp-close:hover {{ background:rgba(0,0,0,0.08); color:#222; }}
     /* Example 열림 → 캔버스 푸시 (위젯 패널 열림/닫힘 분기) */
-    body.example-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 703px); }}
+    body.example-open.widgets-open #vnc-frame {{ left:708px; width:calc(100vw - 708px); }}
     body.nav-expanded.example-open.widgets-open #vnc-frame {{ left:856px; width:calc(100vw - 856px); }}
-    body.example-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 403px); }}
+    body.example-open:not(.widgets-open) #vnc-frame {{ left:408px; width:calc(100vw - 408px); }}
     body.nav-expanded.example-open:not(.widgets-open) #vnc-frame {{ left:556px; width:calc(100vw - 556px); }}
     /* 실습 선택기 (이미지 4 — 노란 탭 드롭다운) */
     #example-sel-wrap {{ flex-shrink:0; position:relative; padding:10px 12px; border-bottom:1px solid #eee;
@@ -2993,6 +2993,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       transition:opacity 0.08s ease-in;
     }}
     #resize-mask-top.active {{ opacity:1; }}
+    /* 창 리사이즈 시 캔버스 전체를 잠깐 #fafafa 로 덮어 검은 영역 노출 방지 (2026-06-15).
+       #vnc-cover 는 초기 로드 후 DOM 제거되어 리사이즈 마스킹에 못 쓰므로 별도 영속 커버 사용.
+       z-index 8190 — 위젯 패널/사이드바(z 9540+)보다 아래라 그것들은 안 가리고 캔버스(iframe)만 덮음. */
+    #resize-cover {{ position:fixed; top:73px; left:48px; right:0; bottom:0; background:#fafafa;
+      z-index:8190; opacity:0; pointer-events:none; transition:opacity 0.14s ease; }}
+    #resize-cover.active {{ opacity:1; }}
 
     /* ── VNC 로딩 커튼 (3단계 패턴) ── */
     #vnc-cover {{
@@ -3851,6 +3857,7 @@ WRAPPER_PAGE = """<!DOCTYPE html>
   <!-- ── 리사이즈 중 왼쪽/상단 마스크 (메뉴바 이동 시각적 혼란 차단) ── -->
   <div id="resize-mask-left"></div>
   <div id="resize-mask-top"></div>
+  <div id="resize-cover"></div>
 
   <!-- ── VNC 로딩 커튼 (3단계 패턴: 헤더·탭바·iframe 전체를 덮어 resize 잔상 차단) ── -->
   <div id="vnc-cover">
@@ -4520,12 +4527,14 @@ WRAPPER_PAGE = """<!DOCTYPE html>
       var _cover = document.getElementById('vnc-cover');
       var _maskL = document.getElementById('resize-mask-left');
       var _maskT = document.getElementById('resize-mask-top');
+      var _rcover = document.getElementById('resize-cover');
       // GPU 가속 힌트 — iframe transform/resize가 GPU에서 처리되도록
       if (frame) frame.style.willChange = 'transform';
       window.addEventListener('resize', function() {{
         // 마스크 즉시 표시 — 왼쪽 위젯 독·상단 이동을 가려 시각 안정화
         if (_maskL) _maskL.classList.add('active');
         if (_maskT) _maskT.classList.add('active');
+        if (_rcover) _rcover.classList.add('active');   // 캔버스 전체 #fafafa 마스크
         // scaling=local 덕에 본체 커버는 거의 불필요 — 매우 옅은 회색 hint만
         if (_cover) {{
           _cover.style.opacity = '0.12';
@@ -4539,6 +4548,8 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         _resizeTimer = setTimeout(function() {{
           nudgeResize();
           if (_cover) {{ _cover.style.transition = 'opacity 0.1s ease-out'; _cover.style.opacity = '0'; }}
+          // 캔버스 커버는 서버 framebuffer 재생성 정착 후 해제(그 전 해제 시 검은 영역 노출)
+          if (_rcover) setTimeout(function() {{ _rcover.classList.remove('active'); }}, 550);
           // 마스크는 350ms 추가 지연 후 제거 — 서버 측 framebuffer 회복 + 위젯 독 정위치 회복 시점에 맞춰
           // 페이드 아웃 자체도 transition 늘려 부드러운 메뉴 등장 효과
           setTimeout(function() {{
@@ -4553,6 +4564,19 @@ WRAPPER_PAGE = """<!DOCTYPE html>
           _resizeFirstFired = false;
         }}, 120);
       }});
+
+      // 캔버스 iframe 크기 변화 전반(창 리사이즈·위젯 패널 토글·사이드바 펼침·nudge 1px·초기
+      // 레이아웃 정착)을 ResizeObserver 로 감지해 #resize-cover 로 검은 영역(resize=remote
+      // 서버 재렌더 중 노출)을 가린다 — 창 resize 이벤트만으로는 못 잡는 케이스 보강 (2026-06-15)
+      if (window.ResizeObserver && frame) {{
+        var _roT = null;
+        var _ro = new ResizeObserver(function() {{
+          if (_rcover) _rcover.classList.add('active');
+          clearTimeout(_roT);
+          _roT = setTimeout(function() {{ if (_rcover) _rcover.classList.remove('active'); }}, 700);
+        }});
+        try {{ _ro.observe(frame); }} catch(_e) {{}}
+      }}
 
       // 흰색 커버 제거:
       // 조건 1 (서버): /screenshot 폴링 → X11에 Orange3 화면이 실제로 렌더됨 확인
@@ -4574,6 +4598,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
         }}
         function _removeCover() {{
           var cover = document.getElementById('vnc-cover');
+          // 클라이언트 noVNC 렌더 지연 브리지(2026-06-15): /screenshot 은 서버 프레임버퍼라
+          // Orange3 가 떠 있으면 밝지만, 클라이언트 캔버스는 프레임 수신 전이라 잠깐 검을 수 있음.
+          // #vnc-cover 가 페이드아웃하는 동안 그 아래 #resize-cover(캔버스만 덮음)를 켜서
+          // 검은 노출을 끊김 없이 이어 가린 뒤 클라이언트 렌더 완료 후 해제한다.
+          var rc = document.getElementById('resize-cover');
+          if (rc) {{ rc.classList.add('active'); setTimeout(function() {{ rc.classList.remove('active'); }}, 900); }}
           if (cover) {{
             cover.style.opacity = '0';
             setTimeout(function() {{ if (cover && cover.parentNode) cover.parentNode.removeChild(cover); }}, 600);
