@@ -11298,9 +11298,9 @@ def _apply_catalog_admin_filter(data: dict) -> None:
                     lookup_name = _qname_to_en_name.get(qname, wname)
                     if wmap.get(lookup_name, True):
                         new_widgets.append(w)
-                    else:
-                        new_widgets.append({**w, "disabled": True})
                 c = {**c, "widgets": new_widgets}
+            if not c.get("widgets"):
+                continue
             cats_out.append(c)
         _phase_idx: dict = {}
         for _ph in _ADMIN_CATEGORY_PHASES:
