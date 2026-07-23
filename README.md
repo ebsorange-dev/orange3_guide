@@ -80,4 +80,6 @@ GCE 리눅스 VM 으로 외부 공개하려면 [`deploy/gce/README.md`](deploy/g
 
 http://104.154.151.10:8889/
 
+## 스크린샷
 
+![Orange3 웹 인터페이스](docs/screenshot.png)
