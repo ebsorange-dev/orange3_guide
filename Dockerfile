@@ -87,19 +87,15 @@ ENV SITE=/usr/local/lib/python${PYVER}/dist-packages
 # ── 앱 파일 복사 ──────────────────────────────────────────────────────────────
 COPY startapp.sh /startapp.sh
 COPY orange3_launcher.py /app/orange3_launcher.py
-COPY ko_gui_patch.py /app/ko_gui_patch.py
 
 # ── orangecanvas 번역 ─────────────────────────────────────────────────────────
-COPY Korean.json                              ${SITE}/orangecanvas/i18n/Korean.json
 COPY orange3/orangecanvas_Slovenian.json      ${SITE}/orangecanvas/i18n/Slovenian.json
 
 # ── orangewidget 번역 + 패치 ──────────────────────────────────────────────────
 COPY orange3/orangewidget/widget.py           ${SITE}/orangewidget/widget.py
-COPY orange3/orangewidget/Korean.json         ${SITE}/orangewidget/i18n/Korean.json
 
 # ── Orange 코어 번역 + 패치 ───────────────────────────────────────────────────
 COPY orange3/Orange/Slovenian.json            ${SITE}/Orange/i18n/Slovenian.json
-COPY orange3/Orange/Korean.json               ${SITE}/Orange/i18n/Korean.json
 COPY orange3/Orange/widgets/data/owfile.py    ${SITE}/Orange/widgets/data/owfile.py
 COPY orange3/Orange/widgets/model/__init__.py ${SITE}/Orange/widgets/model/__init__.py
 # Split 위젯 — PyPI Orange3 3.39.0에는 없음 (3.40.0+에 추가됨). 호스트 소스에서 백포트.
@@ -147,14 +143,14 @@ RUN sed -i 's/const useFallback = !supportsCursorURIs || isTouchDevice;/const us
 # /opt/orange3-regcache(접미사 없음)는 워밍풀 최초 기동(영어)용으로 English 복제 유지.
 RUN Xvfb :99 -screen 0 1280x800x24 -nolisten tcp & XVFB_PID=$!; \
     sleep 2; \
-    for L in English Korean Slovenian; do \
+    for L in English Slovenian; do \
       mkdir -p /tmp/regconf-$L/biolab.si; \
       printf '[application]\nlanguage=%s\nlast-used-language=%s\n' "$L" "$L" > /tmp/regconf-$L/biolab.si/Orange.ini; \
       XDG_CACHE_HOME=/opt/orange3-regcache-$L XDG_CONFIG_HOME=/tmp/regconf-$L DISPLAY=:99 HOME=/root \
       python3 -c "import sys, os, pickle, importlib.metadata; from PyQt5.QtWidgets import QApplication; from PyQt5.QtCore import QCoreApplication, QStandardPaths; app = QApplication(sys.argv); QCoreApplication.setApplicationName('Orange'); ver = importlib.metadata.version('Orange3'); QCoreApplication.setApplicationVersion(ver); cache_base = QStandardPaths.writableLocation(QStandardPaths.CacheLocation); cache_dir = os.path.join(cache_base, ver); os.makedirs(cache_dir, exist_ok=True); from orangecanvas.registry import WidgetRegistry; from orangewidget.workflow.discovery import WidgetDiscovery; r = WidgetRegistry(); d = WidgetDiscovery(r); d.run('orange.widgets'); cache_file = os.path.join(cache_dir, 'registry-cache.pck'); f = open(cache_file, 'wb'); pickle.dump(d.cached_descriptions, f); f.close(); print('[cache]', '$L', len(r.widgets()), 'cached to', cache_file)"; \
     done; \
     rm -rf /opt/orange3-regcache; cp -r /opt/orange3-regcache-English /opt/orange3-regcache; \
-    rm -rf /tmp/regconf-English /tmp/regconf-Korean /tmp/regconf-Slovenian; \
+    rm -rf /tmp/regconf-English /tmp/regconf-Slovenian; \
     kill $XVFB_PID 2>/dev/null || true
 
 # ── 오렌지 캔버스 메뉴바 + 단축 아이콘 툴바 제거 ────────────────────────────────
