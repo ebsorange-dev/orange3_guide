@@ -75,3 +75,9 @@ GCE 리눅스 VM 으로 외부 공개하려면 [`deploy/gce/README.md`](deploy/g
 - 화면 전송은 noVNC WebSocket RFB (스크린샷 폴링 아님)
 - 런타임 데이터(`sessions/`, `config/`)·대용량 교재 콘텐츠(`_upload_ows_/`)는 리포에서 제외
 - 기본 예제 데이터셋(`data/`, ~52MB)은 `git add -f` 로 추적에 포함 — 클론 즉시 사용 가능
+
+## 접속 테스트 페이지
+
+http://104.154.151.10:8889/
+
+
