@@ -546,6 +546,79 @@ def main():
     _thumb_state["timer"].timeout.connect(_try_generate_thumbs)
     _thumb_state["timer"].start(2000)  # 2초마다 registry 확인
 
+    # ── 1.4a. Admin Settings 기반 VNC 위젯 레지스트리 필터링 ────────────────────
+    # /config/admin_settings.json 을 읽어 비활성화된 카테고리/위젯을 레지스트리에서 제거.
+    # 이렇게 하면 캔버스 더블클릭 QuickMenu 에서도 비활성 위젯이 숨겨진다.
+    _reg_filter_state = {"done": False, "attempts": 0, "timer": None}
+
+    def _load_admin_settings_for_filter():
+        import json as _json
+        for _cfg_path in ('/config/admin_settings.json', '/config/admin_settings.default.json'):
+            try:
+                with open(_cfg_path, 'r', encoding='utf-8') as _f:
+                    return _json.load(_f)
+            except Exception:
+                continue
+        return None
+
+    def _apply_registry_filter(reg):
+        settings = _load_admin_settings_for_filter()
+        if not settings:
+            print("[launcher] registry filter: admin_settings 없음 — 건너뜀", flush=True)
+            return
+        menu = settings.get('menu') or {}
+        widgets_cfg = settings.get('widgets') or {}
+        removed_cats = 0
+        removed_wids = 0
+        new_registry = []
+        for cat_desc, widget_list in list(reg.registry):
+            cat_name = getattr(cat_desc, 'name', '') or ''
+            # 카테고리 비활성화 → 전체 제거
+            if cat_name in menu and not menu[cat_name]:
+                removed_cats += 1
+                removed_wids += len(widget_list)
+                continue
+            # 위젯별 필터
+            cat_wcfg = widgets_cfg.get(cat_name) or {}
+            if cat_wcfg:
+                kept = [wd for wd in widget_list
+                        if cat_wcfg.get(getattr(wd, 'name', '') or '', True)]
+                removed_wids += len(widget_list) - len(kept)
+                new_registry.append((cat_desc, kept))
+            else:
+                new_registry.append((cat_desc, widget_list))
+        reg.registry[:] = new_registry
+        if hasattr(reg, '_categories_dict'):
+            reg._categories_dict.clear()
+            for _cd, _wl in reg.registry:
+                reg._categories_dict[getattr(_cd, 'name', '') or ''] = (_cd, _wl)
+        print(f"[launcher] VNC registry 필터 완료: {removed_cats}개 카테고리, "
+              f"{removed_wids}개 위젯 제거", flush=True)
+
+    def _try_apply_registry_filter():
+        if _reg_filter_state["done"]:
+            return
+        _reg_filter_state["attempts"] += 1
+        try:
+            from orangecanvas.registry import global_registry as _global_reg
+            _reg = _global_reg()
+            _n = len(list(_reg.widgets()))
+            if _n >= 10 or _reg_filter_state["attempts"] >= 30:
+                _apply_registry_filter(_reg)
+                _reg_filter_state["done"] = True
+                if _reg_filter_state["timer"]:
+                    _reg_filter_state["timer"].stop()
+        except Exception as _rx:
+            if _reg_filter_state["attempts"] >= 30:
+                print(f"[launcher] registry filter 실패: {_rx}", flush=True)
+                _reg_filter_state["done"] = True
+                if _reg_filter_state["timer"]:
+                    _reg_filter_state["timer"].stop()
+
+    _reg_filter_state["timer"] = _QTimerBoot()
+    _reg_filter_state["timer"].timeout.connect(_try_apply_registry_filter)
+    _reg_filter_state["timer"].start(2000)  # 2초마다 registry 준비 확인
+
     # ── 1.4. message() 함수 대체 — 카드 chrome 다이얼로그 ──────────────────────
     #  wiget_card_26_work.md 의 카드 chrome 을 경고 다이얼로그에도 적용.
     #
