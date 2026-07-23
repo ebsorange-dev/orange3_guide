@@ -6832,6 +6832,12 @@ WRAPPER_PAGE = """<!DOCTYPE html>
     // 단계 2A: 페이지 로드 시 위젯 카탈로그 가져와 사이드바 카테고리 동적 채움
     document.addEventListener('DOMContentLoaded', function() {{
       _loadWidgetCatalog();
+    }});
+    // 탭 전환 복귀 시 위젯 카탈로그 자동 갱신 — admin 설정 변경이 즉시 반영됨
+    document.addEventListener('visibilitychange', function() {{
+      if (!document.hidden && window._hwdCats) {{ _loadWidgetCatalog(); }}
+    }});
+    document.addEventListener('DOMContentLoaded', function() {{
       // 사이드바 위젯 카테고리 — 카탈로그(window._hwdCats) 준비되면 채우고, 첫 카테고리 패널을 자동 노출
       var _wtries = 0, _wAutoOpened = false;
       var _wiv = setInterval(function() {{
@@ -14331,6 +14337,7 @@ async def admin_settings_put(request: Request):
         log.warning(f"[admin-settings] save failed: {e}")
         return JSONResponse({"ok": False, "error": f"save failed: {e}"},
                             status_code=500)
+    _wcat_clear_all()
     log.info(f"[admin-settings] saved by {request.client.host if request.client else '?'}")
     return JSONResponse({"ok": True, "settings": cur})
 

@@ -56,10 +56,12 @@ RUN mkdir -p /etc/dconf/db/local.d /etc/dconf/profile && \
     dconf update
 
 RUN pip3 install --no-cache-dir --upgrade pip requests urllib3 charset-normalizer
-RUN pip3 install --no-cache-dir orange3 koreanize-matplotlib PyQtWebEngine
+RUN pip3 install --no-cache-dir \
+    orange3 koreanize-matplotlib PyQtWebEngine \
+    orange3-imageanalytics orange3-network orange3-text \
+    orange3-timeseries orange3-geo
 
 # ── 3개 예제 워크플로우 .ows 파일 배치 ───────────────────────────────────────────
-# (orange3-text 미설치이므로 tutorials 디렉토리가 없음 → 직접 복사)
 RUN mkdir -p /usr/local/lib/python3.10/dist-packages/orangecontrib/text/tutorials
 COPY orange3/ows_whitelist/60-author-predictions-on-tweets.ows \
      /usr/local/lib/python3.10/dist-packages/orangecontrib/text/tutorials/
@@ -147,7 +149,7 @@ RUN Xvfb :99 -screen 0 1280x800x24 -nolisten tcp & XVFB_PID=$!; \
       mkdir -p /tmp/regconf-$L/biolab.si; \
       printf '[application]\nlanguage=%s\nlast-used-language=%s\n' "$L" "$L" > /tmp/regconf-$L/biolab.si/Orange.ini; \
       XDG_CACHE_HOME=/opt/orange3-regcache-$L XDG_CONFIG_HOME=/tmp/regconf-$L DISPLAY=:99 HOME=/root \
-      python3 -c "import sys, os, pickle, importlib.metadata; from PyQt5.QtWidgets import QApplication; from PyQt5.QtCore import QCoreApplication, QStandardPaths; app = QApplication(sys.argv); QCoreApplication.setApplicationName('Orange'); ver = importlib.metadata.version('Orange3'); QCoreApplication.setApplicationVersion(ver); cache_base = QStandardPaths.writableLocation(QStandardPaths.CacheLocation); cache_dir = os.path.join(cache_base, ver); os.makedirs(cache_dir, exist_ok=True); from orangecanvas.registry import WidgetRegistry; from orangewidget.workflow.discovery import WidgetDiscovery; r = WidgetRegistry(); d = WidgetDiscovery(r); d.run('orange.widgets'); cache_file = os.path.join(cache_dir, 'registry-cache.pck'); f = open(cache_file, 'wb'); pickle.dump(d.cached_descriptions, f); f.close(); print('[cache]', '$L', len(r.widgets()), 'cached to', cache_file)"; \
+      python3 -c "import sys, os, pickle, importlib.metadata; from PyQt5.QtWidgets import QApplication; from PyQt5.QtCore import QCoreApplication, QStandardPaths; app = QApplication(sys.argv); QCoreApplication.setApplicationName('Orange'); ver = importlib.metadata.version('Orange3'); QCoreApplication.setApplicationVersion(ver); cache_base = QStandardPaths.writableLocation(QStandardPaths.CacheLocation); cache_dir = os.path.join(cache_base, ver); os.makedirs(cache_dir, exist_ok=True); from orangecanvas.registry import WidgetRegistry; from orangewidget.workflow.discovery import WidgetDiscovery; r = WidgetRegistry(); d = WidgetDiscovery(r); [d.run(p) for p in ['orange.widgets','orangecontrib.imageanalytics.widgets','orangecontrib.network.widgets','orangecontrib.text.widgets','orangecontrib.timeseries.widgets','orangecontrib.geo.widgets']]; cache_file = os.path.join(cache_dir, 'registry-cache.pck'); f = open(cache_file, 'wb'); pickle.dump(d.cached_descriptions, f); f.close(); print('[cache]', '$L', len(r.widgets()), 'cached to', cache_file)"; \
     done; \
     rm -rf /opt/orange3-regcache; cp -r /opt/orange3-regcache-English /opt/orange3-regcache; \
     rm -rf /tmp/regconf-English /tmp/regconf-Slovenian; \
