@@ -1,6 +1,8 @@
-# 2026년 오픈소스 출전 합니다.
+## 2026년 오픈소스 출전 합니다.
 
-# orange3web
+
+## orange3web
+
 
 Orange3 웹 배포 — Docker 기반 한국어 Orange3 GUI를 브라우저에서 다중 세션으로 제공하는 시스템.
 
@@ -8,7 +10,11 @@ Orange3 웹 배포 — Docker 기반 한국어 Orange3 GUI를 브라우저에서
 세션 매니저가 워밍풀·라우팅·언어 전환·워크플로우 업로드 등을 담당한다.
 
 
+
+## 접속 테스트 페이지
+
 http://104.154.151.10:8889/
+
 
 ## 스크린샷
 
@@ -16,6 +22,8 @@ http://104.154.151.10:8889/
 
 ## 라이선스 / 출처
 Orange3(GPLv3) 알고리즘 라이브러리를 재사용합니다. 배포 시 해당 라이선스를 준수하세요.
+
+
 
 
 ## 구성
@@ -34,11 +42,15 @@ Orange3(GPLv3) 알고리즘 라이브러리를 재사용합니다. 배포 시 �
 | `nginx/` | Nginx 리버스 프록시 + 정적 alias 설정 |
 | `startapp.sh` / `startapp.xpra.sh` | 컨테이너 기동 스크립트 |
 
+
+
 ## 설정
 
 ```bash
 cp .env.example .env   # HOST_BASE, Google OAuth 값 입력 (.env 는 커밋 금지)
 ```
+
+
 
 ## 클론 후 셋업 체크리스트 (필수)
 
@@ -63,6 +75,9 @@ GitHub 클론만으로는 **소스 코드는 모두 받아지지만, 일부 런�
 > 요약: **빠지는 건 소스가 아니라 `data/` 외 런타임 콘텐츠와 `.env`(경로/시크릿 환경변수).**
 > 위 4단계를 마치면 File 위젯 데이터셋 연결·파일 탐색이 로컬과 동일하게 동작한다.
 
+
+
+
 ## 배포 / 실행 (Docker)
 
 이 프로젝트는 **Docker 기반 배포만** 사용한다(서버리스/Vercel 미사용 — `vercel.json` 에서
@@ -79,15 +94,19 @@ docker compose up -d                                              # 세션 매�
 > 파일(`orange3/` 하위 21개)은 저장소에 포함되어 있어 **클린 클론만으로 빌드된다**.
 > (`orange3/` 벤더 트리 전체는 `.gitignore` 로 제외 — 빌드엔 불필요.)
 
+
+
+
 ### 외부 배포 (Google Compute Engine)
 
 GCE 리눅스 VM 으로 외부 공개하려면 [`deploy/gce/README.md`](deploy/gce/README.md) 참고
 (VM 생성 · 방화벽 · `setup_gce.sh` 부트스트랩 · 빌드/기동 절차).
+
+
+
 
 ## 참고
 
 - 화면 전송은 noVNC WebSocket RFB (스크린샷 폴링 아님)
 - 런타임 데이터(`sessions/`, `config/`)·대용량 교재 콘텐츠(`_upload_ows_/`)는 리포에서 제외
 - 기본 예제 데이터셋(`data/`, ~52MB)은 `git add -f` 로 추적에 포함 — 클론 즉시 사용 가능
-
-## 접속 테스트 페이지
