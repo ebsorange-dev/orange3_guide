@@ -3,7 +3,9 @@
 
 ## orange3web
 
+
 Orange3 웹 배포 — Docker 기반 한국어 Orange3 GUI를 브라우저에서 다중 세션 제공 시스템.
+
 
 각 사용자에게 격리된 Orange3 컨테이너를 동적으로 할당하고, 화면을 noVNC(WebSocket RFB)로 브라우저에 전송한다. 
 세션 매니저가 워밍풀·라우팅·언어 전환·워크플로우 업로드 등을 담당한다.
